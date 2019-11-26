@@ -1,0 +1,23 @@
+# Site settings
+title: "artikblue"
+bye_message: "Thx!"
+baseurl: "/"
+url: "https://artikblue.github.io"
+disqus: artikblue
+
+# Header settings
+nick: "artikblue"
+mail:
+    domain: "protonmail"
+    ext: "com"
+source_code:
+    server: "github.com"
+    nick: "artikblue"
+blog:
+    server: "github.io"
+    nick: "artikblue"
+fingerprint_key: "5E12 9ABC C2A9 564B C048  2DF9 D327 0D10 BC71 CF75"
+
+# Build settings
+markdown: kramdown
+permalink: /:categories/:title/
