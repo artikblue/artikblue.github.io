@@ -11,16 +11,16 @@ body {
     //width: 800px;
 }
 h1 {
-  color: rgba(0, 51, 220, 0.541);
+  color: rgba(9, 185, 255, 0.88);
   font-size: 24px;
   font-family: monospace;
   font-weight: bold;
 }
-h2 { color: rgba(0, 51, 220, 0.541); }
-h3 { color: rgba(0, 51, 220, 0.541); }
-h4 { color: rgba(0, 51, 220, 0.541); }
-h5 { color: rgba(0, 51, 220, 0.541); }
-h6 { color: rgba(0, 51, 220, 0.541); }
+h2 { color: rgba(9, 185, 255, 0.88); }
+h3 { color: rgba(9, 185, 255, 0.88); }
+h4 { color: rgba(9, 185, 255, 0.88); }
+h5 { color: rgba(9, 185, 255, 0.88); }
+h6 { color: rgba(9, 185, 255, 0.88); }
 footer {
     color: rgba(0, 205, 220, 0.8);
     font-weight: bold;
@@ -60,7 +60,7 @@ a {
 }
 .menu ul li a {
     text-decoration: none;
-    color: rgba(0, 77, 220, 0.356);
+    color: rgba(9, 185, 255, 0.88);
 }
 .menu ul li a:hover {
     padding: 2px;
@@ -207,7 +207,7 @@ table a {
     color: rgba(0, 77, 220, 0.356);
 }
 .string {
-    color: rgba(0, 77, 220, 0.356);
+    color: rgba(0, 77, 220, 0.534);
 }
 .function {
     color: rgba(255,255,255,0.5);
