@@ -94,6 +94,10 @@ img {
     -moz-border-radius: 3px;
     border-radius: 3px;
 }
+.avatar {
+    margin:0%;
+    width: auto;
+}
 iframe {
     width: 750px;
     height: 400px;
