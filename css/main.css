@@ -11,16 +11,16 @@ body {
     //width: 800px;
 }
 h1 {
-  color: rgba(9, 185, 255, 0.88);
+  color: rgba(203, 240, 255, 0.88);
   font-size: 24px;
   font-family: monospace;
   font-weight: bold;
 }
-h2 { color: rgba(9, 185, 255, 0.88); }
-h3 { color: rgba(9, 185, 255, 0.88); }
-h4 { color: rgba(9, 185, 255, 0.88); }
-h5 { color: rgba(9, 185, 255, 0.88); }
-h6 { color: rgba(9, 185, 255, 0.88); }
+h2 { color: rgba(203, 240, 255, 0.88); }
+h3 { color: rgba(203, 240, 255, 0.88); }
+h4 { color: rgba(203, 240, 255, 0.88); }
+h5 { color: rgba(203, 240, 255, 0.88); }
+h6 { color: rgba(203, 240, 255, 0.88); }
 footer {
     color: rgba(0, 205, 220, 0.8);
     font-weight: bold;
@@ -64,14 +64,14 @@ a {
 }
 .menu ul li a:hover {
     padding: 2px;
-    border-left: 1px dashed rgba(0, 77, 220, 0.356);
-    border-right: 1px dashed rgba(0, 77, 220, 0.356);
+    border-left: 1px dashed rgba(203, 240, 255, 0.88);
+    border-right: 1px dashed rgba(203, 240, 255, 0.88);
 }
 main {
     text-align: left;
 }
 a:hover {
-		color: rgba(0, 77, 220, 0.359);
+		color: rgba(203, 240, 255, 0.88);
 }
 pre {
     background-color: rgba(255,255,255,0.05);
