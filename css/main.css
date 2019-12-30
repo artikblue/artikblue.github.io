@@ -13,14 +13,14 @@ body {
 h1 {
   color: rgba(203, 240, 255, 0.88);
   font-size: 24px;
-  font-family: Georgia;
+  font-family: Georgia !important;
   
 }
-h2 { color: rgba(203, 240, 255, 0.88); }
-h3 { color: rgba(203, 240, 255, 0.88); }
-h4 { color: rgba(203, 240, 255, 0.88); }
-h5 { color: rgba(203, 240, 255, 0.88); }
-h6 { color: rgba(203, 240, 255, 0.88); }
+h2 { color: rgba(203, 240, 255, 0.88); font-family: Georgia;}
+h3 { color: rgba(203, 240, 255, 0.88); font-family: Georgia;}
+h4 { color: rgba(203, 240, 255, 0.88); font-family: Georgia;}
+h5 { color: rgba(203, 240, 255, 0.88); font-family: Georgia;}
+h6 { color: rgba(203, 240, 255, 0.88); font-family: Georgia;}
 footer {
     color: rgba(203, 240, 255, 0.88);
     font-weight: bold;
