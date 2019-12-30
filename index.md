@@ -2,7 +2,6 @@
 layout: content
 ---
 
-# This blog
 
 [https://artikblue.github.io/](https://artikblue.github.io/)
 
