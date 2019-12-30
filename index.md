@@ -2,10 +2,11 @@
 layout: content
 ---
 
+### About the blog 
 
-[https://artikblue.github.io/](https://artikblue.github.io/)
+Here you will find publications mostly about reverse engineering, electronics, offensive security and operational security.
 
-### About
+### About me
 
 Human interested in many fields that include: electronics, software engineering, hacking, art and political philosophy. I will post mostly about these topics :)
 
