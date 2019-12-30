@@ -13,8 +13,8 @@ body {
 h1 {
   color: rgba(203, 240, 255, 0.88);
   font-size: 24px;
-  font-family: monospace;
-  font-weight: bold;
+  font-family: Georgia;
+  
 }
 h2 { color: rgba(203, 240, 255, 0.88); }
 h3 { color: rgba(203, 240, 255, 0.88); }
