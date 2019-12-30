@@ -16,11 +16,11 @@ h1 {
   font-family: Georgia !important;
   
 }
-h2 { color: rgba(203, 240, 255, 0.88); font-family: Georgia;}
-h3 { color: rgba(203, 240, 255, 0.88); font-family: Georgia;}
-h4 { color: rgba(203, 240, 255, 0.88); font-family: Georgia;}
-h5 { color: rgba(203, 240, 255, 0.88); font-family: Georgia;}
-h6 { color: rgba(203, 240, 255, 0.88); font-family: Georgia;}
+h2 { color: rgba(203, 240, 255, 0.88); font-family: Georgia !important;}
+h3 { color: rgba(203, 240, 255, 0.88); font-family: Georgia !important;}
+h4 { color: rgba(203, 240, 255, 0.88); font-family: Georgia !important;}
+h5 { color: rgba(203, 240, 255, 0.88); font-family: Georgia !important;}
+h6 { color: rgba(203, 240, 255, 0.88); font-family: Georgia !important;}
 footer {
     color: rgba(203, 240, 255, 0.88);
     font-weight: bold;
