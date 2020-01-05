@@ -8,10 +8,9 @@ tags:
     - datascience
     - r
 ---
-this is a test :)
-
 ## Data analysis
-
+Today I'm working with the data that I gathered from "habitaclia.com", related to the flat renting market in Madrid. Find this data here(https://github.com/artikblue/datasets-analyses)  
+In this post I will walk you a little bit through the data I gathered:
 ### Basic data analysis
 As the dataset is stored in a mongo db the first step is connecting to it and retrieving the collection.
 ~~~
@@ -491,13 +490,55 @@ And at the end we can categorize our elements and see how each group represents 
 > nrow(subset(mydata,price_category == "HIGHEXPENSIVE")) / nrow(mydata)
 [1] 0.03614655
 ~~~
-And we see how most of the properties belong to the "EXPENSIVE" category.
-
+And we see how most of the properties belong to the "EXPENSIVE" category.  
+### Predictive analysis
+Can we predict the price of a property based on its features? Well, let's be honest, probably NOT. But we can try that anyway.
+  
+Neuralnet package offers a nice way to do that. We can select all of the numerical feats of our dataset, split the dataset into 60-40 for training and validation and run some tests.
 ~~~
+library(neuralnet)
+ds <- select(mydata, 4,5,6,7,9) 
+dvals <- ds
+samplesize <-0.60 * nrow(dvals)
+set.seed(80)
+index = sample(seq_len(nrow(ds)),size = samplesize)
 
+datatrain = dvals[ index, ]
+datatest = dvals[ -index, ]
+
+max = apply(dvals , 2 , max)
+min = apply(dvals, 2 , min)
+scaled = as.data.frame(scale(dvals, center = min, scale = max - min))
+
+trainNN = scaled[index , ]
+testNN = scaled[-index , ]
+
+# fit neural network price
+set.seed(2)
+NN = neuralnet(price ~ toilets + surface + rooms , trainNN, hidden = c(4,3,4) , linear.output = T )
+
+# plot neural network
+plot(NN)
 ~~~
-
-
+We can even plot the neuralnetwork. And as we see the error is so high.
+![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/neuralnet.png)
+And we can plot the regression as well:
 ~~~
+predict_testNN = compute(NN, testNN[,c(1:4)])
+predict_testNN = (predict_testNN$net.result * (max(dvals$price) - min(dvals$price))) + min(dvals$price)
 
+plot(datatest$price, predict_testNN, col='blue', pch=16, ylab = "predicted price NN", xlab = "real price")
+
+abline(0,1)
 ~~~
+It looks like we have a straight regression but... note that due to that outlier the scale moves a lot... so....
+![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/neuralregression.png)
+We can calculate the RMSE:
+~~~
+> # Calculate Root Mean Square Error (RMSE)
+> RMSE.NN = (sum((datatest$price - predict_testNN)^2) / nrow(datatest)) ^ 0.5
+> RMSE.NN
+[1] 9128.876
+~~~
+And it shows that the error is really high...!  
+I will update this post soon with more interesting conclusions :)
