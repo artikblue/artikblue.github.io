@@ -1,6 +1,6 @@
 ---
 layout: post
-title:	"Hello world post"
+title:	"Madrid real estate renting market data analysis"
 date:	2020-01-05 12:00:00
 categories:
     - blog
@@ -70,7 +70,7 @@ price
 128.5034 
 ~~~
 
-![priceboxplot]({{ site.baseurl }}images/blog/madrid_renting/priceboxplot.png)
+![priceboxplot](https://artikblue.github.io/images/blog/madrid_renting/priceboxplot.png)
 
 ~~~
 
