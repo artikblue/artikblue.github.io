@@ -350,7 +350,7 @@ Consultoría Inmobiliaria Internacional de Madrid
 ~~~
 As we saw before, most of the prices range from 900 to 1300 and surfaces go from 60 to 100.
 ### Cluster analysis
-
+As we saw in the first stage of this analysis, it is clear that we have different "categories" of properties (ex: rural vs urban, luxury vs affordable etc). In these situations running a cluster analysis can be helpful.
 ~~~
 > ds <- select(mydata, 4,5,6,7,9) # all of the numeric feats
 > # KMEANS
@@ -367,9 +367,9 @@ Cluster means:
 5    1134.665  90.35074 2.185819 1.530118 17.76039
 6  450000.000 437.00000 4.000000 3.000000 58.00000
 ~~~
-
-
-
+In this case a cluster analysis is a bit revealing as it shows multiple categories. From those categories one of them (number 5) clearly corresponds to the category we just defined in the previous stage. Other categories correspond to (probably) other significant market sectors such as categories 1 and 3. The rest of the categories correspond to highly expensive properties I can't even dream of.  
+  
+So having those identified, we can extract them from the general dataset.
 ~~~
 > group1 <- filter(mydata, price >250 & price < 1600)
 > mean(data.matrix(group1["price"]))
@@ -377,7 +377,7 @@ Cluster means:
 > sd(data.matrix(group1["price"]))
 [1] 268.9029
 ~~~
-
+And repeat our analyses focused on each group:
 ![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/densitypricegroup1.png)
 
 
@@ -389,9 +389,11 @@ Cluster means:
 data:  data.matrix(group1["price"])
 W = 0.97499, p-value < 2.2e-16
 ~~~
-So we can see that we don't have a normal distribution
+So we can see that we don't have a normal distribution in terms of the price eventhough there is more "normality" here than in the general group.
 
 ![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/group1pairs.png)
+It is very interesting to note here that as we move to this general group (let's say the avg property for the avg family) we can appreciate how in here price and surface do really correlate somehow.
+
 
 ![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/group1regression.png)
 
@@ -421,7 +423,9 @@ sample estimates:
       cor 
 0.3080166 
 ~~~
-
+Anyway correlation is still weak here.  
+  
+Let's go for the second group, expensive properties.
 
 ~~~
 > group2 <- filter(mydata, price > 1600 & price < 3200)
@@ -431,8 +435,7 @@ sample estimates:
 [1] 419.5886
 ~~~
 ![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/group2density.png)
-
-
+We have a small degree of normality here but most of the properties range from 1500 to 2000.
 ~~~
 > shapiro.test(data.matrix(group2["price"]))
 
@@ -441,12 +444,11 @@ sample estimates:
 data:  data.matrix(group2["price"])
 W = 0.93823, p-value < 2.2e-16
 ~~~
-We can see that we don't have a normal distribution here either
+Anyway, we can see that we don't have a normal distribution here either.
 
 ![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/group2pairs.png)
 
 ![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/group2regression.png)
-
 ~~~
 > pairs(~price + surface + rooms + toilets,data=group2,
 +       main="correlation matrix") #Matríz de correlaciones
@@ -475,8 +477,9 @@ sample estimates:
 cor 
   1 
 ~~~
+We still have a bit more regression here than in the general group, but its more weird than the previous group.  
 
-
+And at the end we can categorize our elements and see how each group represents a % of the total.
 ~~~
 > mydata$price_category<-ifelse(mydata$price <500, "VERYCHEAP", ifelse(mydata$price <1000,"NORMAL", ifelse(mydata$price < 5000,"EXPENSIVE","HIGHEXPENSIVE")))
 > nrow(subset(mydata,price_category == "VERYCHEAP")) / nrow(mydata)
@@ -488,7 +491,7 @@ cor
 > nrow(subset(mydata,price_category == "HIGHEXPENSIVE")) / nrow(mydata)
 [1] 0.03614655
 ~~~
-
+And we see how most of the properties belong to the "EXPENSIVE" category.
 
 ~~~
 
