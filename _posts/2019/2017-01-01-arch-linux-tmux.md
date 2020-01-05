@@ -5,10 +5,7 @@ date:	2019-12-12 12:00:00
 categories:
     - blog
 tags:
-    - hello
-    - world
-    - first
-    - post
+    - helloworld
 ---
 this is a test :)
 
