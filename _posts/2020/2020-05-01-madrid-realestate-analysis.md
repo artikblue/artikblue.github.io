@@ -520,9 +520,9 @@ NN = neuralnet(price ~ toilets + surface + rooms , trainNN, hidden = c(4,3,4) , 
 # plot neural network
 plot(NN)
 ~~~
-We can even plot the neuralnetwork. And as we see the error is so high.
+We can even plot the neuralnetwork. And as we see the error is so high.  
 ![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/neuralnet.png)
-And we can plot the regression as well:
+  And we can plot the regression as well:
 ~~~
 predict_testNN = compute(NN, testNN[,c(1:4)])
 predict_testNN = (predict_testNN$net.result * (max(dvals$price) - min(dvals$price))) + min(dvals$price)
@@ -532,8 +532,8 @@ plot(datatest$price, predict_testNN, col='blue', pch=16, ylab = "predicted price
 abline(0,1)
 ~~~
 It looks like we have a straight regression but... note that due to that outlier the scale moves a lot... so....
-![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/neuralregression.png)
-We can calculate the RMSE:
+![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/neuralregression.png)  
+  We can calculate the RMSE:
 ~~~
 > # Calculate Root Mean Square Error (RMSE)
 > RMSE.NN = (sum((datatest$price - predict_testNN)^2) / nrow(datatest)) ^ 0.5
