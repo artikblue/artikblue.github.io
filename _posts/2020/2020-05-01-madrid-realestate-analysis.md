@@ -13,13 +13,14 @@ this is a test :)
 ## Data analysis
 
 ### Basic data analysis
+As the dataset is stored in a mongo db the first step is connecting to it and retrieving the collection.
 ~~~
 > con <- mongo("realestate_renting", url = "mongodb://127.0.0.1:27017/habitaclia")
 > con$count()
 [1] 6114
 ~~~
-We can see that our dataset is composed by a total of 6114 flat renting offers.
-
+We can see that our dataset is composed by a total of 6114 flat renting offers.  
+With the dataset loaded we can start by doing some basic descriptive statistics. As it is important to know about what data we are doing our analysis we can print the urban areas and the villages were the offers we just retrieved belong.
 ~~~
 > mydata <- con$find('{}')
 > print("Studied areas")
@@ -54,7 +55,7 @@ We can see that our dataset is composed by a total of 6114 flat renting offers.
 5671                  Zona El Cañaveral-Los Berrocales
 5989  
 ~~~
-
+As we are doing our analysis on the real estate renting market one obviously interesting thing to know is the avg renting price and the avg surface. As we are dealing with a lot of offers and some of them (specially the luxuriy properties) can have a very high price, using the median here is interesting and more revealing.
 ~~~
 > print("general means")
 [1] "general means"
@@ -69,24 +70,33 @@ price
  surface 
 128.5034 
 ~~~
-
+And done that, we can notice an interesting difference between the median and the mean.  
+Box plots are also quite interesting and somehow confirm the theory I just presented. The boxplot related to the price shows that almost all values are between a specific range and then some outliers appear in the upper sector, so those are luxury properties for sure.
 ![priceboxplot](https://artikblue.github.io/images/blog/madrid_renting/priceboxplot.png)
-
+Regarding to the surface something similar happens but not as extreme, probably because expensive properties are more about luxury than just "space".
 ![surfaceboxplot](https://artikblue.github.io/images/blog/madrid_renting/boxplotsurface)
+Those two other boxplots I think are quite less relevant and follow the same logic.
 
 ![roomsboxplot](https://artikblue.github.io/images/blog/madrid_renting/boxplotrooms.png)
 
 ![toiletsboxplot](https://artikblue.github.io/images/blog/madrid_renting/boxplottoilets.png)
 
+We can also generate the density graphs for each feat to quickly identify if they follow a normal distribution along all of the elements.  
+In the first graph, related to the price we can see that almost all of the values are concentrated at the very beggining and so the outliers have a big effect on "breaking" the normality.  
+
 
 ![pricedensity](https://artikblue.github.io/images/blog/madrid_renting/densityprice.png)
 
-![surfacedensity](https://artikblue.github.io/images/blog/madrid_renting/surfacedensity.png)
+Regarding to the surface all of the values are located between about 30 and 200 which is somehow expected, then we may have some very big properties but not to many.
 
+
+![surfacedensity](https://artikblue.github.io/images/blog/madrid_renting/surfacedensity.png)
+The rooms and toilets follow the same logic, we see that the graphic is fluctuating because we have few "integer" values of each like 1,2,3... and all of the elements match at least in one category.
 ![roomsdensity](https://artikblue.github.io/images/blog/madrid_renting/roomsdensity.png)
 
 ![toiletsdensity](https://artikblue.github.io/images/blog/madrid_renting/toiletsdensity.png)
 
+As a conclusion of this first stage of the analysis a summary of the data can complete this big picture for us:
 ~~~
 > print("data summaries")
 [1] "data summaries"
@@ -107,9 +117,12 @@ price
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
   1.000   1.000   2.000   1.997   2.000  26.000 
 ~~~
-
-
-
+From the data summary we can basically extract that prices range from 200EUR to 1800000EUR the avg house/flat may have a cost I would say between 1300EUR and 2000EUR and it would have a surface between 92m2 and 100m2 and would have 1 toilet and 2 or 3 rooms. Most of the offer posts include 18 pics. There is nothing much more to extract.  
+We can also try to identify some correlation between features by generating the pairs graph.
+![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/basicpairs.png)
+One can guess that price and surface may have correlation but price may depend on other factors such as location or luxury. In other terms price and surface have correlation but at the very beggining of the scale, then other factors come to play .Of course surface and rooms and toilets have correlation.
+### Analysis by categories
+As the offers belong to specif categories such as zone or or village, we can try groping our data by those and exploring the differences between each.
 ~~~
 > villages <- mydata %>%
 +   group_by(village) %>%
@@ -130,10 +143,7 @@ price
 +             surface_median=median(surface), surface_sd=sd(surface), surface_varr=var(surface),
 +             surface_range=max(surface)-min(surface), price_meter=sum(price)/sum(surface))
 ~~~
-
-![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/basicpairs.png)
-
-
+Then we can analyze the zones who have more offers, the more expensive zones and the zones who offer larger spaces:
 ~~~
 > select(zones %>% arrange(-total_vals), zone, total_vals)
 # A tibble: 7 x 2
@@ -146,7 +156,7 @@ price
 5 Corredor del Henares                     171
 6 Cuenca del Tajo-Tajuña                    84
 7 Cuenca del Alberche-Guadarrama            36
-> select(zonas %>% arrange(-price_avg), zone, price_avg)
+> select(zones %>% arrange(-price_avg), zone, price_avg)
 # A tibble: 7 x 2
   zone                           price_avg
   <chr>                                 <dbl>
@@ -180,9 +190,8 @@ price
 6 Zona Sur                                  107. 
 7 Corredor del Henares                       97.2
 ~~~
-
-
-
+Not a big surpise that most of the offers are located in the metropolital area (aka the big city). Another interesting fact here is that living in small villages outside the metropilitan area can be very cheap.  
+If we go by village (or quarter in the big city) we see that most of the offers are located in the very city centre.
 ~~~
 > select(villages %>% arrange(-total_vals), village, total_vals)
 # A tibble: 428 x 2
@@ -245,9 +254,8 @@ price
 10 Zona Los Robles                                  452 
 # … with 418 more rows
 ~~~
-
-
-
+We can also note that the most expensive properties are located in the peripheria of the big city in luxury districts.  
+The other interesting category here is the one related to companies:
 ~~~
 > select(companies %>% arrange(-total_vals), company, total_vals)
 # A tibble: 1,036 x 2
@@ -310,9 +318,8 @@ price
 10 2MP                                                  450 
 # … with 1,026 more rows
 ~~~
-
-
-
+We can see that SERVICHECK and EMMANUEL are the top offering companies and we can also identify potential luxury companies such as MIRANDA, LINDEA DE GESTIÓN and REDPISO LAS TABLAS.  
+Seen that, we can end our general analysis by looking at the most common values on each category:
 ~~~
 > print("most common values")
 [1] "most common values"
@@ -341,7 +348,7 @@ Consultoría Inmobiliaria Internacional de Madrid
    2    3    1 
 1811 1651 1388 
 ~~~
-
+As we saw before, most of the prices range from 900 to 1300 and surfaces go from 60 to 100.
 ### Cluster analysis
 
 ~~~
@@ -384,13 +391,102 @@ W = 0.97499, p-value < 2.2e-16
 ~~~
 So we can see that we don't have a normal distribution
 
-~~~
+![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/group1pairs.png)
+
+![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/group1regression.png)
 
 ~~~
+> regresion = lm(data.matrix(group1["price"]) ~ data.matrix(group1["surface"])) 
+> plot(price ~ surface, group1)
+> abline (regresion, lwd=1, col ="red" )    
+> regresion
+
+Call:
+lm(formula = data.matrix(group1["price"]) ~ data.matrix(group1["surface"]))
+
+Coefficients:
+                   (Intercept)  data.matrix(group1["surface"])  
+                       891.924                           1.807  
+
+> cor.test(data.matrix(group1["surface"]), data.matrix(group1["price"]), method=c("pearson", "kendall", "spearman"))
+
+	Pearson's product-moment correlation
+
+data:  data.matrix(group1["surface"]) and data.matrix(group1["price"])
+t = 20.224, df = 3902, p-value < 2.2e-16
+alternative hypothesis: true correlation is not equal to 0
+95 percent confidence interval:
+ 0.2793456 0.3361389
+sample estimates:
+      cor 
+0.3080166 
+~~~
 
 
 ~~~
+> group2 <- filter(mydata, price > 1600 & price < 3200)
+> mean(data.matrix(group2["price"]))
+[1] 2234.894
+> sd(data.matrix(group2["price"]))
+[1] 419.5886
+~~~
+![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/group2density.png)
 
+
+~~~
+> shapiro.test(data.matrix(group2["price"]))
+
+	Shapiro-Wilk normality test
+
+data:  data.matrix(group2["price"])
+W = 0.93823, p-value < 2.2e-16
+~~~
+We can see that we don't have a normal distribution here either
+
+![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/group2pairs.png)
+
+![basicpairs](https://artikblue.github.io/images/blog/madrid_renting/group2regression.png)
+
+~~~
+> pairs(~price + surface + rooms + toilets,data=group2,
++       main="correlation matrix") #Matríz de correlaciones
+> regresion = lm(data.matrix(group2["price"]) ~ data.matrix(group2["surface"])) ## Construyo una ecuación de regresión lineal
+> plot(price ~ surface, group2)
+> abline (regresion, lwd=1, col ="red" )    ### Dibujo la línea de regresión
+> regresion
+
+Call:
+lm(formula = data.matrix(group2["price"]) ~ data.matrix(group2["surface"]))
+
+Coefficients:
+                   (Intercept)  data.matrix(group2["surface"])  
+                      1959.305                           1.724  
+
+> cor.test(data.matrix(group2["price"]), data.matrix(group2["price"]), method=c("pearson", "kendall", "spearman"))
+
+	Pearson's product-moment correlation
+
+data:  data.matrix(group2["price"]) and data.matrix(group2["price"])
+t = Inf, df = 1414, p-value < 2.2e-16
+alternative hypothesis: true correlation is not equal to 0
+95 percent confidence interval:
+ 1 1
+sample estimates:
+cor 
+  1 
+~~~
+
+
+~~~
+> mydata$price_category<-ifelse(mydata$price <500, "VERYCHEAP", ifelse(mydata$price <1000,"NORMAL", ifelse(mydata$price < 5000,"EXPENSIVE","HIGHEXPENSIVE")))
+> nrow(subset(mydata,price_category == "VERYCHEAP")) / nrow(mydata)
+[1] 0.007360157
+> nrow(subset(mydata,price_category == "NORMAL")) / nrow(mydata)
+[1] 0.2924436
+> nrow(subset(mydata,price_category == "EXPENSIVE")) / nrow(mydata)
+[1] 0.6640497
+> nrow(subset(mydata,price_category == "HIGHEXPENSIVE")) / nrow(mydata)
+[1] 0.03614655
 ~~~
 
 
