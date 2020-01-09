@@ -4,7 +4,7 @@ title:  "Madrid real estate renting market data analysis"
 author: artikblue
 categories: [ data, social ]
 tags: [r, python, analysis]
-image: assets/images/madrid_renting/group1pairs.jpg
+image: assets/images/madrid_renting/group1pairs.png
 description: "Data analysis of the madrid flat renting market."
 featured: true
 ---
