@@ -19,8 +19,7 @@ comments: false
 <div class="col-md-4">
 
 <div class="sticky-top sticky-top-80">
-<h5>Buy me a coffee</h5>
-<h4>Contact</h4>
+<h5>Contact</h5>
 
 <p>Find me here on twitter <a href="https://twitter.com/artikblue">@artikblue</a>! You can also contact me at <a href="mailto:artikblue@protonmail.com">artikblue@protonmail.com</a></p>
 
