@@ -30,6 +30,7 @@ If you are on Linux (ubuntu and such) it will be easier to use the package manag
 sudo apt-get install arduino
 ~~~
 Once the ide is installed you should plug your board then go up on the "tools" menu and check out that your board appears on "port" and "board" submenus. There is no rocket science here, if your board does not appear you may have a specific problem related to the board or the pc.  
+
 Done that you should be able to write, compile and upload programs to your board.
 ### Interacting with arduino in VirtualBox VM
 Probably some of you will try to run this on a virtualbox vm and rapidly find out that the arduino IDE does not detect any board even if "arduino X" is selected under the usb sharing menu of the vm. That is because all the communication related to code uploading and such is done via the serial port. So if you want to work on arduino on a virtualbox vm, you have to check what port is arduino using (device manager):
@@ -108,7 +109,9 @@ Time to get our hands dirty on it. So our first project will be a led that will 
 The diagram for the project is this one:
 ![basicled](https://artikblue.github.io/assets/images/sketches/ledboton.JPG)
 From that we can extract a couple of useful things that will be common along the course. Note that on the first two tracks we have black and red cables that go there from GND and 5V pins. Each project has to be powered and well you know that what we are building is a **circuit** one common practice with protoboard is using the first two tracks for power and ground so if a component of our circuit needs to grab them we can just use whatever pin of those two tracks and plug from there, it makes all the sense right? The other thing you may have noticed is that both the button and the led have a resistence between them and the rest of the circuit, that is because those two components do not have an inner resistence (or one big enough) and if being plugged without any external added resistance will probably get burned or harm the circuit.  
+  
 Said that, You should already know that a button is a component that just lets the electrons flow when pressed and led is short for light emiting **diode** In here it is specially important to know that the larger stick is the anode and the shorter the catode, in a common led the current flows from the anode to the catode only and the resistence is serial connected to it in cases such as this one as in this example arduino provides 5V and a common led works at 2-3V (so we need to lower the V with a resistor).  
+  
 Finally we see a couple of yellow cables that go from our components straight to the boards digital pwm pins. Those digital pins we have there, can be configured as input or output. In the case of the led, the pin number 10 will be configured as output and its values will be HIGHH or LOW, then HIGH that pin on the board will provide a power of 5V, when low no V will be provided, with that we are able to turn our led on or off. Same thing with the button, it will be configured as INPUT, with the "off" status when not pressed, as when not pressed the pin will go directly to ground (through the resistor) and when pressed the current will have the option to go to ground through the resistence or to go straight to the pin with no resistance and full V, you should already know what it'll do.  
 Then the code for this example is the one that follows
 ~~~
@@ -136,7 +139,7 @@ There is no mistery with this code. Just note that in every simple program like 
 ### Led fading through pwm
 Done that, we can run the extra mile with the following example, the following circuit should not requiere much explaination to you:
 ![pwmled](https://artikblue.github.io/assets/images/sketches/pwmledpote.JPG)
-
+The general scheme is pretty similar to the other one. In this case we are using a (10kohm) potentiometer to set the "luminosity" of the led. We connect the potentiometer to the A0 (analogue!) port and the led to the 3 digital pin.
 ~~~
 int LED = 3;
 int POT = 0; //potentiometer
@@ -153,3 +156,6 @@ void loop() {
    analogWrite(LED, LEDSHINE);
 }
 ~~~
+The code is pretty interesting if you compared to the previous one. You should have noticed that no input pin is declared here. That is because analog inputs do not requiere initialization at all, arduino just reads whatever is sent there, no 0V OR 5V values, that makes sense because with analogue ports we want to retrieve values between a RANGE. So basically our analog port reads values from 0 a to 1023 ["more info on analog inputs here!"](https://www.arduino.cc/en/tutorial/AnalogInput) and the led works in a 0-255 scale, so we do the conversion and thats it! Regarding to the led, a led is ["RGB"](https://en.wikipedia.org/wiki/RGB_color_model) and if you are familiar with that each RED, GREEN or BLUE works with a brightness level that goes from 0 to 255, voilà!  
+  
+Just keep in touch and we'll be back with the next one very soon! :)
