@@ -4,7 +4,7 @@ title:  "Embedded systems programming with atmel328 - 1"
 author: artikblue
 categories: [ embedded, course ]
 tags: [arduino, atmel, processing]
-image: assets/images/madrid_renting/group1pairs.png
+image: assets/images/sketches/pwmledpote.JPG
 description: "Course on programming embedded systems with arduino-like boards, part 1."
 featured: true
 ---
@@ -28,10 +28,10 @@ sudo apt-get install arduino
 
 ### Interacting with arduino in VirtualBox VM
 
-![comport](https://artikblue.github.io/assets/images/arduino/comport.JPG)
+![comport](https://artikblue.github.io/assets/images/arduino/comport.png)
 *http://joequery.me/*
 
-![virtualbox](https://artikblue.github.io/assets/images/arduino/virtualport.JPG)
+![virtualbox](https://artikblue.github.io/assets/images/arduino/virtualport.png)
 *http://joequery.me/*
 
 ### Manually uploading code to arduino
