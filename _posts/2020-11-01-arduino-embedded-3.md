@@ -1,10 +1,10 @@
 ---
 layout: post
-title:  "Embedded systems programming with atmel328 - 3"
+title:  "Embedded systems programming with atmel328 - 3 (microservos)"
 author: artikblue
 categories: [ embedded, course ]
 tags: [arduino, atmel, processing]
-image: assets/images/sketches/servo.JPG
+image: assets/images/arduino/pservo.jpg
 description: "Working with (micro) servo motors in arduino."
 ---
 

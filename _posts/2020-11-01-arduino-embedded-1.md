@@ -4,7 +4,7 @@ title:  "Embedded systems programming with atmel328 - 1"
 author: artikblue
 categories: [ embedded, course ]
 tags: [arduino, atmel, processing]
-image: assets/images/sketches/pwmledpote.JPG
+image: assets/images/arduino/desktop2.jpg
 description: "Course on programming embedded systems with arduino-like boards, part 1."
 featured: true
 ---

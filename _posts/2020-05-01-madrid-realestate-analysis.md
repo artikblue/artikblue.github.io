@@ -1,10 +1,10 @@
 ---
 layout: post
-title:  "Embedded systems programming with atmel328 - 2"
+title:  "Embedded systems programming with atmel328 - 2 (ultrasounds) "
 author: artikblue
 categories: [ embedded, course ]
 tags: [arduino, atmel, processing]
-image: assets/images/sketches/ultrasound.JPG
+image: assets/images/arduino/pultrasound.jpg
 description: "Working with the hc-sr04 ultrasound sensor."
 ---
 

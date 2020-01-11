@@ -1,10 +1,10 @@
 ---
 layout: post
-title:  "Embedded systems programming with atmel328 - 4"
+title:  "Embedded systems programming with atmel328 - 4 (temperature&humidity)"
 author: artikblue
 categories: [ embedded, course ]
 tags: [arduino, atmel, processing]
-image: assets/images/sketches/dht.JPG
+image: assets/images/arduino/pdht.jpg
 description: "Working with the DHT22 temperature and humidity sensor."
 ---
 
