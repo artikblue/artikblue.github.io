@@ -24,20 +24,20 @@ For this intro post I'm using a simple account with a basic developer license I 
 You can just hit the shodan search bar and type something like "apache" and yes, that will probably show you hosts containing the apache server service, but it may also show you hosts running nginx with apps containing the word apache and there are ways to be more accurate. Shodan works well with filters, a filter like port:80 will show you hosts with port 80 open. Filters can be concatenated so port:80 and country:US will show you hosts in the US with port 80 open. You can also use parentheses () and the OR keyword to perform advanced searches.
 ##### Filters
 Here you can find some of the filters that I find more useful:
-| Description    | Query                                                                                                                                                                                                                      |
-|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| after          | Only show results after the given date (dd/mm/yyyy) string                                                                                                                                                                 |
-| before         | Only show results before the given date (dd/mm/yyyy) string                                                                                                                                                                |
-| city           | Name of the city string                                                                                                                                                                                                    |
-| country        | 2-letter country code string                                                                                                                                                                                               |
-| geo            | Accepts between 2 and 4 parameters. If 2 parameters: latitude,longitude. If 3 parameters: latitude,longitude,range. If 4 parameters: top left latitude, top left longitude, bottom right latitude, bottom right longitude. |
-| net            | Network range in CIDR notation (ex. 199.4.1.0/24) string                                                                                                                                                                   |
-| org            | Organization assigned the netblock string                                                                                                                                                                                  |
-| port           | Port number for the service integer                                                                                                                                                                                        |
-| vuln           | CVE ID for a vulnerability string                                                                                                                                                                                          |
-| http.title     | Title for the web banners website                                                                                                                                                                                          |
-| http.status    | Response status code                                                                                                                                                                                                       |
-| has_screenshot | True/ False boolean                                                                                                                                                                                                        |
+| Description    | Query                                                       |
+|----------------|-------------------------------------------------------------|
+| after          | Only show results after the given date (dd/mm/yyyy) string  |
+| before         | Only show results before the given date (dd/mm/yyyy) string |
+| city           | Name of the city string                                     |
+| country        | 2-letter country code string                                |
+| geo            | lat,lon, kms arround                                        |
+| net            | Network range in CIDR notation (ex. 199.4.1.0/24) string    |
+| org            | Organization assigned the netblock string                   |
+| port           | Port number for the service integer                         |
+| vuln           | CVE ID for a vulnerability string                           |
+| http.title     | Title for the web banners website                           |
+| http.status    | Response status code                                        |
+| has_screenshot | True/ False boolean                                         |                                                       
 
 ##### Interesting queries
 Now that you know some filters, the possibilities are big. Shodan is a tool that is specially useful if you *already know what you are doing* so for example if you are an ICS expert and want to look for a specific vulnerabilitty it will work miracles for you, as you'll probably know many *service banners* related to the ICS systems that you are looking for. 
