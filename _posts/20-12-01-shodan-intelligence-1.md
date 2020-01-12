@@ -78,14 +78,15 @@ featured: true
 | **ssl.cipher.bits**      | Number of bits in the preferred cipher                | integer          |
 | **ssl.cipher.name**      | Name of the preferred cipher                          | string           |
 
-## Telnet Filters
-| **Name**          | **Description**                                             | **Type** |
+##### Telnet Filters
+| Name              | Description                                                  |   Type   |
 | ----------------- | ----------------------------------------------------------- | -------- |
-| **telnet.option** | Search all the options                                      | string   |
-| **telnet.do**     | The server requests the client do support these options     | string   |
-| **telnet.dont**   | The server requests the client to not support these options | string   |
-| **telnet.will**   | The server supports these options                           | string   |
-| **telnet.wont**   | The server doesnt support these options                     | string   |
+| telnet.option     | Search all the options                                      | string   |
+|   telnet.do       | The server requests the client do support these options     | string   |
+|   telnet.dont     | The server requests the client to not support these options | string   |
+|   telnet.will     | The server supports these options                           | string   |
+|   telnet.wont     | The server doesnt support these options                     | string   |
+
 
 ##### Interesting queries
 
