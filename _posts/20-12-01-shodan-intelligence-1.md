@@ -80,17 +80,61 @@ pip install shodan
 ~~~
 And a hello world query using the api would look like:
 ~~~
+import shodan
+
+api_key = "XXX"
+
+api = shodan.Shodan(api_key)
+api.info()
+
+results = api.search('country:US apache')
+print("Results found: {}" . format(results['total']))
+for result in results['matches']:
+    print('IP: {}' . format(result['ip_str']))
+    print(result['data'])
+    print('')
 ~~~
 
+~~~
+artik@blue:~$ python3 sample.py 
+Results found: 8740074
+IP: 146.71.77.80
+HTTP/1.1 200 OK
+Date: Sun, 12 Jan 2020 16:59:05 GMT
+Server: Apache/2.4.41 (cPanel) OpenSSL/1.0.2t mod_bwlimited/1.4
+Transfer-Encoding: chunked
+Content-Type: text/html
+
+
+
+IP: 184.168.244.3
+HTTP/1.1 200 OK
+Date: Sun, 12 Jan 2020 16:59:05 GMT
+Server: Apache
+Last-Modified: Fri, 26 Apr 2013 00:35:46 GMT
+Accept-Ranges: bytes
+Content-Length: 76
+Vary: Accept-Encoding
+Content-Type: text/html
+~~~
+
+As we see here, we retrieve 8740074 results with this query! By default, the "matches" object is a list that contains the first 100 results, if we want to move to the next page we have to specify page=2 (and so on) in our query: api.search('country:US apache', page = 2). So retrieving information from each page will consume one of our search querries and as you our 100 credits are far from enough for retrieving those 8740074 values. Working on those premises, it is important to say that we need to dimension our queries very well.
 
 ### Intelligence gathering and analysis
 
 #### Dimensioning and optimizing our queries
 
+Dimensioning our queries well is not an easy thing and sometimes will be impossible (we'll lose information). There are cases though where a simple query will return less few and interesting analysis (remember, when it comes to analysis, the abscence of a value/result offers information as well).
+  
+For example, let us look at this query related to gas pumps:
 
 ![gas](https://artikblue.github.io/assets/images/shodan/gas_spots.JPG)
 
+We can see that the query returns few values and we can get them all. And it even returns very nice information such as the gas tank levels of each pump.
+
 ![gaslevels](https://artikblue.github.io/assets/images/shodan/gaslevels.JPG)
+
+Those values could help us in the analysis or in the monitorization of a specific technology, it could also help an attacker in conducting sabotage operations against a specific region. But in situations such as that one has to think in perspective, on this case, there are thousands of different gas pumps out there and probably we are receiving a ridiculous part of them on that query.
 
 #### A peek inside the DPRK network range
 
@@ -108,7 +152,92 @@ net:175.45.176.0/22,202.72.96.4/29
 
 ![nk1](https://artikblue.github.io/assets/images/shodan/nk1.JPG)
 
+We can also download the shodan data in a json format and save it to a mongodb for further analysis. R may be a good way to do data analysis on that. Here I show some very basic descriptive analysis as an example:
+
+~~~
+> library(mongolite)
+> library(plyr)
+> library(dplyr)
+> library(ggplot2)
+> con <- mongo("net", url = "mongodb://127.0.0.1:27017/nk")
+> mydata <- con$find('{"location.country_code": "KP"}')
+> unique(mydata["asn"])
+       asn
+1 AS131279
+> unique(mydata["org"])
+            org
+1 Ryugyong-dong
+> unique(mydata["isp"])
+            isp
+1 Ryugyong-dong
+> unique(mydata["port"])
+   port
+1   443
+2  8080
+3    80
+6    53
+9    25
+12   21
+19   22
+23  587
+29   23
+> port <- mydata %>% group_by(port)
+> count(port)
+# A tibble: 9 x 2
+# Groups:   port [9]
+  port      n
+  <chr> <int>
+1 21        2
+2 22        1
+3 23        1
+4 25        4
+5 443       2
+6 53        3
+7 587       1
+8 80        2
+9 8080     18
+> unique(mydata["product"])
+                     product
+1        Microsoft IIS httpd
+2                       <NA>
+9                   Sendmail
+21              Apache httpd
+22             Postfix smtpd
+24 Cisco PIX sanitized smtpd
+29      Cisco router telnetd
+> product <- mydata %>% group_by(product)
+> count(product)
+# A tibble: 7 x 2
+# Groups:   product [7]
+  product                       n
+  <chr>                     <int>
+1 Apache httpd                  2
+2 Cisco PIX sanitized smtpd     1
+3 Cisco router telnetd          1
+4 Microsoft IIS httpd           2
+5 Postfix smtpd                 2
+6 Sendmail                      2
+7 NA                           24
+> unique(mydata["devicetype"])
+   devicetype
+1        <NA>
+24   firewall
+29     router
+> devicetype <- mydata %>% group_by(devicetype)
+> count(devicetype)
+# A tibble: 3 x 2
+# Groups:   devicetype [3]
+  devicetype     n
+  <chr>      <int>
+1 firewall       1
+2 router         1
+3 NA            32
+> 
+~~~
+As we can see from here and taking the data we got from the map into account as well. We can theorize that most of the DPRK net infrastructure is private and hidden inside the country, though some external communications are needed for the country. According to the map, those hosts are located within the *Potonggang-guyok* area, an area that hosts one of the DPRKs strategic headquarters. Most of the devices, almost each of them are network equipment such as mail and web servers. Some routers/firewall appear as well, there is a chance that some of those are routing some internal traffic outside the country.
 #### Iran nuclear reactors in the spotlight
+Another interesting case of studio is using shodan to detect device activity near critical infrastructures such as power plants. Iran has been very relevant in the international geo political scenario, so let's try to peek there.  
+
 
 In this case, the *geo* filter comes very handy. As facilities such as nuclear reactors are not very often located in the middle of a city, in scenarios such as these we'll have to do our side research, identify reasonable coordinates/geo areas and aim there. I've built a python dictionary with the following:
 ~~~
@@ -123,9 +252,38 @@ nuclear_reactors = {
 
 We can automate the search using the api and index the results in mongo:
 ~~~
-~~~
+import shodan
+import pymongo
+api_key = "xXxXx"
 
+api = shodan.Shodan(api_key)
+api.info()
+
+myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+mydb = myclient["iran"]
+
+
+nuclear_reactors = {
+    'lavizan':'geo:35.773056, 51.497778, 80',
+    'natanz':'geo:33.723453, 51.727097, 80',
+    'parchin':'geo:35.52, 51.77, 80',
+    'saghand':'geo:32.313, 55.53, 80',
+    'tehran':'geo:35.738333, 51.388056, 80'
+}
+
+for n in nuclear_reactors.keys():
+    print(nuclear_reactors[n])
+    col = mydb[n]
+    results = api.search(nuclear_reactors[n])
+    print("Results found: {}" . format(results['total']))
+
+    for r in results["matches"]:
+        x = col.insert_one(r)
+        print(x)
+~~~
+And then we can run some analyses on the data. This analyses showed relevant device activity near lavizan and parchin facilities. Parchin is specially interesting because is one of the main facilities related to Irans military nuclear program.
 #### Maping the ucranian industrial sector
+Finally this last use-case scenario involves the power of shodan as an auxiliary tool to map the industrialization of a country. By shodan we can look for ICS devices (industrial control systems). ICSs are very rarely found in networks/facilities that are not related to industries (or are industries themselves). So, searching for those may reveal the location of large industrial areas. Industrial systems often relate to critical infrastructures. In this example I'm detecting industrial infrastructures in Ucrania. I've chose Ucrania because it suffered from blackouts related to cyberattacks recently (or thats what some people say).
 
 The queries I've used to map the ICS devices were these:
 
@@ -163,3 +321,7 @@ Said that, we can conclude that "modbus" may be a good indicator. So we can use 
 ![modbus](https://artikblue.github.io/assets/images/shodan/ua_ics.JPG)
 
 As we can see traditional industrial Ucranian regions such as Kyiv or the Donbass stand out from the rest thus we can see that the map is not far from reality and can be considered. Eventhoug this is a very simplistic example, more comprobations should be made as it is possible, for example, to have more industrialized regions that use a different technology or a technology that is heavily secured (or not even connected to the internet). What is true is that the regions shown in the map contain industrial systems and thus contain industries.
+
+I will update this post with relevant information as soon as I make more time. That said, I want to state that I do not have anything against the countries studied on this post, sure they are full of charming people as any other nation in the world.  
+
+Be good!
