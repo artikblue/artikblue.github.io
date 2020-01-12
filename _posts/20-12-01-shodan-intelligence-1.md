@@ -23,7 +23,8 @@ For this intro post I'm using a simple account with a basic developer license I 
 #### Queries and filters
 You can just hit the shodan search bar and type something like "apache" and yes, that will probably show you hosts containing the apache server service, but it may also show you hosts running nginx with apps containing the word apache and there are ways to be more accurate. Shodan works well with filters, a filter like port:80 will show you hosts with port 80 open. Filters can be concatenated so port:80 and country:US will show you hosts in the US with port 80 open. You can also use parentheses () and the OR keyword to perform advanced searches.
 ##### Filters
-Here you can find some of the filters that I find more useful:
+Here you can find some of the filters that I find more useful:  
+
 | Description    | Query                                                       |
 |----------------|-------------------------------------------------------------|
 | after          | Only show results after the given date (dd/mm/yyyy) string  |
