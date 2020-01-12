@@ -15,8 +15,7 @@ Find more information about the servo ["on its datasheet"](http://www.ee.ic.ac.u
 ### Prototype
 The prototype for this project is quite simple. We will make a servo engine turn to the left or to the right as we move a potentiometer. We already know how to set up a potentiometer and read its value, the servo is simple as well we only need to feed power to it and wire it to a pwm port. 
 ![servo](https://artikblue.github.io/assets/images/sketches/servo.JPG)
-
-
+For easily working with the servo, the Serv.h library is very useful. We could work with the servo without any library thoug it would be much harder and would requiere more code (and harder to understand), in further publications we'll write some pure C code to do it manually, by now, the library is will work fine. 
 ### Code
 
 ~~~
