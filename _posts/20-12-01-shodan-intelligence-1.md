@@ -13,17 +13,44 @@ featured: true
 
 #### Queries and filters
 
+
+
 #### The shodan api
 
 ### Intelligence gathering and analysis
 
-### Dimensioning and optimizing our queries
+#### Dimensioning and optimizing our queries
 
-### A peek inside the DPRK network range
+#### A peek inside the DPRK network range
 
-### Iran nuclear reactors in the spotlight
 
-### Maping the ucranian industrial sector
+
+After some research I've found the following query in many publications related to the North Korean internet.
+~~~
+net:175.45.176.0/22,210.52.109.0/24,77.94.35.0/24
+~~~
+Eventhough after retrieving the results I find a lot of hosts related to Latvia and some actually related to DPRK. After some more research one can find ["the following"](https://lite.ip2location.com/korea-(democratic-peoples-republic-of)-ip-address-ranges) network ranges related to DPRK. So one can see that *175.45.176.0/22* and *202.72.96.4/29* would perform a more accurate and effective search.
+
+~~~
+net:175.45.176.0/22,202.72.96.4/29
+~~~
+
+
+#### Iran nuclear reactors in the spotlight
+
+In this case, the *geo* filter comes very handy. As facilities such as nuclear reactors are not very often located in the middle of a city, in scenarios such as these we'll have to do our side research, identify reasonable coordinates/geo areas and aim there. I've built a python dictionary with the following:
+~~~
+nuclear_reactors = {
+    'lavizan':'geo:35.773056, 51.497778, 80',
+    'natanz':'geo:33.723453, 51.727097, 80',
+    'parchin':'geo:35.52, 51.77, 80',
+    'saghand':'geo:32.313, 55.53, 80',
+    'tehran':'geo:35.738333, 51.388056, 80'
+}
+~~~
+
+
+#### Maping the ucranian industrial sector
 
 The queries I've used to map the ICS devices were these:
 
