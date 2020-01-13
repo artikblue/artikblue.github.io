@@ -153,8 +153,9 @@ nth           paddr             vaddr       len size     section type          s
 
 [0x08048310]> 
 ~~~
-
-
+As we can see, iz detects the "Hello, World!" string, the string that appears everytime we run the program. Radare also tells us about the section (ascii) and the location of the string.  
+  
+Now that we know some of the very basic fundamentals let's actually reverse the program and try to figure out what and how it does. 
 ~~~
 [0x08048310]> sf main
 [0x0804840b]> pdb
@@ -180,9 +181,14 @@ nth           paddr             vaddr       len size     section type          s
 └           0x08048438      c3             ret
 [0x0804840b]> 
 ~~~
+The first thing that we have to understand here is that, we are inspecting main, and main is a function, so it has to return to somewhere and it may receive arguments or need space for local variables, operations related to those aspects are performed at the beggining and the end of the code.
+  
+
+The part that we'll have to focus on here starts with push str.Hello__World and then the call to printf. In 32 bits systems the way of passing parameters to functions consists of pushing those parameters to the stack and then executing a call operation on the address of the function. So something like "printf(a);" in C would be a "push a; call printf" in asm. [So what about the rest of the code?](https://stackoverflow.com/questions/36046201/why-do-we-push-ebp-and-mov-ebp-esp-in-the-callee-in-assembly) Well, the first part of the code is related establishing a new [stack frame](http://www.cs.uwm.edu/classes/cs315/Bacon/Lecture/HTML/ch10s07.html) and a stack frame is nothing more than a section of the code that will contain local variables of the function, arguments passed and values such as that. The end of the code
+
 
 #### x64 binaries and its particularities
-
+Let's repeat the process now but compiling the same program and opening it in r2 in an x64 system.
 ~~~
 [0x00000540]> sf sym.main
 [0x0000064a]> pdb
@@ -200,9 +206,16 @@ nth           paddr             vaddr       len size     section type          s
 \           0x00000665      c3             ret
 [0x0000064a]> 
 ~~~
+The main difference between a x32 program and a x64 one in small examples like this one is that, as you may have seen parameters to functions aren't passed by the stack. In x64 programs like this one, parameters are passed using registers such as rdi, rsi, rdx, rcx, r8 and r9 in that order. We'll keep walking through the x64 architecture with clear and specific examples but [you may want to consider reading a cheatsheet like this one to gain a more solider understanding on topics such as this last one](https://cs.brown.edu/courses/cs033/docs/guides/x64_cheatsheet.pdf)
+  
+There is nothing much more to comment by now.
 
+If we look at the code, in this case, at the beggining of the code, we can appreciate a "push rbp, mov ebp, rsp" This is related to the stack alignment. Then what comes next is way more clear, with lea we load the effective address of the null terminated string "Hello, World!" to the RDI register, then we load the hex value 0 to eax and we proceed to call printf(). We load eax with 0 mainly because the printf function has variable arguments such as the string and a whole lot of format related parameters among others, printf can work with vector registers, for example when doing printf("%f", 1.0f) then the progam will have to set eax to 1 to indicate that. [This stackoverflow question offers a very clear explanation on the mov eax,0 issue](https://stackoverflow.com/questions/6212665/why-is-eax-zeroed-before-a-call-to-printf)
+  
+At the end of the program, we see a mov eax, 0 then pop rbp and a ret being executed. The first the the first one seats eax to 0 as it gets the program ready to do a "return 0" then the second one restores the stack to its original state via picking the original stack frame value to rbp. Then ret just returns the function exiting it with 0 value.
 
 #### Commands used
+Today we basically used those commands:
 
 | Command         | Description                          |
 |-----------------|--------------------------------------|
