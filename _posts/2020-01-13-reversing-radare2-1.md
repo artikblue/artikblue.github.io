@@ -9,8 +9,49 @@ description: "Reverse engineering (C) 32 and 64 bits binaries with radare2."
 ---
 
 
+#### About this course
+This series of post that I'm starting with this one will cover the fundamentals of reverse engineering with the "popular" radare2 framework. What I want to do here is to walk you through a diverse set of examples of C-written binaries that will cover the most common algorithms and data structures you can find in programs out there, so at the end you will be able to identify them and work with them. This won't be an advanced/pro course but it will start from the very bottom and will cover far more than the average free course/tutorial. 
+  
+On these series of posts we'll start with an C source file / algorithm, compile it in both 32 bits and 64 bits systems and then reverse engineer it using radare2, so you'll be able to appreciate the differences between 32 and 64 bit binaries. Once we cover the fundamentals of reversing we'll focus on x64.
+  
+I assume that you have some fundamental knowledge about computer arquitectures and know some basic asm instructions such as mov, push and such. I also assume that you already know what radare2 is and thus want to *finally* learn how to use it.
+#### Getting radare2
 
+Most of the people who use radare2 use it on Linux systems, as from there you can analyze all sorts of binaries and if you want to debug them you can connect to a remote debug session or use gbd on Linux. In here we'll use r2 on Linux most of the time and move it to Windows when needed.
 
+Radare2 supports a ton of arquitectures from from x64 to arduinos or tamagochis and you can analyze binaries related to those arquitectures from the comfort of your ubuntu system or whatever you use. 
+  
+Said that, the best way to get radare2, as the webpage itself suggests is to clone it from the repositories:
+~~~
+git clone https://github.com/radare/radare2
+cd radare2
+sys/install.sh   # just run this script to update r2 from git
+~~~
+You can also install it from the apt/rpm/yaourt/whatever repo in most distributions with something like:
+
+~~~
+sudo apt-get install radare2
+~~~
+
+And if you wish to use it on windows you can [download the windows setup](https://rada.re/r/down.html) from its website.
+
+#### Hello world
+Every programming journy begins with the classical hello world program and this one won't be less. And a hello world in C language will look exactly like that:
+~~~
+#include <stdio.h>
+int main() {
+   printf("Hello, World!");
+   return 0;
+}
+~~~
+A program like that can be easily compiled using the GCC compiler like this:
+
+~~~
+gcc -w hello_world.c -o hello_word
+~~~
+And if we run it we are basically going to get a "Hello, World!" on our screen and that will be all, very simple but we need to begin with something :)
+  
+Once the program is compiled we can open it with r2 by using "radare2 program" where program is the program you want to analyze, r2 is also an alias of radare2 so you can use it instead if you want. Once the binary is loaded, we need radare to parse the program; running aaaa will analize the binary and detect data structures, functions calls and these kinds of elements. If you want to better understand how this works [this answer on stackoverflow](https://reverseengineering.stackexchange.com/questions/19895/radares-aaaa-and-aa-what-does-it-do-exactly) is quite explainatory.
 ~~~
 lab@lab-VirtualBox:~$ radare2 c_examples/bin/hello_world 
  -- Use V! to enter into the visual panels mode (dwm style)
@@ -29,8 +70,7 @@ lab@lab-VirtualBox:~$ radare2 c_examples/bin/hello_world
 [x] Enable constraint types analysis for variables
 [0x08048310]> 
 ~~~
-
-
+Once the program is loaded and parsed, plenty of actions can be done on it, such as listing strings, disassembling code blocks and more. One of the most common things you'll want to do when you get your hands on an unknown binary is to get a list of its functions. You can do it using the afl command.
 ~~~
 [0x08048310]> afl
 0x08048310    1 33           entry0
@@ -48,18 +88,9 @@ lab@lab-VirtualBox:~$ radare2 c_examples/bin/hello_world
 0x080482ac    3 35           sym._init
 [0x08048310]> 
 ~~~
-
-~~~
-[0x08048310]> ii
-[Imports]
-nth                vaddr              bind   type              name
-―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-577730550794551297 0xb6f9994600000000 FUNC   printf            
-2                  0xb6f9994d00000000 NOTYPE __gmon_start__    
-577730619514028035 0xb6f9994600000000 FUNC   __libc_start_main 
-~~~
-
-
+In examples such as this one, the most interesting function is "main". Entry* functions can be interesting as well but as this is a hello world program in functions like those you'll probably find a bunch of code you won't understand at all at this moment (some internal stuff added by the compiler) so we can leave them for now. Other functions we are seeing in this example are related to the C libraries/calls used by the progam (as the printf call you'll probably identify there).
+  
+Another interesting initial thing we can do here is for example get the general information about the binary with *iI*:
 ~~~
 [0x08048310]> iI
 arch     x86
@@ -96,9 +127,23 @@ va       true
 
 [0x08048310]> 
 ~~~
+That will prompt values such as the architecture or the compiler. Those values are always interesting so we can know what we are dealing with and start discarting strategies focusing on what matters.
+  
+We can also list the imports with *ii*
+~~~
+[0x08048310]> ii
+[Imports]
+nth                vaddr              bind   type              name
+―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+577730550794551297 0xb6f9994600000000 FUNC   printf            
+2                  0xb6f9994d00000000 NOTYPE __gmon_start__    
+577730619514028035 0xb6f9994600000000 FUNC   __libc_start_main 
+~~~
+In this particular case, by know we should be sure that we are dealing with a simple program written in C.
+  
+Another command of our interest may be the *iz* one. That will list all of the strings contained within the data section of the program (*izz* will list strings in the whole file). That command is specially useful when dealing with simple crackmes (so we can identify hardcoded passwords).  
 
-
-
+In general terms knowing the strings inside a program is helpful when it comes to getting a general idea of "what the program is about".
 ~~~
 [0x08048310]> iz
 [Strings]
@@ -136,6 +181,7 @@ nth           paddr             vaddr       len size     section type          s
 [0x0804840b]> 
 ~~~
 
+#### x64 binaries and its particularities
 
 ~~~
 [0x00000540]> sf sym.main
@@ -156,7 +202,17 @@ nth           paddr             vaddr       len size     section type          s
 ~~~
 
 
+#### Commands used
 
+| Command         | Description                          |
+|-----------------|--------------------------------------|
+| aaaa            | Fully analyze the binary             |
+| afl             | List all the functions in the binary |
+| ii              | List imports                         |
+| iI              | Information about the binary         |
+| iz              | List strings in the binary           |
+| sf   function   | Seek to a function                   |
+| pdb             | Print disassembly of the basic block |
 
 
 
