@@ -4,7 +4,7 @@ title:  "Async programming made easy with python asyncio"
 author: artikblue
 categories: [ python, programming ]
 tags: [python, asyncio, apis]
-image: assets/images/arduino/pservo.jpg
+image: assets/images/asyncio/head.jpeg
 description: "Learning how to deal with async programming with python."
 featured: true
 ---
