@@ -11,14 +11,24 @@ featured: true
 
 Good morning warriors of the code! Today I'm going to walk you through the misteries of asyncronous programming with python using the world known asyncio library :)
 
-#### About async programming
-
+#### About async programming wyth python
+Parallel programming can be understood with the following image:
 ![definition](https://artikblue.github.io/assets/images/asyncio/definition.jpg)
 
+Understanding the concept of parallel programming is quite simple. In traditional programs, one instruction comes after another, so first you run the process a, then maybe starting with the result of process a you run process b and so on, one after another. But think about of the following task, one program executes an operation to retrieve data from the network, it has to wait for the data and then do some other things, some of them may depend on the received data and some others not, the program could be executing those processes that do not depend on that data meanwhile the other process waits for the data, that can be done in parallel and in fact is one of the classical problems that python asyncio solves. Another classical program relates to the following problem: Imagine that you have a massive excel table containing tag: value and value is a numeric value, you have to ADD all of those values one by one, you sure can add the first to the second, then add the result to the third one and so on but, if you happen to have another processor on your system you could easily split the table in two (or tell the other processor to start at the n/2 position) and let each processor add its set of values one by one, then at the end add the two results together and get the final value, if you have X processors you can n/x split your data set and perform x times faster :) that case unluckly does not relate so well to python asyncio :(  
+
+Basically because python does not support multiprocessor/multicore operations, so all of its async operations are executed on a single thread by a "polling" system.
+
+![definition](https://artikblue.github.io/assets/images/asyncio/poll.png)
+
+A polling system in this case, is a loop that goes process by process every X time, very quickly and "asks" about the result of an operation and or runs some code. Single cpu single core systems work 100% this way eventhough you have the feeling that many programs are going on at the same time (ex: browser, text editor and music player).  
+
+Asyncio works this way as you can see in the following diagram:
 ![loop](https://artikblue.github.io/assets/images/asyncio/eventloop.png)
 
 
 #### Hello world(s)
+The simplest program you can write using asyncio is this one here:
 ~~~
 import asyncio
 
@@ -30,7 +40,11 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(say('hello world', 1))
 loop.close()
 ~~~
+It basically defines the say() function as an async funcion. That function will async wait N seconds and then print a message. Then it moves that function to the event loop and runs the loop. That function is defined as an async function because it uses the await statement. As it is defined as an "async" function it also have to be awaited. Asyncio.sleep does the same thing as time.sleep, it just "pauses" the execution N seconds. The main difference with time.sleep is that asyncio.sleep will be executed asyncronously and thus will "generate an interruption" after N seconds, that interruption will be "received" by the main loop and then the print will be executed. The key concept here is that the print will only be executed AFTER the sleep call because it has an await statement before and so the process will AWAIT for the result before continuing.  
+ 
+But meanwhile that process is "awaiting" some other process can run!  
 
+Let's look at this one :)
 ~~~
 import asyncio
 
@@ -47,9 +61,9 @@ loop.create_task(say('second hello', 1))
 loop.run_forever()
 loop.close()
 ~~~
-
+In this case we insert a couple of tasks in the loop, two processes that come from the same function, one will wait two seconds, one will wait 1. It is very clear that in a standard sync program the execution time will be about 3 seconds, in here it will be about 2. So in here, the first process will be executed and so will get to sleep for two seconds, after the first process gets to sleep the "execution flow" will be liberated and the program will proceed with the second process, that one will be waiting for one second, so it will "wake up" clearly before the first process or in other terms, when the second process would awake it the first one will still be sleeping and thus the execution flow will be free, it will run the print and then after one second the first process will wake up and run its print!
 #### Task optimization using asyncio
-
+That was very simple though. We have to keep in mind that processes that are using this scheme can work together even sharing resources.
 ##### Sync code
 
 ~~~
