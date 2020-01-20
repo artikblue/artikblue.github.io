@@ -25,7 +25,7 @@ A polling system in this case, is a loop that goes process by process every X ti
 
 Asyncio works this way as you can see in the following diagram:
 ![loop](https://artikblue.github.io/assets/images/asyncio/eventloop.png)
-
+The program starts with a main loop, tasks are executed in order, each task is executed until it has to "await" for something, then the next one doing the same till it reaches the last one and from there back to the beginning.
 
 #### Hello world(s)
 The simplest program you can write using asyncio is this one here:
@@ -63,7 +63,11 @@ loop.close()
 ~~~
 In this case we insert a couple of tasks in the loop, two processes that come from the same function, one will wait two seconds, one will wait 1. It is very clear that in a standard sync program the execution time will be about 3 seconds, in here it will be about 2. So in here, the first process will be executed and so will get to sleep for two seconds, after the first process gets to sleep the "execution flow" will be liberated and the program will proceed with the second process, that one will be waiting for one second, so it will "wake up" clearly before the first process or in other terms, when the second process would awake it the first one will still be sleeping and thus the execution flow will be free, it will run the print and then after one second the first process will wake up and run its print!
 #### Task optimization using asyncio
-That was very simple though. We have to keep in mind that processes that are using this scheme can work together even sharing resources.
+That was very simple though. We have to keep in mind that processes that are using this scheme can work together even sharing resources. Of course as you may think, by using this new feature, more complex algorithms can be implemented.  
+
+A typical example of a complex async scenario with a common resource that is shared can be the following. Imagine that you have a couple of processes, one process generates some data and based on that data, the other one performs a task. Data can be "batch" generated, so on a sync program first, one process will generate a certain amount of data, then the other process will go through that data and perform the task. That can be really slow, basically because the second task will only kick after the first one finishes. A more optimal scenario will process the data as soon as its available!
+  
+Now imagine that this is the sync program:
 ##### Sync code
 
 ~~~
@@ -116,6 +120,9 @@ if __name__ == '__main__':
 ~~~
 
 ##### Async code
+In the previous example, we can clearly identify the "data" queue as the resource that contains data in both functions. Time sleep is the function that can be awaited, so meanwhile one process is sleeping the other one can pick up data from the queue and start processing it.  
+
+The following code does that:
 ~~~
 import datetime
 import colorama
@@ -172,7 +179,11 @@ if __name__ == '__main__':
 ~~~
 
 #### Making non-async functions async
+Those examples were very good for understanding the underlying concept of asyncio but you may be wondering about using asyncio with real functions, not only built in functions such as asyncio.sleep and such.  
 
+Well, to go straight to the point, the following wrapper uses threads to convert a sync function to an async one. Just note that if you define a function as an async, that function needs to be called from an async function or needs to be called as a task and inserted somehow in the loop.  
+
+The following function will compute PI asyncronously.
 ~~~
 import decimal
 import asyncio
@@ -231,7 +242,11 @@ loop.run_until_complete(final_task)
 ~~~
 
 #### Async flask with quart
+Another clear example of the benefits of parallel/async programming is found in APIs/Backends. If you have a web service that will eventually run complex and time consuming operations such as heavy db queries or complex operations each request will be time consuming and if you have a large number of requests those will stack up slowing the system or even collapsing it.  
 
+The Quart framework extends the Flask [Flask](https://palletsprojects.com/p/flask) implenting asyncio over it. Its workflow is super simple, the functions that will get executed in each of the api endpoints are defined as async and thus can work with async functions unlocking the execution flow for other calls to be executed while they wait for some process to complete! :)  
+
+A function can be defined somewhere in the project:
 ~~~
 import asyncio
 import aiohttp # python async equiv of requests
@@ -244,7 +259,7 @@ async def planets(n):
 
     return resp.json
 ~~~
-
+Then called in the api view asyncronously:
 ~~~
 import quart
 @blueprint.route('/planet/<n>', methods=['GET'])
