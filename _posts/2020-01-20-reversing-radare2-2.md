@@ -12,11 +12,12 @@ Welcome to this next part of the reverse engineering with radare2 course :) Toda
 #### Variables
 
 ##### The code
-
+Let's start with this simple example. The following example-program, declares four variables, regarding to the numeric variables the first one represents an int, second one represents a float and the third one a double then we also have a char 'a'. At the end those values are added and the result is printed. We will see how the first variable gets directly stored in a (general purpose) register, the second one gets stored in memory too but in another place and the third one works the same with the exception that it needs 2 times the space of the second (double)
 ~~~
 #include <stdio.h>
 
 int main() {
+  char ab ='a';
   int a = 3;
   float b = 4.5;
   double c = 5.25;
@@ -28,9 +29,9 @@ int main() {
   return 0;
 }
 ~~~
-
+As always, we can compile the code by using gcc, no mistery.
 ##### The binary
-
+We open the binary and then we analyze its content, aaa should work fine.
 ~~~
  -- sudo make me a pancake
 [0x08048310]> aaa
@@ -46,7 +47,7 @@ int main() {
 [x] Use -AA or aaaa to perform additional experimental analysis.
 [0x08048310]> 
 ~~~
-
+As we compiled the binary using GCC, we can identify some "typical" functions related to the initialization of the program.
 ~~~
 [0x08048310]> afl
 0x08048310    1 33           entry0
@@ -64,8 +65,7 @@ int main() {
 0x080482ac    3 35           sym._init
 [0x08048310]> 
 ~~~
-
-
+The only interesting function here is the "main" one as it clearly belongs to the "main" function of the program. From here we can also identify that "printf" is used in the program.
 ~~~
 [0x08048310]> sf main
 [0x0804840b]> pdf
@@ -115,7 +115,9 @@ int main() {
 [0x0804840b]> 
 
 ~~~
+As we look through the main code of the program we see some new instructions here, like fstp, fild, fadd and so forth by pure deduction we could state that those may be related to "floating point operations" as we use float and double here. We can also identify how the print function is called, we see some parameters being pushed onto the stack.  
 
+As we are dealing with variables here, one of the things we may want to do is to see how radare2 identifies variables and maybe give them a nice name. We can doo this by using afv.
 ~~~
 [0x0804840b]> afv
 arg int32_t arg_4h @ esp+0x4c
@@ -124,8 +126,7 @@ var int32_t var_1ch @ ebp-0x1c
 var int32_t var_4h @ ebp-0x4
 [0x0804840b]> 
 ~~~
-
-
+As we clearly identify a char with radare2 (var char var_1...) we can rename that variable to char
 ~~~
 [0x0804840b]> afvn  char1 var_1dh
 [0x0804840b]> afvn
@@ -135,13 +136,18 @@ var_4h
 arg_4h
 [0x0804840b]> 
 ~~~
-
-
+That char variable is interesting. When using char variables, what really happens internally is that those chars are hex encoded. In hex, 'a' corresponds to 61 in the ascii table. In our example we can simply see how the program uses mov to move the 0x61 byte to the position of the variable.
 ~~~
 0x0804841c      c645e361       mov byte [var_1dh], 0x61    ; 'a' ; 97
 0x08048420      c745e4030000.  mov dword [var_1ch], 3
 ~~~
+Now that we have the char variable identified, and we should already be able to identify the int variable as well let's look at how the program deals with floating point variables.  
 
+The best way to inspect that is by running the program in debug mode. In radare2 we can open a program in debug mode by using the -d option.  
+
+In debug mode we can use commands such as "db memaddress" to set a breakpoint, "dc" to continue the execution flow to that/those breakpoint(s) and "dt" to run the current instruction and move to the next one right after.  
+
+In our program we can set some interesting points before the fldz, flstp and such.
 ~~~
 [0x0804840b]> db 0x08048427
 [0x0804840b]> db 0x0804842d
@@ -150,7 +156,13 @@ arg_4h
 hit breakpoint at: 8048427
 [0x08048427]> 
 ~~~
-
+After we hit our first breakpoint we move to:
+~~~
+│           0x08048420      c745e4030000.  mov dword [var_1ch], 3
+│           0x08048427      d9054c850408   fld dword [0x804854c]
+│           0x0804842d      d95de8         fstp dword [ebp - 0x18]
+~~~
+We can identify that the 3 value has been moved to var_1ch and then some strange instruction is executed "fld dword". The fld instruction loads a 32 bit, 64 bit, or 80 bit floating point value onto the stack. This instruction converts 32 and 64 bit operand to an 80 bit extended precision value before pushing the value onto the floating point stack. So if we inspect what value is fld picking up for loading we will see something like:
 ~~~
 [0x08048427]> px 32 @ 0x804854c
 - offset -   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0123456789ABCDEF
@@ -158,8 +170,7 @@ hit breakpoint at: 8048427
 0x0804855c  2800 0000 0400 0000 78fd ffff 4400 0000  (.......x...D...
 [0x08048427]> 
 ~~~
-
-
+" 0000 9040 0000 0000 0000 ".We can now try to inspect the contents of that position in memory which clearly corresponds to a variable
 ~~~
 [0x08048430]> px @ ebp-0x18
 - offset -   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0123456789ABCDEF
@@ -167,75 +178,49 @@ hit breakpoint at: 8048427
 0xbfe7a7f0  dc93 f6b7 10a8 e7bf 0000 0000 37f6 dcb7  ............7...
 0xbfe7a800  0090 f6b7 0090 f6b7 0000 0000 37f6 dcb7  ............7...
 ~~~
-
+We can make the output a little bit more nice and human readable (for our case) by adding w and thus running pxw when w comes from word (two bytes)
 ~~~
 [0x08048430]> pxw @ ebp-0x18
 0xbfe7a7e0  0x40900000 0xbfe7a8a4 0xbfe7a8ac 0x080484b1  ...@............
 0xbfe7a7f0  0xb7f693dc 0xbfe7a810 0x00000000 0xb7dcf637  ............7...
 ~~~
-
+"0x40900000" must be the value. But that value gives us few information, at least in this format. As we suspect that this number represents a floating point encoded number, we can try to use the "rax2" tool to read it. 
 ~~~
 [0xbfe7a7f0]> rax2  Fx40900000
 4.500000f
 ~~~
+And we can clearly see how this number corresponds to the value of our first floating point variable.  
 
+We can do this exact same thing with the second variable, I will leave it up to you, you will find the value of 5.25, but as its a "double" value, instead of one word, we will have a size of 32.  
+  
+So finally, we can see how those parameters are pusshed to the stack. The string "The sum of..." is pushed directly to the stack by just doing "push" and the "sum" variable is inserted in to the stack by using the fstp instruction. The FST instruction copies the value in the ST(0) register to the destination operand, which can be a memory location or another register in the FPU register stack. When storing the value in memory, the value is converted to single- or double-real format.
 ~~~
-[0x0804844d]> pxw @ ebp-0x14
-0xbf91aeb4  0x414c0000 0x00000000 0x40150000 0xb7f893dc  ..LA.......@....
+|           0x08048447      d95dec         fstp dword [ebp - 0x14]
+│           0x0804844a      d945ec         fld dword [ebp - 0x14]
+│           0x0804844d      83ec04         sub esp, 4
+│           0x08048450      8d6424f8       lea esp, [esp - 8]
+│           0x08048454      dd1c24         fstp qword [esp]
+│           0x08048457      6810850408     push str.The_sum_of_a__b__and_c_is__f. ; 0x8048510 ; "The sum of a, b, and c is %f." ; const char *format
+│           0x0804845c      e87ffeffff     call sym.imp.printf         ; int printf(const char *format)
 ~~~
-
-~~~
-[0x0804844d]> rax2 Fx414c0000
-12.750000f
-~~~
-
+We see how the "sum" value comes from ebp-0x14 as a result of the previous operation:
 ~~~
 [0x08048444]> pxw @ ebp-0x14
 0xbf8e0ba4  0x00000000 0x00000000 0x40150000 0xb7f573dc  ...........@.s..
-
-
-
-│           0x08048454      dd1c24         fstp qword [esp]
-│           0x08048457      6810850408     push str.The_sum_of_a__b__and_c_is__f. ; 0x8048510 ; "The sum of a, b, and c is %f."
-│           ;-- eip:
-│           0x0804845c b    e87ffeffff     call sym.imp.printf         ; int printf(const char *format)
-
 ~~~
-
-
+And it clearly corresponds to the actual result:
 ~~~
-[0x0804845c]> pxr @ esp
-0xbf8e0b70 0x08048510  .... @esp (/home/lab/c_examples/var) (.rodata) str.The_sum_of_a__b__and_c_is__f. program R X 'push esp' 'var' (The sum of a, b, and c is %f.)
-0xbf8e0b74 ..[ null bytes ]..   00000000   GNU nano 2.9.3                                                                                                                    variables.c                                                                                                                                
-
-#include <stdio.h>
-
-int main() {
-  int a = 3;
-  float b = 4.5;
-  double c = 5.25;
-  float sum;
-  
-  sum = a+b+c;
-
-  printf("The sum of a, b, and c is %f.", sum);
-  return 0;
-}
-
-0xbf8e0b78 0x40298000  ..)@
-0xbf8e0b7c 0xb7f711b0  .... (unk2) R W 0xb7da5000 -->  (unk0) library R X 'jg 0xb7da5047' 'libc-2.23.so'
-0xbf8e0b80 0x00008000  .... 32768
-
-
+[0x0804844d]> rax2 Fx414c0000
+12.750000f (as float)
+~~~
+And then it appears on the stack along with the address that points to the string to be printed
+~~~
 [0x0804845c]> pxw @ esp
 0xbf8e0b70  0x08048510 0x00000000 0x40298000 0xb7f711b0  ..........)@....
 0xbf8e0b80  0x00008000 0xb7f57000 0xb7f55244 0xb7dbd0ec  .....p..DR......
 0xbf8e0b90  0x00000001 0x00000000 0x61dd3a50 0x00000003  ........P:.a....
-
-0x4029800000000000 = 12.75
 ~~~
-
-
+*note that little endian is used here and 0x4029800000000000 = 12.75 as double = sum
 #### Conditional structures
 
 ##### The code 
