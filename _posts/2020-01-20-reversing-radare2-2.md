@@ -224,7 +224,7 @@ And then it appears on the stack along with the address that points to the strin
 #### Conditional structures
 
 ##### The code 
-
+We will start with the following piece of code. It will declare a variable as a signed integer, then it will read the user input and store it in that variable. After that it will check whether if is a positive or negative int then print a message.
 ~~~
 #include <stdio.h>
 int main() {
@@ -243,8 +243,7 @@ int main() {
 ~~~
 
 ##### The binary
-
-
+We start as usual by running the program with r2 -d analyzing it and switching to the main function and running pdf to peek inside it:
 ~~~
 [0x080484bb]> pdf
             ; DATA XREF from entry0 @ 0x80483d7
@@ -304,7 +303,9 @@ int main() {
 │           0x08048556      8d61fc         lea esp, [ecx - 4]
 └           0x08048559      c3             ret
 ~~~
+So in here, we can start seeing some arrows moving up and down the code. Those arrows indicate the execution flow that the program may follow depending on certain conditions, as we already have the code, we can guess that those flow directions relate to the IF-ELSE part of the code somehow. We also see some variables being declared on top of the code.
 
+The next thing that may get our attention is the call to the SCANF function. Let's examine it, by setting some breakpoints with "db":
 ~~~
 │           0x080484df      e88cfeffff     call sym.imp.printf         ; int printf(const char *format)
 │           0x080484e4      83c410         add esp, 0x10
@@ -317,7 +318,8 @@ int main() {
 │           0x080484fb      8b45f0         mov eax, dword [input]
 │           0x080484fe      85c0           test eax, eax
 ~~~
-
+So after the PRINTF call, some stack adjustment is done and then we see that the address of one of the variables we saw on top of the code is loaded into eax (one can name it something like "input" with afvn for pure logical reasons), then eax is pushed to the stack for being passed as a parameter (we can guess) to the SCANF function, a memory address is pushed to the stack as well, in this case we can see that this address contains the string ("please enter...:").  
+If we move after the first breakpoint, we can inspect the registers and see how the address is loaded:
 ~~~
 [0x080484ed]> dr
 eax = 0xbfa9a688
@@ -332,7 +334,7 @@ eip = 0x080484ed
 eflags = 0x00000296
 oeax = 0xffffffff
 ~~~
-
+Then we can move to the next breakpoint and inspect the stack, we will see how those two parameters are appear there:
 ~~~
 [0x080484ed]> dc
 hit breakpoint at: 80484f3
@@ -344,14 +346,14 @@ hit breakpoint at: 80484f3
 0xbfa9a680 0x00000001  .... 1 (.comment)
 0xbfa9a684 0xbfa9a744  D... ([stack]) stack R W 0xbfa9c27f -->  ([stack]) stack R W 0x66692f2e (./ifelse) -->  ascii ('.')
 ~~~
-
+Then if we hit the next breakpoint one more time, the program will ask for a value and will then hit the last breakpoint:
 ~~~
 [0x080484f3]> dc
 Enter an integer: 10
 hit breakpoint at: 80484f8
 [0x080484f8]> 
 ~~~
-
+If we inspect the registers, we will see how EAX is set with the value 0x00000001, that means the SCANF call executed properly without any major problem.
 ~~~
 [0x080484f8]> dr
 eax = 0x00000001
@@ -367,17 +369,19 @@ eflags = 0x00000246
 oeax = 0xffffffff
 [0x080484f8]> 
 ~~~
-
+So at that point we can now examine the address of the "input" variable and we will see how the number (10 in our case) is stored there in hex format.
 ~~~
 [0x080484f8]> pxw @ 0xbfa9a688
 0xbfa9a688  0x0000000a 0x630f3300 0xb7f0b3dc 0xbfa9a6b0  .....3.c........
 ~~~
-
+We can even make sure of it by using rax2 to convert it to base10.
 ~~~
 [0x080484f8]> rax2 0xa
 10
 ~~~
+At that point of the program, we have our input value properly stored, after that, the program will have to check whether that value is positive or negative and move the execution to one place or another depending on that.  
 
+So we can set another breakpoint right before "the first arrow" related to the execution flow. As arrows may not always appear (that always will depend on the disasm/framework you are using), another way to detect "switch points" on the execution flow is to look for JLE, JE and instructions like that.  
 ~~~
 [0x080484f8]> 
 
@@ -389,7 +393,8 @@ oeax = 0xffffffff
 │       │   0x08048502      8b45f0         mov eax, dword [input]
 │       │   0x08048505      83ec08         sub esp, 8
 ~~~
-
+So we basically see that the "10"base10 value is loaded into EAX and then a test instruction is executed:  
+After the test instruction is used, the flag registers status is the following:
 ~~~
 [0x08048500]> dr 1
 cf = 0x00000000
@@ -402,9 +407,9 @@ if = 0x00000001
 df = 0x00000000
 of = 0x00000000
 ~~~
-The TEST instruction sets ZF and SF based on a logical AND between the operands, and clears OF.
+And basically, the TEST instruction sets ZF(Zero flag) and SF(Sign flag) based on a logical AND between the operands, and clears OF(Overflow flag). So in this case those flags will be set to zero. Then the instruction JLE means JUMP (to the memory address that is indicated right after) If less than and "Less than" is defined as: ZF=1 or SF != OF  
 
-"Less than or equal" is defined as: ZF=1 or SF != OF
+So we can see that if we reload the program and enter a negative number the SF flag will get activated:
 ~~~
 [0x080484bb]> db 0x08048500
 [0x080484bb]> dc
@@ -421,8 +426,7 @@ if = 0x00000001
 df = 0x00000000
 of = 0x00000000
 [0x08048500]> 
-
-
+And one more time, as we enter a positive number the SF flag will not be activated.
 [0x080484bb]> db 0x08048500
 [0x080484bb]> dc
 Enter an integer: 20
@@ -439,9 +443,10 @@ df = 0x00000000
 of = 0x00000000
 [0x08048500]> 
 ~~~
+Then after that, the program will basically jump to a memory address that will print "positive" or to another one printing "negative" then move or jump (with jmp) to the end of the program and thus the program will end.
 
 #### The 64 bit version
-
+The 64 bit is prettyy the same, can you note the differences? Basically registers(esi, rdi..) are being used to pass parameters instead of the stack! Also, memory addresses are 64 bits.
 ~~~
 [0x7f584b7b9090]> sf main
 [0x561302d2871a]> pdf
@@ -492,3 +497,4 @@ of = 0x00000000
 \           0x561302d287ba      c3             ret
 [0x561302d2871a]> 
 ~~~
+See you in the next one :)

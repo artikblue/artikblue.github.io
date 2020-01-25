@@ -6,7 +6,6 @@ categories: [ embedded, course ]
 tags: [arduino, atmel, processing, relay]
 image: assets/images/arduino/relayheader.jpg
 description: "Course on programming embedded systems with arduino-like boards, part 4. Working with relays"
-featured: true
 ---
 
 #### What is a Relay?
