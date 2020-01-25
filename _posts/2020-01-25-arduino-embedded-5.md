@@ -9,15 +9,17 @@ description: "Course on programming embedded systems with arduino-like boards, p
 ---
 
 #### About keypads
+Keypads are simple input devices that can be used in embedded projects. Most of the time, we can find keyboards being used in access control mechanisms, but they are also used for programming/controlling machines among other cases.  
 
+In this example, we will use a keypad to let the user input a password and then blink a led if the password is correct.
 
 #### The sketch
-
+Here is the sketch for this small lesson. We need to connect each of the in pins on the keyboard to a digital pin on the arduino board. No resistance is needed. In this example I've also added a simple led to be turned on when they correct password is entered.
 ![keypad1](https://artikblue.github.io/assets/images/arduino/keypadscheme.jpg)
 
 
 #### But how does it work?
-
+The workflow of a keypad like this one is super simple. Each key of the keypad represents an "open circuit" so when you press on that button, the circuit is closed and the arduino board receives a "HIGH" on a certain pin, so it knows that a key has been pressed!
 
 ![keypad2](https://artikblue.github.io/assets/images/arduino/keypad.png)
 
