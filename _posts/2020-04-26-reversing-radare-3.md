@@ -591,7 +591,7 @@ func2();
 getchar();
 }
 ```
-
+We can inspect it easily with the radare2 visual mode
 
 ```
                                                                                                        | cmp eax, 2                                               |                                               
@@ -640,9 +640,12 @@ getchar();
                             |                     | jmp 0x88a;[gp]                              |           | |               | jmp 0x88a;[gp]                              |   |                                  
                             |                     `---------------------------------------------'           | |               `---------------------------------------------'   | 
 ```
+As you can see here the program reads the users choice and then compares the value with one of the options, if not it keeps comparing until all of the conditions are evaluated. You should be able to do the analysis yourself without any major problem.
+  
 
+#### While and For loops
 
-
+Another case of very common dynamics you'll see on almost every binary are loops commonly represented with while and for statements. Code located inside a wwhile loop will keep its execution on cycling as long as the loop condition is true, code located inside a for will run N times.
 ```
 #include <stdio.h>
 
@@ -673,9 +676,138 @@ getchar();
 
 }
 ```
+Inside radare2 the func2 function will look like this:
 
+```
+[0x7fba89d68090]> s sym.func2
+[0x55b75b1ba7aa]> pdf
+/ (fcn) sym.func2 170
+|   sym.func2 ();
+|           ; var int local_ch @ rbp-0xc
+|           ; var int local_8h @ rbp-0x8
+|              ; CALL XREF from 0x55b75b1ba85d (sym.main)
+|           0x55b75b1ba7aa      55             push rbp
+|           0x55b75b1ba7ab      4889e5         mov rbp, rsp
+|           0x55b75b1ba7ae      4883ec10       sub rsp, 0x10
+|           0x55b75b1ba7b2      64488b042528.  mov rax, qword fs:[0x28] ; [0x28:8]=-1 ; '(' ; 40
+|           0x55b75b1ba7bb      488945f8       mov qword [local_8h], rax
+|           0x55b75b1ba7bf      31c0           xor eax, eax
+|           0x55b75b1ba7c1      488d3d300100.  lea rdi, qword str.Enter_a_num___exit_with_0_: ; 0x55b75b1ba8f8 ; "Enter a num, (exit with 0):"
+|           0x55b75b1ba7c8      b800000000     mov eax, 0
+|           0x55b75b1ba7cd      e88efeffff     call sym.imp.printf     ; int printf(const char *format)
+|           0x55b75b1ba7d2      488d45f4       lea rax, qword [local_ch]
+|           0x55b75b1ba7d6      4889c6         mov rsi, rax
+|           0x55b75b1ba7d9      488d3d340100.  lea rdi, qword [0x55b75b1ba914] ; "%d"
+|           0x55b75b1ba7e0      b800000000     mov eax, 0
+|           0x55b75b1ba7e5      e896feffff     call sym.imp.__isoc99_scanf
+|       ,=< 0x55b75b1ba7ea      eb4a           jmp 0x55b75b1ba836
+|      .--> 0x55b75b1ba7ec      8b45f4         mov eax, dword [local_ch]
+|      :|   0x55b75b1ba7ef      85c0           test eax, eax
+|     ,===< 0x55b75b1ba7f1      7e0e           jle 0x55b75b1ba801
+|     |:|   0x55b75b1ba7f3      488d3d1d0100.  lea rdi, qword str.Positive_num ; 0x55b75b1ba917 ; "Positive num"
+|     |:|   0x55b75b1ba7fa      e841feffff     call sym.imp.puts       ; int puts(const char *s)
+|    ,====< 0x55b75b1ba7ff      eb0c           jmp 0x55b75b1ba80d
+|    |`---> 0x55b75b1ba801      488d3d1c0100.  lea rdi, qword str.Negative_num ; 0x55b75b1ba924 ; "Negative num"
+|    | :|   0x55b75b1ba808      e833feffff     call sym.imp.puts       ; int puts(const char *s)
+|    | :|      ; JMP XREF from 0x55b75b1ba7ff (sym.func2)
+|    `----> 0x55b75b1ba80d      488d3d240100.  lea rdi, qword str.Enter_another_num__exit_with_0_: ; 0x55b75b1ba938 ; "Enter another num (exit with 0):"
+|      :|   0x55b75b1ba814      b800000000     mov eax, 0
+|      :|   0x55b75b1ba819      e842feffff     call sym.imp.printf     ; int printf(const char *format)
+|      :|   0x55b75b1ba81e      488d45f4       lea rax, qword [local_ch]
+|      :|   0x55b75b1ba822      4889c6         mov rsi, rax
+|      :|   0x55b75b1ba825      488d3de80000.  lea rdi, qword [0x55b75b1ba914] ; "%d"
+|      :|   0x55b75b1ba82c      b800000000     mov eax, 0
+|      :|   0x55b75b1ba831      e84afeffff     call sym.imp.__isoc99_scanf
+|      :|      ; JMP XREF from 0x55b75b1ba7ea (sym.func2)
+|      :`-> 0x55b75b1ba836      8b45f4         mov eax, dword [local_ch]
+|      :    0x55b75b1ba839      85c0           test eax, eax
+|      `==< 0x55b75b1ba83b      75af           jne 0x55b75b1ba7ec
+|           0x55b75b1ba83d      90             nop
+|           0x55b75b1ba83e      488b55f8       mov rdx, qword [local_8h]
+|           0x55b75b1ba842      644833142528.  xor rdx, qword fs:[0x28]
+|       ,=< 0x55b75b1ba84b      7405           je 0x55b75b1ba852
+|       |   0x55b75b1ba84d      e8fefdffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+|       `-> 0x55b75b1ba852      c9             leave
+\           0x55b75b1ba853      c3             ret
+[0x55b75b1ba7aa]> 
+```
+As you can see, the logic of the program here is quite similar to the previous if-else blocks, in general terms. The difference here is that we see an arrow going back up from the instruction located at 0x55b75b1ba83b, that captures the essence of a loop. Let's go step by step now.
 
+First of all the program sets some space and as we can see here uses a couple of variables, one related to the stack guard and the other one probably related to the user input.
+```
+|           ; var int local_ch @ rbp-0xc
+|           ; var int local_8h @ rbp-0x8
+|              ; CALL XREF from 0x55b75b1ba85d (sym.main)
+|           0x55b75b1ba7aa      55             push rbp
+|           0x55b75b1ba7ab      4889e5         mov rbp, rsp
+|           0x55b75b1ba7ae      4883ec10       sub rsp, 0x10
+|           0x55b75b1ba7b2      64488b042528.  mov rax, qword fs:[0x28] ; [0x28:8]=-1 ; '(' ; 40
+|           0x55b75b1ba7bb      488945f8       mov qword [local_8h], rax
+|           0x55b75b1ba7bf      31c0           xor eax, eax
+```
+Then the program asks for the user input and stores it into the variable in local_ch.
+```
+|           0x55b75b1ba7cd      e88efeffff     call sym.imp.printf     ; int printf(const char *format)
+|           0x55b75b1ba7d2      488d45f4       lea rax, qword [local_ch]
+|           0x55b75b1ba7d6      4889c6         mov rsi, rax
+|           0x55b75b1ba7d9      488d3d340100.  lea rdi, qword [0x55b75b1ba914] ; "%d"
+|           0x55b75b1ba7e0      b800000000     mov eax, 0
+|           0x55b75b1ba7e5      e896feffff     call sym.imp.__isoc99_scanf
+```
+We can even rename that variable in order to make the whole thing more readable.
 
+```
+[0x55b75b1ba7aa]> afvn local_ch input
+[0x55b75b1ba7aa]> afvn
+local_8h
+input
+[0x55b75b1ba7aa]> 
+```
+Let's proceed. Right after the scanf, we perform a jump at the very bottom of this block of code, like this:
+
+```
+|       ,=< 0x55b75b1ba7ea      eb4a           jmp 0x55b75b1ba836
+|      .--> 0x55b75b1ba7ec      8b45f4         mov eax, dword [input]
+```
+And if we recall, the exit condition for our loop was the input value to be equal to zero, so on this case if input is not zero, the jne will kick in and take us back again at the beggining of the loop.
+
+```
+|      :`-> 0x55b75b1ba836      8b45f4         mov eax, dword [input]
+|      :    0x55b75b1ba839      85c0           test eax, eax
+|      `==< 0x55b75b1ba83b      75af           jne 0x55b75b1ba7ec
+```
+The next block of the code? We already know it
+```
+|      .--> 0x55b75b1ba7ec      8b45f4         mov eax, dword [input]
+|      :|   0x55b75b1ba7ef      85c0           test eax, eax
+|     ,===< 0x55b75b1ba7f1      7e0e           jle 0x55b75b1ba801
+|     |:|   0x55b75b1ba7f3      488d3d1d0100.  lea rdi, qword str.Positive_num ; 0x55b75b1ba917 ; "Positive num"
+|     |:|   0x55b75b1ba7fa      e841feffff     call sym.imp.puts       ; int puts(const char *s)
+|    ,====< 0x55b75b1ba7ff      eb0c           jmp 0x55b75b1ba80d
+|    |`---> 0x55b75b1ba801      488d3d1c0100.  lea rdi, qword str.Negative_num ; 0x55b75b1ba924 ; "Negative num"
+|    | :|   0x55b75b1ba808      e833feffff     call sym.imp.puts       ; int puts(const char *s)
+|    | :|      ; JMP XREF from 0x55b75b1ba7ff (sym.func2)
+```
+The program checks for the input, wheter positive or negative by doing the test and jump
+
+And right after, it asks again for an input and checks for the exit condition at the bottom of the block
+```
+|    `----> 0x55b75b1ba80d      488d3d240100.  lea rdi, qword str.Enter_another_num__exit_with_0_: ; 0x55b75b1ba938 ; "Enter another num (exit with 0):"
+|      :|   0x55b75b1ba814      b800000000     mov eax, 0
+|      :|   0x55b75b1ba819      e842feffff     call sym.imp.printf     ; int printf(const char *format)
+|      :|   0x55b75b1ba81e      488d45f4       lea rax, qword [input]
+|      :|   0x55b75b1ba822      4889c6         mov rsi, rax
+|      :|   0x55b75b1ba825      488d3de80000.  lea rdi, qword [0x55b75b1ba914] ; "%d"
+|      :|   0x55b75b1ba82c      b800000000     mov eax, 0
+|      :|   0x55b75b1ba831      e84afeffff     call sym.imp.__isoc99_scanf
+|      :|      ; JMP XREF from 0x55b75b1ba7ea (sym.func2)
+|      :`-> 0x55b75b1ba836      8b45f4         mov eax, dword [input]
+|      :    0x55b75b1ba839      85c0           test eax, eax
+|      `==< 0x55b75b1ba83b      75af           jne 0x55b75b1ba7ec
+```
+And thats pretty much all here.
+
+The other common way of creating loops is by using for, as you can see here:
 ```
 #include <stdio.h>
 
@@ -692,7 +824,6 @@ for(counter=1; counter <=10; counter++){
 
 }
 
-
 main(){
 
         func2();
@@ -700,5 +831,60 @@ main(){
 
 }
 
+```
+And the radare2 disasm will look like this one:
 
 ```
+[0x0000068a]> pdf
+/ (fcn) sym.func2 59
+|   sym.func2 ();
+|           ; var int input @ rbp-0x4
+|              ; CALL XREF from 0x000006ce (sym.main)
+|           0x0000068a      55             push rbp
+|           0x0000068b      4889e5         mov rbp, rsp
+|           0x0000068e      4883ec10       sub rsp, 0x10
+|           0x00000692      c745fc000000.  mov dword [input], 0
+|           0x00000699      c745fc010000.  mov dword [input], 1
+|       ,=< 0x000006a0      eb1a           jmp 0x6bc
+|       |      ; JMP XREF from 0x000006c0 (sym.func2)
+|      .--> 0x000006a2      8b45fc         mov eax, dword [input]
+|      :|   0x000006a5      89c6           mov esi, eax
+|      :|   0x000006a7      488d3db60000.  lea rdi, qword [0x00000764] ; "%d "
+|      :|   0x000006ae      b800000000     mov eax, 0
+|      :|   0x000006b3      e898feffff     call sym.imp.printf         ; int printf(const char *format)
+|      :|   0x000006b8      8345fc01       add dword [input], 1
+|      :|      ; JMP XREF from 0x000006a0 (sym.func2)
+|      :`-> 0x000006bc      837dfc0a       cmp dword [input], 0xa      ; [0xa:4]=0
+|      `==< 0x000006c0      7ee0           jle 0x6a2
+|           0x000006c2      90             nop
+|           0x000006c3      c9             leave
+\           0x000006c4      c3             ret
+[0x0000068a]> 
+```
+Note that we don't see any stack guard here can you tell why? Probably because we are not receiving any input here! 
+
+So the program starts by setting the value to zero (counter = 0), then it sets the value to 1 to start the for
+```
+|           0x00000692      c745fc000000.  mov dword [input], 0
+|           0x00000699      c745fc010000.  mov dword [input], 1
+|       ,=< 0x000006a0      eb1a           jmp 0x6bc
+```
+It then compares the value to 10 (0xA)
+```
+|      :`-> 0x000006bc      837dfc0a       cmp dword [input], 0xa      ; [0xa:4]=0
+|      `==< 0x000006c0      7ee0           jle 0x6a2
+```
+And as the value is less than it, it goes back to the top to run the loop code.
+
+The code basically prints the value of the variable and adds 1 to it
+```
+|      .--> 0x000006a2      8b45fc         mov eax, dword [input]
+|      :|   0x000006a5      89c6           mov esi, eax
+|      :|   0x000006a7      488d3db60000.  lea rdi, qword [0x00000764] ; "%d "
+|      :|   0x000006ae      b800000000     mov eax, 0
+|      :|   0x000006b3      e898feffff     call sym.imp.printf         ; int printf(const char *format)
+|      :|   0x000006b8      8345fc01       add dword [input], 1
+```
+Easy right?
+
+Well, thats all I wanted to talk about here. On the next part we'll start digging into some data structures such as arrays and matrices.
