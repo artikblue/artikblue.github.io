@@ -1,0 +1,20 @@
+<header id="masthead" class="site-header outer">
+    <div class="site-header-inside">
+        <div class="site-branding">
+            {% if site.logo != null %}
+                <p class="site-logo"><a href="{{ site.baseurl }}/" rel="home"><img src="{{ site.baseurl }}/{{ site.logo }}" alt="{{ site.name }}" /></a></p>
+                <h1 class="site-title screen-reader-text"><a href="{{ site.baseurl }}" rel="home">{{site.title}}</a></h1>
+            {% else %}
+                <h1 class="site-title"><a href="{{ site.baseurl }}/" rel="home">{{site.name}}</a></h1>
+            {% endif %}
+        </div><!-- .site-branding -->
+        <nav id="main-navigation" class="site-navigation" aria-label="Primary Navigation">
+            <ul class="menu">
+            {% for link in site.navigation %}
+                <li class="menu-item"><a href="{{ link.url }}">{{ link.text }}</a></li>
+            {% endfor %}
+            </ul>
+            <button id="sidebar-show" class="sidebar-toggle"><span class="screen-reader-text">Open Sidebar</span><span class="icon-more" aria-hidden="true"></span></button>
+        </nav><!-- .site-navigation -->
+    </div><!-- .site-header-inside -->
+</header><!-- .site-header -->

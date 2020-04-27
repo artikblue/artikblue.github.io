@@ -4,58 +4,31 @@ title: Home
 ---
 
 {% if page.url == "/" %}
-
-<!-- Featured
-================================================== -->
-<section class="featured-posts">
-    <div class="section-title">
-        <h2><span>Featured</span></h2>
-    </div>
-    <div class="row">
-
+<!-- Featured-->
+<div class="featured-posts outer">
     {% for post in site.posts %}
-
         {% if post.featured == true %}
-
             {% include featuredbox.html %}
-
         {% endif %}
-
     {% endfor %}
-
+</div>
+{% endif %}
+<!-- Posts Index -->
+<div class="outer">
+    {% if page.url == "/" %}
+    <div class="post-feed-title inner">Latest Articles</div>
+    {% endif %}
+    <div class="post-feed inner-wide">
+        {% for post in paginator.posts %}
+            {% include postbox.html %}
+        {% endfor %}
     </div>
-</section>
-
+</div>
+<!-- Pagination-->
+{% include pagination.html %}
+{% if site.mailchimp_url %}
+    {% include newsletter-box.html %}
 {% endif %}
 
-<!-- Posts Index
-================================================== -->
-<section class="recent-posts">
 
-    <div class="section-title">
-
-        <h2><span>All Stories</span></h2>
-
-    </div>
-
-    <div class="row listrecent">
-
-        {% for post in paginator.posts %}
-
-        {% include postbox.html %}
-
-        {% endfor %}
-
-    </div>
-
-</section>
-
-<!-- Pagination
-================================================== -->
-<div class="bottompagination">
-<div class="pointerup"><i class="fa fa-caret-up"></i></div>
-<span class="navigation" role="navigation">
-    {% include pagination.html %}
-</span>
-</div>
 

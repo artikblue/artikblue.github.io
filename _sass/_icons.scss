@@ -1,0 +1,141 @@
+/**
+ * 0. Icons
+ * Font Awesome Free 5.0.6 by @fontawesome - http://fontawesome.com
+ * License - http://fontawesome.com/license (Icons: CC BY 4.0, Fonts: SIL OFL 1.1)
+ * ----------------------------------------------------------------------------
+ */
+@font-face {
+    font-family: 'fontawesome';
+    src: url("../fonts/fontawesome.eot?lzb0sb");
+    src: url("../fonts/fontawesome.eot?lzb0sb#iefix") format("embedded-opentype"), url("../fonts/fontawesome.ttf?lzb0sb") format("truetype"), url("../fonts/fontawesome.woff?lzb0sb") format("woff"), url("../fonts/fontawesome.svg?lzb0sb#fontawesome") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+[class^="fa-"],
+[class*=" fa-"] {
+    font-family: 'fontawesome' !important;
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.fa-500px:before {
+  content: "\f26e";
+}
+.fa-behance:before {
+  content: "\f1b4";
+}
+.fa-codepen:before {
+  content: "\f1cb";
+}
+.fa-docker:before {
+  content: "\f395";
+}
+.fa-dribbble:before {
+  content: "\f17d";
+}
+.fa-dropbox:before {
+  content: "\f16b";
+}
+.fa-facebook-f:before {
+  content: "\f39e";
+}
+.fa-facebook-messenger:before {
+  content: "\f39f";
+}
+.fa-facebook:before {
+  content: "\f09a";
+}
+.fa-github:before {
+  content: "\f09b";
+}
+.fa-gitlab:before {
+  content: "\f296";
+}
+.fa-instagram:before {
+  content: "\f16d";
+}
+.fa-linkedin-in:before {
+  content: "\f0e1";
+}
+.fa-linkedin:before {
+  content: "\f08c";
+}
+.fa-medium-m:before {
+  content: "\f3c7";
+}
+.fa-medium:before {
+  content: "\f23a";
+}
+.fa-mixcloud:before {
+  content: "\f289";
+}
+.fa-patreon:before {
+  content: "\f3d9";
+}
+.fa-pinterest-p:before {
+  content: "\f231";
+}
+.fa-pinterest:before {
+  content: "\f0d2";
+}
+.fa-product-hunt:before {
+  content: "\f288";
+}
+.fa-quora:before {
+  content: "\f2c4";
+}
+.fa-reddit:before {
+  content: "\f1a1";
+}
+.fa-slack-hash:before {
+  content: "\f3ef";
+}
+.fa-slack:before {
+  content: "\f198";
+}
+.fa-soundcloud:before {
+  content: "\f1be";
+}
+.fa-spotify:before {
+  content: "\f1bc";
+}
+.fa-stack-overflow:before {
+  content: "\f16c";
+}
+.fa-tumblr:before {
+  content: "\f173";
+}
+.fa-twitter:before {
+  content: "\f099";
+}
+.fa-vimeo-v:before {
+  content: "\f27d";
+}
+.fa-vimeo:before {
+  content: "\f40a";
+}
+.fa-vk:before {
+  content: "\f189";
+}
+.fa-xing:before {
+  content: "\f168";
+}
+.fa-youtube:before {
+  content: "\f167";
+}
+.fa-envelope:before {
+  content: "\f0e0";
+}
+.fa-paper-plane:before {
+  content: "\f1d8";
+}
+.fa-rss:before {
+  content: "\f09e";
+}

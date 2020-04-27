@@ -1,0 +1,19 @@
+---
+layout: default
+current: tag
+title: Tag Page
+class: 'tag-template'
+---
+
+<div id="content" class="site-content fadeInDown delay_075s">
+    <main id="main" class="site-main outer">
+        <header class="page-header inner">
+            <h1 class="page-title">{{ page.tag }}</h1>
+            <p class="page-description">A collection of {{ paginator.total_posts }} {% if paginator.total_posts == 1 %}post{% else %}posts{% endif %}</p>
+            
+        </header>
+        <div class="post-feed inner-wide">
+            {% for post in paginator.posts %}{% include postbox.html %}{% endfor %}
+        </div>
+    </main><!-- .site-main -->
+</div><!-- .site-content -->

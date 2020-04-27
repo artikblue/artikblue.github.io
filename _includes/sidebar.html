@@ -1,0 +1,17 @@
+<aside id="sidebar" class="sidebar">
+	<div class="sidebar-scrollable">
+		<div class="sidebar-inside">
+			<button id="sidebar-hide" class="sidebar-toggle"><span class="screen-reader-text">Close Sidebar</span><span
+				    aria-hidden="true" class="icon-close"></span></button>
+			<nav id="sidebar-navigation" class="widget site-navigation">
+				<h2 class="widget-title">Explore Site</h2>
+				<ul class="menu">
+					{% for link in site.navigation %}
+						<li class="menu-item"><a href="{{ link.url }}">{{ link.text }}</a></li>
+					{% endfor %}
+				</ul>
+			</nav>
+			{% include widgets.html %}
+		</div><!-- .sidebar-inside -->
+	</div><!-- .sidebar-scrollable -->
+</aside><!-- .sidebar -->

@@ -1,19 +1,22 @@
-# Site
-name: "Artikblue"
+# Site setings
+name: 'Artik blue'
 title: "Artik labs"
 description: "Hacking, electronics and data."
+meta_description: 'Hacking, electronics and data.'
+#logo: 'assets/images/logo.png'
 logo: 'assets/images/logo.png'
-favicon: 'assets/images/logo.png'
+favicon: 'assets/images/favicon.ico'
 baseurl: /
-google_analytics: ''
-disqus: ''
-mailchimp-list: ''
-include: ["_pages"]
-permalink: /:title/
+production_url: https://artik.blue
+disqus: 'arrtikblue'
+mailchimp_url: '//justgoodthemes.us3.list-manage.com/subscribe/post?u=78f1bab16028354caeb23aecd&amp;id=4a7330d117'
+cover_image: bc_1.jpg
+# Add your GA Tracking Id
+ga_analytics: ''
 
-# Authors
-authors:
-  artikblue:
+
+# Author
+author:
     name: Artikblue
     display_name: Artikblue
     gravatar: 76ead780a562cf43aaa438f46ad3fb93
@@ -21,42 +24,48 @@ authors:
     web: artikblue.github.io
     twitter: https://twitter.com/artikblue
     description: "Author of artik labs."
-# Plugins
-plugins:
+# Contact form setings
+email: artikblue@protonmail.com
+contact_page_description: "The alternate use of modern technologies, aka hacking."
+thankyou_page_description: ""
+
+# Social links
+twitter: 'artikblue'
+#facebook: 'username'
+github: 'artikblue'
+#codepen: 'username'
+#dribbble: 'username'
+medium: '@artikblue'
+#instagram: 'username'
+#pinterest: 'username'
+#linkedin: 'krishnallamilli'
+#producthunt: '@username'
+
+# Navigation
+navigation:
+  - text: About
+    url: /about
+#  - text: Contact Me
+#    url: /contact
+
+# Required Plugins
+plugins_dir:
   - jekyll-paginate
-  - jekyll-sitemap
-  - jekyll-feed
+  - jekyll-tagsgenerator
   - jekyll-seo-tag
-  - jekyll-archives
-    
-# Archives
-jekyll-archives:
-  enabled:
-    - categories
-  layout: archive
-  permalinks:
-    category: '/category/:name/'
-    
-# Pagination 
-paginate: 6
+  - jekyll-sitemap
+
+# Pagination
+paginate: 5
 paginate_path: /page:num/
-    
+
+# Permalinks
+permalink: /:title
+
 # Other
 markdown: kramdown
 
-kramdown:
-  input: GFM
-  syntax_highlighter: rouge
-  syntax_highlighter_opts:
-    block:
-      line_numbers: true
-
-# Adsense (change to "enabled" to activate, also your client id and ad slot. Create a new ad unit from your Adsense account to get the slot.)
-adsense: "disabled"
-adsense-data-ad-client: "ca-pub-3412143450191416"
-adsense-data-ad-slot: "1363087678"
-
-# Lazy Images ("enabled" or "disabled")
-lazyimages: "disabled"
-
-exclude: [changelog.md, LICENSE.txt, README.md, Gemfile, Gemfile.lock]
+# Sass
+sass:
+  sass_dir: _sass
+  style: compressed
