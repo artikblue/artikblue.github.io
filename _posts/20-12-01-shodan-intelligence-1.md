@@ -5,6 +5,7 @@ tags: [shodan, python, analysis]
 featured_image_thumbnail: assets/images/shodan.png
 featured_image: assets/images/shodan.png
 featured: true
+hidden: true
 ---
 
 ### About shodan
