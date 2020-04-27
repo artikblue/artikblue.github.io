@@ -9,8 +9,11 @@ hidden: true
 ---
 
 ### About shodan
-[Shodan.io](https://shodan.io) is the world known search engine that is continously indexing ipv4/ipv6 hosts connected to the internet and lets you search them by using a wide range of filters such as: network, country, ip or port. How shodan works internally is still a "mystery" but we can guess that shodan has a certain number of systems that are scanning and re scanning the (whole) internet 24/7 and indexing the results. I guess that shodan identifies features such as location or organisation by gathering and studying information related to ISP companies and IP network ranges. This hypothesis seems reasonable as tools such as [zmap](https://zmap.io/) let you scan the *whole* internet in a matter of minutes.
-  
+[Shodan.io](https://shodan.io) is the world known search engine that is continously indexing ipv4/ipv6 hosts connected to the internet and lets you search them by using a wide range of filters such as: network, country, ip or port. 
+<!--more-->  
+
+How shodan works internally is still a "mystery" but we can guess that shodan has a certain number of systems that are scanning and re scanning the (whole) internet 24/7 and indexing the results. I guess that shodan identifies features such as location or organisation by gathering and studying information related to ISP companies and IP network ranges. This hypothesis seems reasonable as tools such as [zmap](https://zmap.io/) let you scan the *whole* internet in a matter of minutes.
+
 So with shodan we can search for devices that are connected to the internet. The services is focused to the device, so instead of google, in here we are able to look for web apps, ports, custom apps or whatever, not just web pages. This services can be used for multiple purposes, for example it can be used by attackers or pentesters to audit a specific network looking for some specific application or to mass attack a specific vulnerability, it can also be used by social scientists or industrial researchers to know more about the impact of a certain technology in the world. On this post I'm going to show you how shodan can be useful for analysts for detecting infrastructures on different countries.
   
 Some interesting things that you have to take into account related to shodan are:
