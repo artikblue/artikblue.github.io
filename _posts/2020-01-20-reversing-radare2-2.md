@@ -1,12 +1,11 @@
 ---
 layout: post
 title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 2"
-author: artikblue
-categories: [ reversing, course ]
 tags: [reversing, c, radare]
-image: assets/images/radare2/radare2_2.png
-description: "Reverse engineering (C) 32 and 64 bits binaries with radare2."
+featured_image_thumbnail: assets/images/radare2/radare2_2.png
+featured_image: assets/images/radare2/radare2_2.png
 ---
+
 Welcome to this next part of the reverse engineering with radare2 course :) Today we are going to walk through some simple data structures such as variables, understand how basic conditional code structures work on the inside and we will also learn how to debug with radare2.
 
 #### Variables

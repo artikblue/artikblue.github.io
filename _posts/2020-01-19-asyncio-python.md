@@ -1,12 +1,9 @@
 ---
 layout: post
 title:  "Async programming made easy with python asyncio"
-author: artikblue
-categories: [ python, programming ]
 tags: [python, asyncio, apis]
-image: assets/images/asyncio/head.jpeg
-description: "Learning how to deal with async programming with python."
-featured: true
+featured_image_thumbnail: assets/images/asyncio/head.jpeg
+featured_image: assets/images/asyncio/head.jpeg
 ---
 
 Good morning warriors of the code! Today I'm going to walk you through the misteries of asyncronous programming with python using the world known asyncio library :)

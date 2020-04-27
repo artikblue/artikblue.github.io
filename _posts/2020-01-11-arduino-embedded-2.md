@@ -1,13 +1,12 @@
 ---
 layout: post
 title:  "Madrid real estate renting market data analysis"
-author: artikblue
-categories: [ data, social ]
 tags: [r, python, analysis]
-image: assets/images/madrid_renting/group1pairs.png
-description: "Data analysis of the madrid flat renting market."
-featured: true
+featured_image_thumbnail: assets/images/madrid_renting/group1pairs.png
+featured_image: assets/images/madrid_renting/group1pairs.png
 ---
+
+
 ## Data analysis
 Today I'm working with the data that I gathered from "habitaclia.com", related to the flat renting market in Madrid. Find this data here(https://github.com/artikblue/datasets-analyses)  
 In this post I will walk you a little bit through the data I gathered:

@@ -1,12 +1,11 @@
 ---
 layout: post
 title:  "Embedded systems programming with atmel328 - 3 (microservos)"
-author: artikblue
-categories: [ embedded, course ]
 tags: [arduino, atmel, processing]
-image: assets/images/arduino/pservo.jpg
-description: "Working with (micro) servo motors in arduino."
+featured_image_thumbnail: assets/images/arduino/pservo.jpg
+featured_image: assets/images/arduino/pservo.jpg
 ---
+
 
 ### About servo-motors
 Servo motors are small dc engines that transmit their power to a series of gears to maximize the amount of weight they can move (at the cost of their speed). Thus, by that concept servos are very powerful and are used in many many diy projects such as robots and all kinds of automatisms. You can find many different kinds of servos, some  small and not so powerful to big servos capable of moving heavy weights and with a high demand of energy. So, this components, by the effort they have to do, tend to have stronger power needs. In this example we are dealing with the KY66 9g servo that does not have heavy power requirements, eventhough I recommend that you get yourself an external power transformer for your arduino, so that you can power up your arduino without the usb connection and thus avoid potential harms or problems.  

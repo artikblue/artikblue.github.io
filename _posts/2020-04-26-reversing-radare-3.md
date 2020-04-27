@@ -1,12 +1,12 @@
 ---
 layout: post
 title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 3 (funcs, cases and loops)"
-author: artikblue
-categories: [ reversing, course ]
 tags: [reversing, c, radare]
-image: assets/images/radare2/radare2_2.png
-description: "Reverse engineering (C) 32 and 64 bits binaries with radare2."
+featured_image_thumbnail: assets/images/radare2/radare2_2.png
+featured_image: assets/images/radare2/radare2_2.png
 ---
+
+
 
 Here we go again. In the previous chapter of this radare2 full course, we walked through the very basic structure of an executable binary written in C paying atention to input/output function calls such as printf and basic data structures such as variables basic measures of controling the execution flow such as if - else statements were reviewed as well. Today were are going a bit deeper with those measures of execution flow control, we'll present the basic usage of the case statement, we'll declare and use functions of our own and at the end we will analyse loops with while and for. 
   

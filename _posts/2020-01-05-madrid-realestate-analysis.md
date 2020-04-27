@@ -1,12 +1,11 @@
 ---
 layout: post
 title:  "Embedded systems programming with atmel328 - 2 (ultrasounds) "
-author: artikblue
-categories: [ embedded, course ]
 tags: [arduino, atmel, processing]
-image: assets/images/arduino/pultrasound.jpg
-description: "Working with the hc-sr04 ultrasound sensor."
+featured_image_thumbnail: assets/images/arduino/pultrasound.jpg
+featured_image: assets/images/arduino/pultrasound.jpg
 ---
+
 
 ### About the hc-sr04 sensor
 Among the lands of arduino and diy projects, the HC-SR04 is one of the easiest components to recognize. Being used in many projects such as robots and alarms, it is used to detect obstacles and even to measure distances between objects. This component is composed by an ultra sound emiter and a receiver that work emitting and receiving sound at a frequency of 40KHz, a frequency that is not audible by humans.  

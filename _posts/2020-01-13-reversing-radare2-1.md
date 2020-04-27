@@ -1,11 +1,9 @@
 ---
 layout: post
 title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 1"
-author: artikblue
-categories: [ reversing, course ]
 tags: [reversing, c, radare]
-image: assets/images/radare2/radare2_1.png
-description: "Reverse engineering (C) 32 and 64 bits binaries with radare2."
+featured_image_thumbnail: assets/images/radare2/radare2_1.png
+featured_image: assets/images/radare2/radare2_1.png
 ---
 
 

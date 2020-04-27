@@ -1,11 +1,9 @@
 ---
 layout: post
 title:  "Embedded systems programming with atmel328 - 5"
-author: artikblue
-categories: [ embedded, course ]
 tags: [arduino, atmel, processing, relay]
-image: assets/images/arduino/relayheader.jpg
-description: "Course on programming embedded systems with arduino-like boards, part 4. Working with relays"
+featured_image_thumbnail: assets/images/arduino/relayheader.jpg
+featured_image: assets/images/arduino/relayheader.jpg
 ---
 
 #### What is a Relay?

@@ -1,12 +1,11 @@
 ---
 layout: post
 title:  "Writting linux32 shellcode from scratch - 1"
-author: artikblue
-categories: [ reversing, course ]
 tags: [shellcode, asm, linux]
-image: assets/images/shellcode/shellcode1.png
-description: "Writting shellcode for linux 32 bits systems using nasm."
+featured_image_thumbnail: assets/images/shellcode/shellcode1.png
+featured_image: assets/images/shellcode/shellcode1.png
 ---
+
 Here we go!
 #### About this course
 In these series of posts we'll walk through the creation and implementation of Linux Shellcode for x32 systems. We'll go from basic operations using syscalls to the implementation of crypters/encoders and we'll be able to use those shellcodes we'll make with our exploits. It is important to note that eventhough a lot of techniques may be quite similar, in here we'll focus on 32 bits linux systems, some topics such as the use of registers change between 32 bit and 64 bit systems, also eventhough the concept is also quite similar, shellcode writting is much easier on Linux than it is on Windows thus starting with shellcode writting in Linux32 is probably the best option.

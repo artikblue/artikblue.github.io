@@ -1,12 +1,12 @@
 ---
 layout: post
 title:  "Embedded systems programming with atmel328 - 6"
-author: artikblue
-categories: [ embedded, course ]
 tags: [arduino, atmel, processing, relay]
-image: assets/images/arduino/keypad.jpg
-description: "Course on programming embedded systems with arduino-like boards, part 4. Working with keypads"
+featured_image_thumbnail: assets/images/arduino/keypad.jpg
+featured_image: assets/images/arduino/keypad.jpg
 ---
+
+
 
 #### About keypads
 Keypads are simple input devices that can be used in embedded projects. Most of the time, we can find keyboards being used in access control mechanisms, but they are also used for programming/controlling machines among other cases.  
