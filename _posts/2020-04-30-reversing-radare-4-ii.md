@@ -2,8 +2,8 @@
 layout: post
 title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 4 - II (more strings)"
 tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare_5.png
-featured_image: assets/images/radare2/radare_5.png
+featured_image_thumbnail: assets/images/radare2/radare2_5.png
+featured_image: assets/images/radare2/radare2_5.png
 ---
 
 On this one, we are going to walk a little bit more through char arrays and strings to set solid fundamentals on the topic so we can move on and study more complex data structures (such as multi-dimensional arrays and structs).
