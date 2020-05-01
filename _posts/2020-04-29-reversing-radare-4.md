@@ -18,7 +18,7 @@ We'll go example by example as I think it is one of the easiest ways to learn an
 Arrays are simple data structures that contain one or more elements of a specific type. Arrays make it easy for us to reference multiple elements with one single tag, instead of having to declare a lot of variables.
 
 Consider the following code:
-```
+```C
 # include <stdio.h>
 
 main(){
@@ -178,7 +178,7 @@ That's it, all those variables come together in memory one after another, the wa
 After that, what comes next is not a challenge for us. The edx register is used for storing the sum of all of those numbers, then the variable sum is used for storing the final value and bam! printf.
 
 Let's now check the same exact thing, but using single variables instead:
-```
+```C
 # include <stdio.h>
 
 main(){
@@ -246,7 +246,7 @@ But you'll be asking yourself ok so that array of 5 positions can be read as 5 i
 
 Let's see!
 
-```
+```C
 # include <stdio.h>
 
 main(){
@@ -358,7 +358,7 @@ The rest of the code, same thing partner
 #### Initializing arrays
 
 Arrays can be pre-initialized, but on this case it will be the same:
-```
+```C
 # include <stdio.h>
 
 main(){
@@ -411,7 +411,7 @@ Saaame thing :)
 #### Char arrays / strings
 
 Things start to get a bit more interesting here, this time we will declare a char array that can be interpreted as a string, we'll use scanf to read fromuser input:
-```
+```C
 # include <stdio.h>
 
 main(){
@@ -493,7 +493,7 @@ hit breakpoint at: 55d4941247cd
 There it is! The rest of the code is quite simple, local_30h will be passed again to printf and the output will be printed out.
 
 As usual, we can access char array elements individually by using an index, let's consider this one:
-```
+```C
 # include <stdio.h>
 
 main(){

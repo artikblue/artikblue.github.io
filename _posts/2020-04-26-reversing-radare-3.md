@@ -13,7 +13,7 @@ Here we go again. In the previous chapter of this radare2 full course, we walked
 Let's refresh some previous concepts a little bit with the following code, that declares a function for detecting positive numbers and jumps to it.
 
 
-```
+```C
 #include <stdio.h>
 
 func2(){
@@ -188,7 +188,7 @@ After this point we can say that our simple analysis is over, let's proceed with
   
 
 Let's try now with an extra step, we'll add an else condition to see how the compiler deals with that.
-```
+```C
 #include <stdio.h>
 
 func2(){
@@ -260,7 +260,7 @@ Inside radare2 there's a cleaner way to inspect code bifurcations such as the on
 The switch case cames with a more advanced scenario than if else. The if else statement works fine if we have a couple or three ways we plan to redirect the execution flow of the program but if we have a lot of diferent cases we may want to use something more advanced such as switch case.
 
 We will work with the following piece of code
-```
+```C
 #include <stdio.h>
 
 func2(){
@@ -552,7 +552,7 @@ At this point we already know how the program is going to end so let's move to o
 
 
 
-```
+```C
 #include <stdio.h>
 
 func2(){
@@ -646,7 +646,7 @@ As you can see here the program reads the users choice and then compares the val
 #### While and For loops
 
 Another case of very common dynamics you'll see on almost every binary are loops commonly represented with while and for statements. Code located inside a wwhile loop will keep its execution on cycling as long as the loop condition is true, code located inside a for will run N times.
-```
+```C
 #include <stdio.h>
 
 func2(){
@@ -808,7 +808,7 @@ And right after, it asks again for an input and checks for the exit condition at
 And thats pretty much all here.
 
 The other common way of creating loops is by using for, as you can see here:
-```
+```C
 #include <stdio.h>
 
 

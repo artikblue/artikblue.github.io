@@ -35,7 +35,7 @@ And if you wish to use it on windows you can [download the windows setup](https:
 
 #### Hello world
 Every programming journy begins with the classical hello world program and this one won't be less. And a hello world in C language will look exactly like that:
-~~~
+~~~C
 #include <stdio.h>
 int main() {
    printf("Hello, World!");

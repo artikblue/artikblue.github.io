@@ -12,7 +12,7 @@ Welcome to this next part of the reverse engineering with radare2 course :) Toda
 
 ##### The code
 Let's start with this simple example. The following example-program, declares four variables, regarding to the numeric variables the first one represents an int, second one represents a float and the third one a double then we also have a char 'a'. At the end those values are added and the result is printed. We will see how the first variable gets directly stored in a (general purpose) register, the second one gets stored in memory too but in another place and the third one works the same with the exception that it needs 2 times the space of the second (double)
-~~~
+~~~C
 #include <stdio.h>
 
 int main() {
@@ -224,7 +224,7 @@ And then it appears on the stack along with the address that points to the strin
 
 ##### The code 
 We will start with the following piece of code. It will declare a variable as a signed integer, then it will read the user input and store it in that variable. After that it will check whether if is a positive or negative int then print a message.
-~~~
+~~~C
 #include <stdio.h>
 int main() {
     signed int number;

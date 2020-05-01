@@ -13,7 +13,7 @@ On this one, we are going to walk a little bit more through char arrays and stri
 #### A refresher on char arrays
 
 As we seen on the previous post, strings can be declared as charr arrays of a fixed size, then they can be printed out by printf using %s for the format.
-```
+```C
 # include <stdio.h>
 
 main(){
@@ -122,7 +122,7 @@ Will allow spaces to be registered. Consider the following link https://www.incl
 Other methods for receiving strings from the input or printing them out are gets and puts. Gets eeads characters from the standard input and stores them as a string and prints characters from the standard output. Both act in a similar way as printf and scanf, the main difference here is that there is no specification on the format. The main difference here comes from the format (https://www.geeksforgeeks.org/difference-between-scanf-and-gets-in-c/) as, for example, by default gets won't stop if it encounters a whitespace. Same thing with puts, puts will just dump the contents of the char array interpreting it as a string.
 
 Let's inspect the following code:
-```
+```C
 # include <stdio.h>
 
 main(){
@@ -229,7 +229,7 @@ Voilà! As we have seen the full string is stored in memory this time. It is imp
 
 #### Strlen
 We can interact with char arrays in different ways. A function that you'll probably encounter in many programs and ctf games is the strlen, that returns the lenght of a string.
-```
+```C
 
 # include <stdio.h>
 
@@ -330,7 +330,7 @@ As we can see, rax contains 0xb = 11dec and "SAMPLE TEXT" has a lenght of 11 (sp
 The string library "string.h" contains various functions very useful for string manipulation. Those functions allow us to manipulate strings in many ways, in here we'll see how it is useful for copying strings.
 
 Consider the following program:
-```
+```C
 # include <stdio.h>
 # include <string.h>
 
@@ -549,7 +549,7 @@ var local_6ah = 0x7fffd173ccd6  0x00000000504d4153   SAMP.... @rdi ascii
 Only 4 bytes got copied. It is important to remark that in the case of strncpy the null terminator is not inserted by default and that makes sense because maybe our goal is just to "merge" a couple of arrays instead of copying a string to an empty array....
 
 If we want to cut an array we can manually insert a null terminator this way:
-```
+```C
 # include <stdio.h>
 # include <string.h>
 
