@@ -45,6 +45,8 @@ medium: '@artikblue'
 navigation:
   - text: About
     url: /about
+  - text: Reversing course
+  - url: /reversing
 #  - text: Contact Me
 #    url: /contact
 
