@@ -15,7 +15,7 @@ Casting is a way we have to "convert" a variable of one kind to another kind. By
 "Converting one datatype into another is known as type casting or, type-conversion. For example, if you want to store a 'long' value into a simple integer then you can type cast 'long' to 'int'. You can convert the values from one type to another explicitly using the cast operator as follows − (type_name) expression"
 
 Let's review a simple example:
-```
+```C
 # include <stdio.h>
 
 main(){
@@ -163,7 +163,7 @@ Movss (move scalar single precision floating point value) moves a scalar single-
 Let's now do another kind of casting, this time we'll go from character to integer.
 
 
-```
+```C
 # include <stdio.h>
 
 main(){
@@ -216,7 +216,7 @@ byte 0x61 (ascii a) is stored in local_5h, good that should mean char b = 'a', t
 Let's finish this one with a last example
 
 
-```
+```C
 # include <stdio.h>
 
 main(){
