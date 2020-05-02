@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 6 (multi-dimensional arrays and structs)"
+title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 6 (2d arrays and structs)"
 tags: [reversing, c, radare]
 featured_image_thumbnail: assets/images/radare2/radare2_7.png
 featured_image: assets/images/radare2/radare2_7.png
@@ -235,6 +235,7 @@ That was nice! We were able to retrieve 20 signed decimal integers starting from
 
 So briefly, on this perspective having an array of arrays is, on a practical level, almost the same as having a single large array as everything will be together, it is more like a semantic trick for making it easier for us, the h u m a n s, to work with data structures while programming.
 
+#### Structs 
 
 But most of the time, specially if we are deing with projects that are somehow more "serious", we can expect to encounter more advanced data structures that may be asociated with objects. At the end, those structures will be comprised sets of arrays, tags of memory addresses and simple variables. That is one of the reasons why I love to work at the low level, everything becomes super simple.
 

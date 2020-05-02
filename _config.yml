@@ -21,13 +21,13 @@ author:
     display_name: Artikblue
     gravatar: 76ead780a562cf43aaa438f46ad3fb93
     email: artikblue@protonmail.com
-    web: artikblue.github.io
+    web: artik.blue
     twitter: https://twitter.com/artikblue
-    description: "Author of artik labs."
+    description: "Alternate use of modern technology also known as hacking."
 # Contact form setings
 email: artikblue@protonmail.com
 contact_page_description: "The alternate use of modern technologies, aka hacking."
-thankyou_page_description: ""
+thankyou_page_description: "Thank you"
 
 # Social links
 twitter: 'artikblue'
@@ -45,7 +45,7 @@ medium: '@artikblue'
 navigation:
   - text: About
     url: /about
-  - text: "Reversing course"
+  - text: Reversing
     url: /reversing
 #  - text: Contact Me
 #    url: /contact
@@ -58,7 +58,7 @@ plugins_dir:
   - jekyll-sitemap
 
 # Pagination
-paginate: 5
+paginate: 6
 paginate_path: /page:num/
 
 # Permalinks
