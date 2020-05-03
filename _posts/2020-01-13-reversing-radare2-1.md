@@ -13,6 +13,8 @@ This series of post that I'm starting with this one will cover the fundamentals 
 On these series of posts we'll start with an C source file / algorithm, compile it in both 32 bits and 64 bits systems and then reverse engineer it using radare2, so you'll be able to appreciate the differences between 32 and 64 bit binaries. Once we cover the fundamentals of reversing we'll focus on x64.
   
 I assume that you have some fundamental knowledge about computer arquitectures and know some basic asm instructions such as mov, push and such. I also assume that you already know what radare2 is and thus want to *finally* learn how to use it.
+
+[Wanna show your support to this course? Follow me in Twitter! @artikblue](www.twitter.com/artikblue) If people show interest I'll post more content :)
 #### Getting radare2
 
 Most of the people who use radare2 use it on Linux systems, as from there you can analyze all sorts of binaries and if you want to debug them you can connect to a remote debug session or use gbd on Linux. In here we'll use r2 on Linux most of the time and move it to Windows when needed.
