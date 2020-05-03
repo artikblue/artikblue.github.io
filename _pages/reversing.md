@@ -9,7 +9,7 @@ comments: false
 <div class="col-md-8 pr-5">
 <p>Some notes on reverse engineering on various architectures, mostly using radare2</p>
 
-<i><a href="www.twitter.com/artikblue">Wanna show your support to these materials? Follow me on twitter at @artikblue and let me know</a>If I see interest I'll post more :)</i>
+<i><a href="https://www.twitter.com/artikblue">Wanna show your support to these materials? Follow me on twitter at @artikblue and let me know</a>If I see interest I'll post more :)</i>
 
 <ul>
   <li><a href="https://artik.blue/reversing-radare2-1">Reversing x32/x64 with radare2 - 1 (intro) </a></li>
