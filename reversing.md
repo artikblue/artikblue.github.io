@@ -15,4 +15,6 @@ comments: false
   <li><a href="https://artik.blue/reversing-radare-4">Reversing x32/x64 with radare2 - 4 - I ((arrays and strings))</a></li>
   <li><a href="https://artik.blue/reversing-radare-4-ii">Reversing x32/x64 with radare2 - 4 - II ((more strings)</a></li>
   <li><a href="https://artik.blue/reversing-radare-5">Reversing x32/x64 with radare2 - 5 (var types and casting)</a></li>
+  <li><a href="https://artik.blue/reversing-radare-6">Reversing x32/x64 with radare2 - 6 (multi dimensional arrays and structs)</a></li>
+
 </ul>
