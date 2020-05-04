@@ -10,7 +10,7 @@ So today we are going to work with a more complete example related to structs, t
 #include <stdio.h>
 
 const int MAX = 20;
-
+"td struct stud { char fletter; int age; float mark;};"
 struct stud
 	{
 		char fletter;
@@ -548,6 +548,32 @@ val = val + 2^2 (the shl 2 translates to that)
 addr_char_towrite = local_8h + val
 ```
 And as we can calculate, for an index of 0x0 the result will be 0xC (dec 12), on the next block the same operation is repeated an an extra 0x4 is added then on the final block a 0x8. so there is a distance of 0xC (dec 12) between the first and the last it all makes sense now, right? With that you can figure the whole structure out, by the way try to debug the program, add some values and dump the struct.
+
+Now that we have "figured out" the structure of the data we can even run r2 on debug mode and dump the content like this:
+
+```
+[0x5645465e8aee]> pf 5c...df @ 0x7ffe3530d310
+0x7ffe3530d310 [0] {
+  0x7ffe3530d310 = 'A'
+        0x7ffe3530d314 = 23
+  0x7ffe3530d318 = 3.29999995
+}
+0x7ffe3530d31c [1] {
+  0x7ffe3530d31c = 'L'
+        0x7ffe3530d320 = 2
+  0x7ffe3530d324 = 3.4000001
+}
+0x7ffe3530d328 [2] {
+  0x7ffe3530d328 = 'B'
+        0x7ffe3530d32c = 19
+  0x7ffe3530d330 = 6.4000001
+}
+0x7ffe3530d334 [3] {
+  0x7ffe3530d334 = 'C'
+        0x7ffe3530d338 = 32
+  0x7ffe3530d33c = 7.69999981
+}
+```
 
 If you remind, there was another interesting function on the program... sym.showstudents but we did not see it anywhere in the code (?) Anyway for now we can also seek to it and inspect it with s
 ```
