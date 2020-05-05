@@ -2,6 +2,40 @@
 
 OPEN FILE AND READ
 
+#include <stdio.h>
+#include <string.h>
+main(){
+funcion();
+getchar();
+}
+
+
+funcion()
+{ 
+
+    FILE* ftest;
+    char name[80] = "test.txt";
+    char line[81];
+ 
+    ftest = fopen(name, "rt");
+ 
+    if (ftest == NULL)
+    {
+      printf("file not found!\n");
+      exit(1);
+    }
+    fgets(line, 80, ftest);
+    puts(line);
+fgets(line, 80, ftest);
+    puts(line);
+    fclose(ftest);
+
+
+}
+
+
+
+
 
 
 OPEN FILE
@@ -529,4 +563,28 @@ label_0:
 
 
 
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+
+int main () {
+   FILE *fp;
+
+   fp = fopen("fseek.txt","w+");
+   fputs("This is a simple file, feel free to visit artik.blue to get fresh reversing stuff", fp);
+  
+   fseek( fp, 7, SEEK_SET );
+   fputs(" C Programming Language", fp);
+   fclose(fp);
+   
+   return(0);
+}
 
