@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 9 (pointers and dynamic memory)"
+title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (pointers and dynamic memory)"
 tags: [reversing, c, radare]
 featured_image_thumbnail: assets/images/radare2/radare2_10.png
 featured_image: assets/images/radare2/radare2_10.png
