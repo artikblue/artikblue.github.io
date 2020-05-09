@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (more pointers and dynamic structs)"
+title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 11 (more pointers and dynamic structs)"
 tags: [reversing, c, radare]
 featured_image_thumbnail: assets/images/radare2/radare2_10.png
 featured_image: assets/images/radare2/radare2_10.png
