@@ -20,5 +20,10 @@ comments: false
   <li><a href="https://artik.blue/reversing-radare-5">Reversing x32/x64 with radare2 - 5 (var types and casting)</a></li>
   <li><a href="https://artik.blue/reversing-radare-6">Reversing x32/x64 with radare2 - 6 (multi dimensional arrays and structs)</a></li>
   <li><a href="https://artik.blue/reversing-radare-7">Reversing x32/x64 with radare2 - 7 (struct arrays, r2pm and patching)</a></li>	
-  <li><a href="https://artik.blue/reversing-radare-8">Reversing x32/x64 with radare2 - 8 (files: read, write, seek and some heaps :O)</a></li>
+  <li><a href="https://artik.blue/reversing-radare-8">Reversing x32/x64 with radare2 - 8 (files: read, write, seek and some heaps)</a></li>
+  <li><a href="https://artik.blue/reversing-radare-8-i">Reversing x32/x64 with radare2 - 8 - I (crackmes)</a></li>
+  <li><a href="https://artik.blue/reversing-radare-9">Reversing x32/x64 with radare2 - 9 (pointers and dynamic memory)</a></li>
+  <li><a href="https://artik.blue/reversing-radare-10">Reversing x32/x64 with radare2 - 10 (more pointers and dynamic structs)</a></li>
+  <li><a href="https://artik.blue/reversing-radare-11">Reversing x32/x64 with radare2 - 11 (linked lists, enums, bitwise operations and r2pipe)</a></li>
+
 </ul>
