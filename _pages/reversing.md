@@ -1,19 +1,18 @@
 ---
 layout: page
-title: Reverse engineering course
+title: Reverse engineering course (with radare2)
 permalink: /reversing
 comments: false
 ---
 
 <div class="row justify-content-between">
 <div class="col-md-8 pr-5">
-<p>Some notes on reverse engineering on various architectures, mostly using radare2</p>
+<p>Some notes on reverse engineering on various architectures, mostly using free software such as the radare2 framework, gdb, frida, x64dbg among others</p>
 
 <i><a href="https://www.twitter.com/artikblue">Wanna show your support to these materials? Follow me on twitter at @artikblue and let me know</a>If I see interest I'll post more :)</i>
-
 <hr />
-<br />
-
+<h3>Reversing basic C code (x32/x64)</h3>
+<hr />
 <ul>
   <li><a href="https://artik.blue/reversing-radare2-1">Reversing x32/x64 with radare2 - 1 (intro) </a></li>
   <li><a href="https://artik.blue/reversing-radare2-2">Reversing x32/x64 with radare2 - 2 (conditionals) </a></li>
@@ -30,3 +29,6 @@ comments: false
   <li><a href="https://artik.blue/reversing-radare-11">Reversing x32/x64 with radare2 - 11 (linked lists, enums, bitwise operations and r2pipe)</a></li>
   <li><a href="https://artik.blue/reversing-radare-12">Reversing x32/x64 with radare2 - 12 (defines, unions and bitmaps)</a></li>
 </ul>
+<hr />
+<h3>Advanced topics on reversing C code (Windows and Unix)</h3>
+<hr />
