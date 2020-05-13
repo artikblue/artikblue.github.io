@@ -11,7 +11,7 @@ comments: false
 
 <i><a href="https://www.twitter.com/artikblue">Wanna show your support to these materials? Follow me on twitter at @artikblue and let me know</a>If I see interest I'll post more :)</i>
 <hr />
-<h3>Reversing basic C code (x32/x64)</h3>
+<h3>Reversing basic C code (x86)</h3>
 <hr />
 <ul>
   <li><a href="https://artik.blue/reversing-radare2-1">Reversing x32/x64 with radare2 - 1 (intro) </a></li>
