@@ -7,7 +7,7 @@ meta_description: 'Hacking, electronics and data.'
 logo: 'assets/images/logo.png'
 favicon: 'assets/images/favicon.ico'
 baseurl: /
-production_url: https://artik.blue
+production_url: https://artik.blue/
 disqus: 'arrtikblue'
 cover_image: bc_1.jpg
 # Add your GA Tracking Id
