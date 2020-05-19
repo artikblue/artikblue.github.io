@@ -32,3 +32,6 @@ comments: false
 <hr />
 <h3>Advanced topics on reversing C code (Windows and Unix)</h3>
 <hr />
+<ul>
+  <li><a href="https://artik.blue/reversing-radare-13">Reverse engineering x64 binaries with Radare2 - 13 (linux systems programming: theory, syscalls, files and ESIL)</a></li>
+</ul>
