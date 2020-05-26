@@ -34,4 +34,5 @@ comments: false
 <hr />
 <ul>
   <li><a href="https://artik.blue/reversing-radare-13">Reverse engineering x64 binaries with Radare2 - 13 (linux systems programming: theory, syscalls, files and ESIL)</a></li>
+  <li><a href="https://artik.blue/reversing-radare-14">Reverse engineering x64 binaries with Radare2 - 14 (the windows api: theory, helloworld and files)</a></li>
 </ul>

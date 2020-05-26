@@ -6,10 +6,22 @@ featured_image_thumbnail: assets/images/radare2/radare2_15.png
 featured_image: assets/images/radare2/radare2_15.png
 ---
 
-
+Today we are going to talk about the windows api, something that will allow us to do similar stuff as what we are doing with linux using syscalls.
 #### WindowsAPI HelloWorld
 
-The first program is always hello wowrld. ***to be updated
+The first program is always the hello wowrld and that is what we are going to do now.
+
+So, Windows Api is what we use to interact with the windows operating system from the user space, according to wikipedia
+
+"The Windows API, informally WinAPI, is Microsoft's core set of application programming interfaces (APIs) available in the Microsoft Windows operating systems. The name Windows API collectively refers to several different platform implementations that are often referred to by their own names (for example, Win32 API); see the versions section. Almost all Windows programs interact with the Windows API. On the Windows NT line of operating systems, a small number (such as programs started early in the Windows startup process) use the Native API"
+
+You may be thinking about if winapi calls are syscalls or are the same as what we have saw on the past tutorial but know that you are not alone and some answers have been provided: https://www.quora.com/Why-does-Windows-have-the-Win32-API-for-invoking-system-calls-but-on-Linux-you-would-just-directly-invoke-the-system-call
+
+The following answer states a good point that I want to remark, when we were going through Linux syscalls, we actually did no syscall at all, write()/open() etc are userland code they do the syscall internally but we can interpret them as syscalls for educational purposes.
+
+
+
+Let's get to the code now:
 ```c
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,6 +50,10 @@ int main()
     return 0;
 }
 ```
+The following code will use the Windows Api to pop a messagebox, a small dialog that will requiere the interaction of the user. Depending on the user action the program will do some stuff. That stuff will include emitting a simple "beep" using the systems audio (those params are related to the frequency). So, the key thing here is that MessageBox and Beep make use the operating systems features, that is important, those functions are not related to the specific language, not related to some calculations we want to perform, not related to data structures /algorithms those are actually ACTIONS we want the WINDOWS SYSTEM to do for us. So we use the api for dealing with operating system actions like generating a window or emitting a sound. A lot of windows malware makes use of the windows api because a malware deals with stuff like the filesystem/systems memory/registry/devices/network.
+
+Having a nice understanding of the windows api makes it easy for malware analysis.
+
 The information related to this MessageBox call can be found here: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebox
 
 Let us first list the detected functions by using afl
@@ -235,6 +251,11 @@ Let's now get into more "systems programming" - like stuff, like the winapi way 
 
 #### Write a file to disk CreateFile and WriteFile
 
+Let's continue with the very basics, as you see these msdn functions work relatively the same as the linux syscalls, we open a file for read/write creating it if it does  not exist with CreateFile and we get a handle to the file, a file handle or file handleR is somehow similar for us as a file descriptor, by using it we can reference the file, the system will hold information internally related to the file, for example, a pointer to the current position on the file, that will be updated afer a read/write/seek call on the file. 
+
+So, following this logic, we can easily write some bytes to the file with WriteFile by using the file handle and some buffer with the bytes to write there. Note that when using Linux syscalls write/file descriptors is a MORE ADVANCED concept, as write is general it can write to the screen, to a file, to a socket, pipe whatever "because in linux everything is a file" here the thing is more like "in windows everything is an object" so eventhough the architecture is similar AT SOME POINT windows have a specific call for writing to a file, another call for sending info to the screen etc.
+
+Whatever, here's the code:
 ```C
 #include <windows.h>
 #include <stdio.h>
@@ -258,7 +279,7 @@ int main(void)
         printf("f handle = %d \n", hFile);
         char arr[20] = "SAMPLESAMPLESAMPLETEXT";
         printf("%s \n", arr);
-        WriteFile(hFile, arr, 5,&at,NULL);
+        WriteFile(hFile, &arr, 5,&at,NULL);
         printf("Bytes written: %d \n", at);
         CloseHandle(hFile);
     }
@@ -266,6 +287,7 @@ int main(void)
 return 0;
 }
 ```
+So basically the program opens a file for writting then checks if everythings ok with the open and calls WriteFile to write some bytes (arr).
 
 
 Let's diisasm this:
@@ -875,6 +897,70 @@ The program opens a JPG file, then uses LZSEEK to move at the end of the file, t
 All of the content (bytes) that go after the end signature won't be interpreted by a jpg visualizer, so adding content in files that way can be used to deliver hidden messages (or malware commands) the set of techniques that allow us to do that is called steganography!
 
 
+After running this program, having the needed image on the right place on the filesystem, a "secret message" will be appended at the end, after the end signature. The image will open properly but the message will be there. We can actually open it with radare2 and inspect the message:
+
+```
+[0x00000000]> pxw
+0x00000000  0xe0ffd8ff 0x464a1000 0x01004649 0x60000101  ......JFIF.....`
+0x00000010  0x00006000 0x4300dbff 0x01010200 0x02010101  .`.....C........
+0x00000020  0x02010101 0x02020202 0x02020304 0x04050202  ................
+0x00000030  0x06040304 0x06060605 0x06060605 0x06080907  ................
+0x00000040  0x06070907 0x080b0806 0x0a0a0a09 0x08060a0a  ................
+0x00000050  0x0a0b0c0b 0x0a0a090c 0x00dbff0a 0x02020143  ............C...
+0x00000060  0x02020202 0x05030305 0x0706070a 0x0a0a0a0a  ................
+0x00000070  0x0a0a0a0a 0x0a0a0a0a 0x0a0a0a0a 0x0a0a0a0a  ................
+0x00000080  0x0a0a0a0a 0x0a0a0a0a 0x0a0a0a0a 0x0a0a0a0a  ................
+0x00000090  0x0a0a0a0a 0x0a0a0a0a 0x0a0a0a0a 0xc2ff0a0a  ................
+0x000000a0  0x02081100 0x03200358 0x02002201 0x11030111  ....X. .."......
+0x000000b0  0x00c4ff01 0x0200001c 0x01010302 0x00000000  ................
+0x000000c0  0x00000000 0x05040000 0x02010603 0xff080007  ................
+0x000000d0  0x011a00c4 0x01010300 0x00000101 0x00000000  ................
+0x000000e0  0x00000000 0x00030201 0xff060504 0x030c00da  ................
+0x000000f0  0x10020001 0x00001003 0x4ae1e801 0x497e596c  ...........JlY~Is?
+```
+As you see, the file presents the image format, we can seek to the end with sG and move -+ bytes with s-+ num
+
+```
+[0x00022f74]> px
+- offset -   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0123456789ABCDEF
+0x00022f74  ac71 8a48 5640 a2f8 693c e3d2 0a2d 0dc7  .q.HV@..i<...-..
+0x00022f84  1c13 4c68 468f 0af5 841c 26a4 8445 8705  ..LhF.....&..E..
+0x00022f94  6f10 0008 1a88 4aaf fb58 8c06 0a94 9f77  o.....J..X.....w
+0x00022fa4  3930 dc8e 9b53 904e da85 843f 2fce 5b2e  90...S.N...?/.[.
+0x00022fb4  c09a d499 d833 0fc0 8ee8 c874 1644 08f6  .....3.....t.D..
+0x00022fc4  df3e c0c0 7f09 2555 4f0f a7d6 42a5 8e78  .>....%UO...B..x
+0x00022fd4  383e 3de0 4605 9aae 7d4c 61f1 1a31 0430  8>=.F...}La..1.0
+0x00022fe4  b0de bef3 91b6 1586 a035 38a9 2ae2 8956  .........58.*..V
+0x00022ff4  d9eb 1e90 8890 8204 be79 fac7 4994 0d28  .........y..I..(
+0x00023004  649e 262a 311c a58a 08a2 0ff7 789c d558  d.&*1.......x..X
+0x00023014  55d0 2719 1a5d 0d32 b712 123f c39a 02ba  U.'..].2...?....
+0x00023024  6c9b 2b7c 9382 9bba 054b 7491 efce 3183  l.+|.....Kt...1.
+0x00023034  70bc d7e1 c51c f34b 4b07 5ffb 8cab 2c19  p......KK._...,.
+0x00023044  d9dc 5ff1 926d 4135 7953 edc1 ac11 0661  .._..mA5yS.....a
+0x00023054  1e7e b1f1 8090 db56 ff00 cc10 18c3 2822  .~.....V......("
+0x00023064  be4f f39f ffd9 7365 6372 6574 206d 7367  .O....secret msg
+[0x00022f74]> s+20
+[0x00022f88]> px
+- offset -   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0123456789ABCDEF
+0x00022f88  468f 0af5 841c 26a4 8445 8705 6f10 0008  F.....&..E..o...
+0x00022f98  1a88 4aaf fb58 8c06 0a94 9f77 3930 dc8e  ..J..X.....w90..
+0x00022fa8  9b53 904e da85 843f 2fce 5b2e c09a d499  .S.N...?/.[.....
+0x00022fb8  d833 0fc0 8ee8 c874 1644 08f6 df3e c0c0  .3.....t.D...>..
+0x00022fc8  7f09 2555 4f0f a7d6 42a5 8e78 383e 3de0  ..%UO...B..x8>=.
+0x00022fd8  4605 9aae 7d4c 61f1 1a31 0430 b0de bef3  F...}La..1.0....
+0x00022fe8  91b6 1586 a035 38a9 2ae2 8956 d9eb 1e90  .....58.*..V....
+0x00022ff8  8890 8204 be79 fac7 4994 0d28 649e 262a  .....y..I..(d.&*
+0x00023008  311c a58a 08a2 0ff7 789c d558 55d0 2719  1.......x..XU.'.
+0x00023018  1a5d 0d32 b712 123f c39a 02ba 6c9b 2b7c  .].2...?....l.+|
+0x00023028  9382 9bba 054b 7491 efce 3183 70bc d7e1  .....Kt...1.p...
+0x00023038  c51c f34b 4b07 5ffb 8cab 2c19 d9dc 5ff1  ...KK._...,..._.
+0x00023048  926d 4135 7953 edc1 ac11 0661 1e7e b1f1  .mA5yS.....a.~..
+0x00023058  8090 db56 ff00 cc10 18c3 2822 be4f f39f  ...V......(".O..
+0x00023068  ffd9 7365 6372 6574 206d 7367 ffff ffff  ..secret msg....
+0x00023078  ffff ffff ffff ffff ffff ffff ffff ffff  ................
+```
+And here we have our secret message!
+
 
 #### Listing dirs, FindFirstFile and FindNextFile
 All kind of operations related to the file system can be done with the Windows Api, by the way I think that the windows api is probably the best way to deal with operations on the filesystem. At the end, you'll find a lot of calls to the windows api when reversing most kind of malware samples, as they parse the file system for file infection / information hidding / information extraction extraction etc 
@@ -999,9 +1085,11 @@ And the disasm of the main function will look like this one:
 \           0x00401687      c3             ret
 [0x00401550]>
 ```
+Let's go step by step. As the code is a bit large and we already know about almost everything here, we'll focus on the new stuff
 
+So we see that FindFirstFileA is called. You may be wondering why the "A", that A stands for ASCII, it means that the function will deal with ascii encoding, same call without the a can be found as well.
 
-
+The call will return a search handle, an identifier for the ongoing search pointing to an internal structure that knows at what point on the search the progam is, then a "user" struct related to the last/actual file found will be updated.
 ```
 |           0x004015bd      488d0d492a00.  lea rcx, str.C:__samples__stor___.txt ; 0x40400d ; "C:\samples\stor\*.txt"
 |           0x004015c4      488b05516c00.  mov rax, qword sym.imp.KERNEL32.dll_FindFirstFileA ; [0x40821c:8]=0x7751c530 ; "0\xc5Qw"
@@ -1014,7 +1102,7 @@ And the disasm of the main function will look like this one:
 0x00255850
 ```
 
-The struct for the file info is now loaded inside our arg_b0h variable
+The struct (WIN32_FIND_DATA) for the file info is now loaded inside our arg_b0h variable
 
 ```
 [0x004015cd]> afvd
@@ -1103,4 +1191,464 @@ Let's now move on to a more complex example:
 
 #### Xor Encrypting files 
 
+Let's move on the last example:
 
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <windows.h>
+#include <string.h>
+
+#define MAX_DIR_LEN 260
+#define BUF_SIZ 10
+void cryp(char buf[]){
+
+    char k[10] = "0123456789";
+
+    for(int i = 0; i < sizeof(buf); i ++){
+        buf[i] ^= k[i];
+    }
+}
+void doFile(int hFile){
+    char buf[BUF_SIZ];
+
+    int totalBytesRead = 0;
+    int dwBytesRead = 0;
+    int fsize = GetFileSize(hFile, NULL);
+
+    printf("File size in bytes: %d \n", fsize);
+
+    printf("File content: \n");
+
+    while(totalBytesRead < fsize){
+        memset(buf,0,BUF_SIZ);
+        ReadFile(hFile, buf, BUF_SIZ-1, &dwBytesRead, NULL);
+        cryp(buf);
+        LZSeek(hFile,-dwBytesRead,1);
+        WriteFile(hFile, buf, dwBytesRead,NULL,NULL);
+        printf("%s", buf);
+        totalBytesRead += dwBytesRead;
+    }
+    printf("\n");
+}
+
+int main()
+{
+    printf("Hello world!\n");
+    char base_path[MAX_DIR_LEN];
+
+    WIN32_FIND_DATA FindFileData;
+    HANDLE hFind;
+
+    hFind = FindFirstFile("C:\\samples\\stor\\*.txt",&FindFileData);
+    printf("Search handler = %d \n", hFind);
+
+    do{
+        memset(base_path,0,MAX_DIR_LEN);
+        strcpy(base_path,"C:\\samples\\stor\\");
+
+        strcat(base_path,FindFileData.cFileName);
+        printf("Name= %s \n",base_path );
+
+        int hFile = CreateFile(base_path,               // file to open
+                       GENERIC_ALL,          // open for write
+                       FILE_SHARE_WRITE | FILE_SHARE_READ,       // share for reading
+                       NULL,                  // default security
+                       OPEN_EXISTING,         // existing file only
+                       FILE_ATTRIBUTE_NORMAL, // normal file
+                       NULL);
+
+
+        printf("File handle: %d \n", hFile);
+        doFile(hFile);
+    }
+    while(FindNextFile(hFind, &FindFileData) != 0);
+    return 0;
+}
+```
+So this small poorly written program makes use of Find*File to go through a specific folder, open each file for read/write and XOR encrypt its bytes block by block it reads - xors - writes and moves on repeating the process. The key point is: as ReadFile and WriteFile both do move the file pointer N bytes forward, the progam makes use of seek for going back for writting the XORed content (then write will move the pointer back to the desired position).
+
+Why do we go block by block? Easy, because we can XOR large files with this method, you don't want to map N GB in memory.
+
+Also please note that this is purely a concept, this program may crash or not work very well on many systems (pointer stuff). Eventhough some malware uses encryption on the file system, for protecting itself or for attacking the system (cryptolockers) normally, they won't use lame code like the one I presented here! as the windows api already presents nice cryptography functionalities and there are also a bunch of free properly written and tested crypto libraries out there, we'll review those topics on the following tutorials. Said that, we can use this as a nice example.
+
+Let's dig in there
+
+```
+[0x004016d8]> pdf
+/ (fcn) sym.main 339
+|   sym.main (int arg_100h, int arg_204h, int arg_208h);
+|           ; var int local_40h @ rbp-0x40
+|           ; arg int arg_100h @ rbp+0x100
+|           ; arg int arg_204h @ rbp+0x204
+|           ; arg int arg_208h @ rbp+0x208
+|           ; var int local_20h @ rsp+0x20
+|           ; var int local_28h @ rsp+0x28
+|           ; var int local_30h @ rsp+0x30
+|           ; var int local_80h @ rsp+0x80
+|           ; CALL XREF from 0x004013c2 (sym.__tmainCRTStartup)
+|           0x004016d8      55             push rbp
+|           0x004016d9      4881ec900200.  sub rsp, 0x290
+|           0x004016e0      488dac248000.  lea rbp, [local_80h]        ; 0x80 ; 128
+|           0x004016e8      e8f3010000     call sym.__main
+|           0x004016ed      488d0d372900.  lea rcx, str.Hello_world    ; 0x40402b ; "Hello world!"
+|           0x004016f4      e81f160000     call sym.puts               ; int puts(const char *s)
+|           0x004016f9      488d45c0       lea rax, [local_40h]
+|           0x004016fd      4889c2         mov rdx, rax
+|           0x00401700      488d0d312900.  lea rcx, str.C:__samples__stor___.txt ; 0x404038 ; "C:\samples\stor\*.txt"
+|           0x00401707      488b05366b00.  mov rax, qword sym.imp.KERNEL32.dll_FindFirstFileA ; [0x408244:8]=0x845a reloc.KERNEL32.dll_FindFirstFileA ; "Z\x84"
+|           0x0040170e      ffd0           call rax
+|           0x00401710      488985080200.  mov qword [arg_208h], rax   ; [0x208:8]=-1 ; 520
+|           0x00401717      488b85080200.  mov rax, qword [arg_208h]   ; [0x208:8]=-1 ; 520
+|           0x0040171e      4889c2         mov rdx, rax
+|           0x00401721      488d0d262900.  lea rcx, str.Search_handler____d ; 0x40404e ; "Search handler = %d \n"
+|           0x00401728      e8fb150000     call sym.printf             ; int printf(const char *format)
+|           ; CODE XREF from 0x00401817 (sym.main)
+|       .-> 0x0040172d      488d85000100.  lea rax, [arg_100h]         ; 0x100 ; 256
+|       :   0x00401734      41b804010000   mov r8d, 0x104              ; 260
+|       :   0x0040173a      ba00000000     mov edx, 0
+|       :   0x0040173f      4889c1         mov rcx, rax
+|       :   0x00401742      e8e9150000     call sym.memset             ; void *memset(void *s, int c, size_t n)
+|       :   0x00401747      488d85000100.  lea rax, [arg_100h]         ; 0x100 ; 256
+|       :   0x0040174e      48ba433a5c73.  movabs rdx, 0x6c706d61735c3a43
+|       :   0x00401758      488910         mov qword [rax], rdx
+|       :   0x0040175b      48ba65735c73.  movabs rdx, 0x5c726f74735c7365
+|       :   0x00401765      48895008       mov qword [rax + 8], rdx
+|       :   0x00401769      c6401000       mov byte [rax + 0x10], 0
+|       :   0x0040176d      488d45c0       lea rax, [local_40h]
+|       :   0x00401771      488d502c       lea rdx, [rax + 0x2c]       ; ',' ; 44
+|       :   0x00401775      488d85000100.  lea rax, [arg_100h]         ; 0x100 ; 256
+|       :   0x0040177c      4889c1         mov rcx, rax
+|       :   0x0040177f      e884150000     call sym.strcat             ; char *strcat(char *s1, const char *s2)
+|       :   0x00401784      488d85000100.  lea rax, [arg_100h]         ; 0x100 ; 256
+|       :   0x0040178b      4889c2         mov rdx, rax
+|       :   0x0040178e      488d0dcf2800.  lea rcx, str.Name___s       ; 0x404064 ; "Name= %s \n"
+|       :   0x00401795      e88e150000     call sym.printf             ; int printf(const char *format)
+|       :   0x0040179a      488d85000100.  lea rax, [arg_100h]         ; 0x100 ; 256
+|       :   0x004017a1      48c744243000.  mov qword [local_30h], 0
+|       :   0x004017aa      c74424288000.  mov dword [local_28h], 0x80 ; [0x80:4]=-1 ; 128
+|       :   0x004017b2      c74424200300.  mov dword [local_20h], 3
+|       :   0x004017ba      41b900000000   mov r9d, 0
+|       :   0x004017c0      41b803000000   mov r8d, 3
+|       :   0x004017c6      ba00000010     mov edx, 0x10000000
+|       :   0x004017cb      4889c1         mov rcx, rax
+|       :   0x004017ce      488b05576a00.  mov rax, qword sym.imp.KERNEL32.dll_CreateFileA ; [0x40822c:8]=0x841c reloc.KERNEL32.dll_CreateFileA
+|       :   0x004017d5      ffd0           call rax
+|       :   0x004017d7      898504020000   mov dword [arg_204h], eax   ; [0x204:4]=-1 ; 516
+|       :   0x004017dd      8b8504020000   mov eax, dword [arg_204h]   ; [0x204:4]=-1 ; 516
+|       :   0x004017e3      89c2           mov edx, eax
+|       :   0x004017e5      488d0d832800.  lea rcx, str.File_handle:__d ; 0x40406f ; "File handle: %d \n"
+|       :   0x004017ec      e837150000     call sym.printf             ; int printf(const char *format)
+|       :   0x004017f1      8b8504020000   mov eax, dword [arg_204h]   ; [0x204:4]=-1 ; 516
+|       :   0x004017f7      89c1           mov ecx, eax
+|       :   0x004017f9      e8bbfdffff     call sym.doFile
+|       :   0x004017fe      488d45c0       lea rax, [local_40h]
+|       :   0x00401802      488b8d080200.  mov rcx, qword [arg_208h]   ; [0x208:8]=-1 ; 520
+|       :   0x00401809      4889c2         mov rdx, rax
+|       :   0x0040180c      488b05396a00.  mov rax, qword sym.imp.KERNEL32.dll_FindNextFileA ; [0x40824c:8]=0x846c reloc.KERNEL32.dll_FindNextFileA ; "l\x84"
+|       :   0x00401813      ffd0           call rax
+|       :   0x00401815      85c0           test eax, eax
+|       `=< 0x00401817      0f8510ffffff   jne 0x40172d
+|           0x0040181d      b800000000     mov eax, 0
+|           0x00401822      4881c4900200.  add rsp, 0x290
+|           0x00401829      5d             pop rbp
+\           0x0040182a      c3             ret
+[0x004016d8]>   
+```
+Again, we face some initializations and a do-while style loop. When you see some block of code starting by a jmp forward then a cmp then a possible jump backwards it is clear that we are facing a while/for style loop, if we have a cmp-jmp backwards at the end of the block we have a do-while. It is important to be able to recognize those structures well as if/for/while are fundamental on programming and thus on reverse engineering programs :)
+
+So, we have the findfirstfile call, then we enter inside the do-while.
+
+Then the do-while starts with this:
+
+```
+|       :   0x0040173f      4889c1         mov rcx, rax
+|       :   0x00401742      e8e9150000     call sym.memset             ; void *memset(void *s, int c, size_t n)
+|       :   0x00401747      488d85000100.  lea rax, [arg_100h]         ; 0x100 ; 256
+|       :   0x0040174e      48ba433a5c73.  movabs rdx, 0x6c706d61735c3a43
+|       :   0x00401758      488910         mov qword [rax], rdx
+|       :   0x0040175b      48ba65735c73.  movabs rdx, 0x5c726f74735c7365
+|       :   0x00401765      48895008       mov qword [rax + 8], rdx
+|       :   0x00401769      c6401000       mov byte [rax + 0x10], 0
+|       :   0x0040176d      488d45c0       lea rax, [local_40h]
+|       :   0x00401771      488d502c       lea rdx, [rax + 0x2c]       ; ',' ; 44
+|       :   0x00401775      488d85000100.  lea rax, [arg_100h]         ; 0x100 ; 256
+|       :   0x0040177c      4889c1         mov rcx, rax
+|       :   0x0040177f      e884150000     call sym.strcat             ; char *strcat(char *s1, const char *s2)
+|       :   0x00401784      488d85000100.  lea rax, [arg_100h]         ; 0x100 ; 256
+|       :   0x0040178b      4889c2         mov rdx, rax
+|       :   0x0040178e      488d0dcf2800.  lea rcx, str.Name___s       ; 0x404064 ; "Name= %s \n"
+|       :   0x00401795      e88e150000     call sym.printf             ; int printf(const char *format)   
+```
+Memset "deletes" the content of the char array used to hold the file_path, then manually loads the folders address back to the variable and concatenates the file name found with the base addr of the folder.
+
+Note that at this point, var_40h will hold the struct related to the found file object, so + 0x2c is used for moving through the struct
+```
+|       :   0x00401769      c6401000       mov byte [rax + 0x10], 0
+        :   ;-- rip:
+|       :   0x0040176d b    488d45c0       lea rax, [local_40h]
+|       :   0x00401771      488d502c       lea rdx, [rax + 0x2c]       ; ',' ; 44
+|       :   0x00401775      488d85000100.  lea rax, [arg_100h]         ; 0x100 ; 256
+|       :   0x0040177c      4889c1         mov rcx, rax
+|       :   0x0040177f      e884150000     call sym.strcat             ; char *strcat(char *s1, const char *s2)
+|       :   0x00401784      488d85000100.  lea rax, [arg_100h]         ; 0x100 ; 256
+
+[0x0040176d]> afvd
+var local_40h = 0x0061fbd0  0x119893fa00000020    .......
+arg arg_208h = 0x0061fe18  0x0000000000758160   `.u.....
+arg arg_100h = 0x0061fd10  0x6c706d61735c3a43   C:\sampl @rax ascii
+arg arg_204h = 0x0061fe14  0x0075816000000000   ....`.u.
+var local_80h = 0x0061fc10  0x005c006500630069   i.c.e.\. @rbp ascii
+var local_30h = 0x0061fbc0  0x0000000000000000   ........ r15
+var local_28h = 0x0061fbb8  0x00007ffa97b377f3   .w......
+var local_20h = 0x0061fbb0  0x8800000000593608   .6Y.....
+[0x0040176d]> pxw @ 0x0061fbd0
+0x0061fbd0  0x00000020 0x119893fa 0x01d63016 0x9b1838bf   ........0...8..
+0x0061fbe0  0x01d63323 0x9ad559d3 0x01d63323 0x00000000  #3...Y..#3......
+0x0061fbf0  0x000000c7 0x00000000 0x00000000 0x2e333333  ............333.
+0x0061fc00  0x00747874 0x00000000 0x0044005c 0x00760065  txt.....\.D.e.v.
+```
+SO, the prgoram ends up opening the corresponding found file and then calls the doFile function sendinf the file handler like this:
+
+```
+|       :   0x004017f7      89c1           mov ecx, eax
+        :   ;-- rip:
+|       :   0x004017f9 b    e8bbfdffff     call sym.doFile
+|       :   0x004017fe      488d45c0       lea rax, [local_40h]
+|       :   0x00401802      488b8d080200.  mov rcx, qword [arg_208h]   ; [0x208:8]=-1 ; 520
+|       :   0x00401809      4889c2         mov rdx, rax
+|       :   0x0040180c      488b05396a00.  mov rax, qword sym.imp.KERNEL32.dll_FindNextFileA ; [0x40824c:8]=0x7ffa99f621a0
+|       :   0x00401813      ffd0           call rax
+|       :   0x00401815      85c0           test eax, eax
+|       `=< 0x00401817      0f8510ffffff   jne 0x40172d
+|           0x0040181d      b800000000     mov eax, 0
+|           0x00401822      4881c4900200.  add rsp, 0x290
+|           0x00401829      5d             pop rbp
+\           0x0040182a      c3             ret
+[0x004017f9]> dr ecx
+0x000000ac
+[0x004017f9]>    
+```
+Yes, that is the file handler, we can check that as we are debugging the program, the file handler (dec) should be on the screen at this point
+
+```
+[0x004017f9]> s sym.doFile
+[0x004015b9]> pdf
+/ (fcn) sym.doFile 287
+|   sym.doFile (int arg_10h);
+|           ; var int local_18h @ rbp-0x18
+|           ; var int local_12h @ rbp-0x12
+|           ; var int local_8h @ rbp-0x8
+|           ; var int local_4h @ rbp-0x4
+|           ; arg int arg_10h @ rbp+0x10
+|           ; var int local_20h @ rsp+0x20
+|           ; CALL XREF from 0x004017f9 (sym.main)
+|           0x004015b9      55             push rbp
+|           0x004015ba      4889e5         mov rbp, rsp
+|           0x004015bd      4883ec50       sub rsp, 0x50               ; 'P'
+|           0x004015c1      894d10         mov dword [arg_10h], ecx    ; r12 ; [0x10:4]=-1
+|           0x004015c4      c745fc000000.  mov dword [local_4h], 0
+|           0x004015cb      c745e8000000.  mov dword [local_18h], 0
+|           0x004015d2      8b4510         mov eax, dword [arg_10h]    ; r12 ; [0x10:4]=-1
+|           0x004015d5      4898           cdqe
+|           0x004015d7      ba00000000     mov edx, 0
+|           0x004015dc      4889c1         mov rcx, rax
+|           0x004015df      488b05866c00.  mov rax, qword sym.imp.KERNEL32.dll_GetFileSize ; [0x40826c:8]=0x7ffa99f622b0
+|           0x004015e6      ffd0           call rax
+|           0x004015e8      8945f8         mov dword [local_8h], eax
+|           0x004015eb      8b45f8         mov eax, dword [local_8h]
+|           0x004015ee      89c2           mov edx, eax
+|           0x004015f0      488d0d092a00.  lea rcx, str.File_size_in_bytes:__d ; section..rdata ; 0x404000 ; "File size in bytes: %d \n"
+|           0x004015f7      e82c170000     call sym.printf             ; int printf(const char *format)
+|           0x004015fc      488d0d162a00.  lea rcx, str.File_content:  ; 0x404019 ; "File content: "
+|           0x00401603      e810170000     call sym.puts               ; int puts(const char *s)
+|       ,=< 0x00401608      e9ae000000     jmp 0x4016bb
+|       |   ; CODE XREF from 0x004016c1 (sym.doFile)
+|      .--> 0x0040160d      488d45ee       lea rax, [local_12h]
+|      :|   0x00401611      41b80a000000   mov r8d, 0xa
+|      :|   0x00401617      ba00000000     mov edx, 0
+|      :|   0x0040161c      4889c1         mov rcx, rax
+|      :|   0x0040161f      e80c170000     call sym.memset             ; void *memset(void *s, int c, size_t n)
+|      :|   0x00401624      8b4510         mov eax, dword [arg_10h]    ; r12 ; [0x10:4]=-1
+|      :|   0x00401627      4898           cdqe
+|      :|   0x00401629      4889c1         mov rcx, rax
+|      :|   0x0040162c      488d55e8       lea rdx, [local_18h]
+|      :|   0x00401630      488d45ee       lea rax, [local_12h]
+|      :|   0x00401634      48c744242000.  mov qword [local_20h], 0
+|      :|   0x0040163d      4989d1         mov r9, rdx
+|      :|   0x00401640      41b809000000   mov r8d, 9
+|      :|   0x00401646      4889c2         mov rdx, rax
+|      :|   0x00401649      488b05646c00.  mov rax, qword sym.imp.KERNEL32.dll_ReadFile ; [0x4082b4:8]=0x7ffa99f62410
+|      :|   0x00401650      ffd0           call rax
+|      :|   0x00401652      488d45ee       lea rax, [local_12h]
+|      :|   0x00401656      4889c1         mov rcx, rax
+|      :|   0x00401659      e8f2feffff     call sym.cryp
+|      :|   0x0040165e      8b45e8         mov eax, dword [local_18h]
+|      :|   0x00401661      f7d8           neg eax
+|      :|   0x00401663      41b801000000   mov r8d, 1
+|      :|   0x00401669      89c2           mov edx, eax
+|      :|   0x0040166b      8b4d10         mov ecx, dword [arg_10h]    ; r12 ; [0x10:4]=-1
+|      :|   0x0040166e      e835180000     call sym.LZSeek
+|      :|   0x00401673      8b45e8         mov eax, dword [local_18h]
+|      :|   0x00401676      89c2           mov edx, eax
+|      :|   0x00401678      8b4510         mov eax, dword [arg_10h]    ; r12 ; [0x10:4]=-1
+|      :|   0x0040167b      4898           cdqe
+|      :|   0x0040167d      4889c1         mov rcx, rax
+|      :|   0x00401680      488d45ee       lea rax, [local_12h]
+|      :|   0x00401684      48c744242000.  mov qword [local_20h], 0
+|      :|   0x0040168d      41b900000000   mov r9d, 0
+|      :|   0x00401693      4189d0         mov r8d, edx
+|      :|   0x00401696      4889c2         mov rdx, rax
+|      :|   0x00401699      488b05746c00.  mov rax, qword sym.imp.KERNEL32.dll_WriteFile ; [0x408314:8]=0x7ffa99f62500
+|      :|   0x004016a0      ffd0           call rax
+|      :|   0x004016a2      488d45ee       lea rax, [local_12h]
+|      :|   0x004016a6      4889c2         mov rdx, rax
+|      :|   0x004016a9      488d0d782900.  lea rcx, [0x00404028]       ; "%s"
+|      :|   0x004016b0      e873160000     call sym.printf             ; int printf(const char *format)
+|      :|   0x004016b5      8b45e8         mov eax, dword [local_18h]
+|      :|   0x004016b8      0145fc         add dword [local_4h], eax
+|      :|   ; CODE XREF from 0x00401608 (sym.doFile)
+|      :`-> 0x004016bb      8b45fc         mov eax, dword [local_4h]
+|      :    0x004016be      3b45f8         cmp eax, dword [local_8h]
+|      `==< 0x004016c1      0f8c46ffffff   jl 0x40160d
+|           0x004016c7      b90a000000     mov ecx, 0xa
+|           0x004016cc      e84f160000     call sym.putchar            ; int putchar(int c)
+|           0x004016d1      90             nop
+|           0x004016d2      4883c450       add rsp, 0x50               ; 'P'
+|           0x004016d6      5d             pop rbp
+\           0x004016d7      c3             ret
+[0x004015b9]>                                                                                                                                      
+```
+So as you should already know, what kind of structure do we have here? YES a WHILE
+
+
+```
+|           0x004015df      488b05866c00.  mov rax, qword sym.imp.KERNEL32.dll_GetFileSize ; [0x40826c:8]=0x7ffa99f622b0
+|           0x004015e6      ffd0           call rax
+|           0x004015e8      8945f8         mov dword [local_8h], eax
+
+|      :|   ; CODE XREF from 0x00401608 (sym.doFile)
+|      :`-> 0x004016bb      8b45fc         mov eax, dword [local_4h]
+|      :    0x004016be      3b45f8         cmp eax, dword [local_8h]
+|      `==< 0x004016c1      0f8c46ffffff   jl 0x40160d
+|           0x004016c7      b90a000000     mov ecx, 0xa
+```
+GetFileSize is called, size then stored inside local_8h and compared with local_4h we can easily guess that this loop actually goes through the file, reading N bytes chunk by chunk after it reaches the end by having read all of them.
+
+Let's focus now on the loop itself:
+
+```
+|      :|   0x00401629      4889c1         mov rcx, rax
+|      :|   0x0040162c      488d55e8       lea rdx, [local_18h]
+|      :|   0x00401630      488d45ee       lea rax, [local_12h]
+|      :|   0x00401634      48c744242000.  mov qword [local_20h], 0
+|      :|   0x0040163d      4989d1         mov r9, rdx
+|      :|   0x00401640      41b809000000   mov r8d, 9
+|      :|   0x00401646      4889c2         mov rdx, rax
+|      :|   0x00401649      488b05646c00.  mov rax, qword sym.imp.KERNEL32.dll_ReadFile ; [0x4082b4:8]=0x7ffa99f62410
+```
+The first thing that it does is reading from the file, how many bytes? 9 as we see, let's inspect those buffers after the read.
+
+```
+[0x00401652]> afvd
+arg arg_10h = 0x0061fb90  0x00000000000000ac   ........
+var local_4h = 0x0061fb7c  0x0061fc1000000000   ......a.
+var local_18h = 0x0061fb68  0x6f4e000000000009   ......No
+var local_8h = 0x0061fb78  0x00000000000000c7   ........
+var local_12h = 0x0061fb6e  0x6961676120726f4e   Nor agai ascii
+var local_20h = 0x0061fb50  0x0000000000000000   ........ rdx
+[0x00401652]> pxw @ 0x0061fb6e
+0x0061fb6e  0x20726f4e 0x69616761 0x00c7006e 0x00000000  Nor again.......
+0x0061fb7e  0xfc100000 0x00000061 0x17fe0000 0x00000040  ....a.......@...
+```
+Thats it, 9 bytes being read, content dumpted to 0x0061fb6e, then it goes to the cryp function.
+
+```
+[0x00401550]> pdf
+/ (fcn) sym.cryp 105
+|   sym.cryp (int arg_10h);
+|           ; var int local_eh @ rbp-0xe
+|           ; var int local_6h @ rbp-0x6
+|           ; var int local_4h @ rbp-0x4
+|           ; arg int arg_10h @ rbp+0x10
+|           ; CALL XREF from 0x00401659 (sym.doFile)
+|           0x00401550      55             push rbp
+|           0x00401551      4889e5         mov rbp, rsp
+|           0x00401554      4883ec10       sub rsp, 0x10
+|           0x00401558      48894d10       mov qword [arg_10h], rcx    ; r12 ; [0x10:8]=-1
+|           0x0040155c      48b830313233.  movabs rax, 0x3736353433323130
+|           0x00401566      488945f2       mov qword [local_eh], rax
+|           0x0040156a      66c745fa3839   mov word [local_6h], 0x3938
+|           0x00401570      c745fc000000.  mov dword [local_4h], 0
+|       ,=< 0x00401577      eb31           jmp 0x4015aa
+|       |   ; CODE XREF from 0x004015b0 (sym.cryp)
+|      .--> 0x00401579      8b45fc         mov eax, dword [local_4h]
+|      :|   0x0040157c      4898           cdqe
+|      :|   0x0040157e      488b5510       mov rdx, qword [arg_10h]    ; r12 ; [0x10:8]=-1
+|      :|   0x00401582      4801d0         add rax, rdx                ; '('
+|      :|   0x00401585      440fb600       movzx r8d, byte [rax]
+|      :|   0x00401589      8b45fc         mov eax, dword [local_4h]
+|      :|   0x0040158c      4898           cdqe
+|      :|   0x0040158e      0fb64c05f2     movzx ecx, byte [rbp + rax - 0xe]
+|      :|   0x00401593      8b45fc         mov eax, dword [local_4h]
+|      :|   0x00401596      4898           cdqe
+|      :|   0x00401598      488b5510       mov rdx, qword [arg_10h]    ; r12 ; [0x10:8]=-1
+|      :|   0x0040159c      4801d0         add rax, rdx                ; '('
+|      :|   0x0040159f      4489c2         mov edx, r8d
+|      :|   0x004015a2      31ca           xor edx, ecx
+|      :|   0x004015a4      8810           mov byte [rax], dl
+|      :|   0x004015a6      8345fc01       add dword [local_4h], 1
+|      :|   ; CODE XREF from 0x00401577 (sym.cryp)
+|      :`-> 0x004015aa      8b45fc         mov eax, dword [local_4h]
+|      :    0x004015ad      83f807         cmp eax, 7                  ; 7
+|      `==< 0x004015b0      76c7           jbe 0x401579
+|           0x004015b2      90             nop
+|           0x004015b3      4883c410       add rsp, 0x10
+|           0x004015b7      5d             pop rbp
+\           0x004015b8      c3             ret
+[0x00401550]>                                                                                                                                         
+```
+Again, another for/while style loop. We can use the common sense here, function is labeled cryp, byte array (buffer) is sent, the XOR instruction is present there. Nothing much more to see...We can  guess that the buffer will be xored with something, and what about that something?
+
+Well, we see a movabs -> 
+
+```
+|           0x00401558      48894d10       mov qword [arg_10h], rcx    ; r12 ; [0x10:8]=-1
+|           0x0040155c      48b830313233.  movabs rax, 0x3736353433323130
+|           0x00401566      488945f2       mov qword [local_eh], rax
+|           0x0040156a b    66c745fa3839   mov word [local_6h], 0x3938
+|           0x00401570      c745fc000000.  mov dword [local_4h], 0
+|       ,=< 0x00401577      eb31           jmp 0x4015aa
+|       |   ; CODE XREF from 0x004015b0 (sym.cryp)
+
+[0x00401550]> dc
+hit breakpoint at: 40156a
+[0x00401550]> afvd
+arg arg_10h = 0x0061fb30  0x000000000061fb6e   n.a..... (PRIVATE  ) rcx R W 0x6961676120726f4e (Nor again) -->  ascii
+var local_eh = 0x0061fb12  0x3736353433323130   01234567 rax ascii sequence
+var local_6h = 0x0061fb1a  0xfb8000000000001a   ........
+var local_4h = 0x0061fb1c  0x0061fb8000000000   ......a.
+[0x00401550]> pxw @ 0x0061fb12
+0x0061fb12  0x33323130 0x37363534 0x0000001a 0xfb800000  01234567........
+0x0061fb22  0x00000061 0x165e0000 0x00000040 0xfb6e0000  a.....^.@.....n.
+```
+We can assume a 0-7 ascii char array that will be used for a byte-by-byte xor here.
+```
+[0x0040165e]> pxw @ 0x0061fb6e
+0x0061fb6e  0x13405e7e 0x5e575255 0x00c7006e 0x00000000  ~^@.URW^n.......
+0x0061fb7e  0xfc100000 0x00000061 0x17fe0000 0x00000040  ....a.......@...
+```
+After the call that was the result.
+
+
+
+They key thing is that LZSEEK is being used to move backwards for writting that content.
+
+I will stop here for this tutorial. I suggest you to review those examples by building them and maybe automating some stuff with r2pipe.
+
+On the next tutorial we'll talk about sockets!
+
+
+
+
+Why is important to learn about the windows api? https://www.quora.com/Is-Win32-API-still-used
