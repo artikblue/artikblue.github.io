@@ -154,22 +154,22 @@ The actions carried out by the “Anonymous” collective did not go unnoticed a
 **To be updated.
 
 
-[0] https://www.cs.utah.edu/~elb/folklore/afs-paper/node3.html
-[1] unknown(LoD), 1990)
-[3] (Jenny Preece, 2003)
-[4] TheMentor, 1986
-[5] (Lunceford, 2009)
-[6] (Granger, 1994)
-[7] (von Busch, 2006)  
-[8] Tom Postmes, 2002 )
-[9] (Michael Scott Bernstein, 2011)
-[10] (McDonald, 2015)
-[11] (Tom Postmes, 2002 ) 
-[12] (Tom Postmes, 2002 ) 
-[13] (Underwood, 2009)
+- [0] https://www.cs.utah.edu/~elb/folklore/afs-paper/node3.html
+- [1] unknown(LoD). (1990). The History of The Legion Of Doom. Obtenido de phrack.org: http://phrack.org/issues/31/5.html
+- [3] Jenny Preece, D. M.-K. (2003). History of online communities . Thousand Oaks: Sage Publications, 1023-1027.
+- [4] TheMentor. (1986). The hacker manifesto . Obtenido de phrack.org: http://phrack.org/issues/7/3.html
+- [5] Lunceford, B. (2009). Building Hacker Collective Identity One Text Phile at a Time: Reading Phrack. Media History Monographs, University of South Alabama, 11:2.
+- [6] Granger, S. (1994). THE HACKER ETHIC. Proceedings of the conference on Ethics in the computer age, 7-9.
+- [7] von Busch, O. a. (2006). The Making of a Hacker Culture.Abstract Hacktivism: The Making of a Hacker Culture. Open Mute.
+- [8] Tom Postmes, S. B. (2002 ). Collective Action in the Age of the Internet: Mass Communication and Online Mobilization. Social Science Computer Review, 20, 290–301.
+- [9] Michael Scott Bernstein, A. M.-H. (2011). 4chan and /b/: An Analysis of Anonymity and Ephemerality in a Large Online Community. Proceedings of the Fifth International AAAI Conference on Weblogs and Social Media.
+- [10] McDonald, K. (2015). From Indymedia to Anonymous: rethinking action and identity in digital cultures. Information, Communication and Society, 968-982 .
+- [11] Tom Postmes, S. B. (2002 ). Collective Action in the Age of the Internet: Mass Communication and Online Mobilization. Social Science Computer Review, 20, 290–301.
+- [12] McArthur, J. (2008 ). Digital Subculture: A Geek Meaning of Style. Journal of Communication Inquiry,, 58–70.
+- [13] Underwood, P. C. (2009). New Directions in Networked Activism and Online Social Movement Mobilization: The Case of Anonymous and Project Chanology. https://etd.ohiolink.edu/.
 [14] (Mejíacitar, 2012)
-[15] Milan
-[16] Beyer, 2014
-[17] (AHN, 2003
-[18] David A. Snow, 1986
-[19] Snow, 1988
+- [15] Milan, S. (s.f.). WikiLeaks, Anonymous, and the Exercise of Individuality: Protesting in the Cloud. En S. Milan, Beyond WikiLeaks (págs. 191-208). Springer.
+- [16] Beyer, J. L. (2014). The Emergence of a Freedom of Information Movement: Anonymous, WikiLeaks, the Pirate Party, and Iceland. Journal of Computer-Mediated Communication, Volume 19, 141–154.
+- [17] (AHN, 2003
+- [18] Snow, D. (1988 ). Ideology, Frame Resonance and Participant Mobilization. International social movement research, 197-217.
+- [19] David A. Snow, E. B. (1986). Frame Alignment Processes, Micromobilization, and Movement Participation. American Sociological Review, 464-481.
