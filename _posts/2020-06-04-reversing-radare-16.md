@@ -21,7 +21,7 @@ So in this following example I wrote a very simple program that will retrieve a 
 _I need to say that I do not encourage you to write ransomware or any kind of malware, you may face legal consequences if you do it_
 
 Here's the code:
-```
+```C
 #include <stdio.h>
 #include <stdlib.h>
 #include <netdb.h>
@@ -450,7 +450,7 @@ Let's now move into a new topic that I think may be of great interest.
 This post is not about shellcode writting, we'll go over that after some tutorials though. In here we'll just introduce you to a new concept linked to the socket topic whe are dealing wiht.
 
 Let's start with this very simple program:
-```
+```c
 #include <stdio.h>
 
 void hello(){
