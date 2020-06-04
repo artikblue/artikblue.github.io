@@ -109,7 +109,8 @@ int main(int argc, char *argv[]) {
    crypFile("sample.txt",key);
    return 0;
 }
-</pre>
+</code></pre>
+
 As you see the algorithm is simple, first we ask the remote server for the key, then the server will return a response containing data related to the status of the request like http headers and such, then the body will contain the k tagged key, so we'll need to parse it, getKey will extract the key and tne crypFile will use it to xor the file in chunks of key size.
 
 We start with the main function as usual:
