@@ -12,6 +12,8 @@ comments: false
 
 <h4>About the author</h4>
 
+<img src="https://artik.blue/assets/images/avatar2.png">
+
 <p>Human interested in many fields that include: electronics, software engineering, hacking, art and political philosophy. </p>
 
 </div>
