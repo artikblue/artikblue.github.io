@@ -36,4 +36,5 @@ comments: false
   <li><a href="https://artik.blue/reversing-radare-13">Reverse engineering x64 binaries with Radare2 - 13 (linux systems programming: theory, syscalls, files and ESIL)</a></li>
   <li><a href="https://artik.blue/reversing-radare-14">Reverse engineering x64 binaries with Radare2 - 14 (the windows api: theory, helloworld and files)</a></li>
   <li><a href="https://artik.blue/reversing-radare-15">Reverse engineering x64 binaries with Radare2 - 15 - I (unix sockets fundamentals)</a></li>
+  <li><a href="https://artik.blue/reversing-radare-16">Reverse engineering x64 binaries with Radare2 - 15 - II (more sockets, http emulation, radasm, ragg and shellcode)</a></li>
 </ul>
