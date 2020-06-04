@@ -21,7 +21,8 @@ So in this following example I wrote a very simple program that will retrieve a 
 _I need to say that I do not encourage you to write ransomware or any kind of malware, you may face legal consequences if you do it_
 
 Here's the code:
-```c
+{% highlight c %}
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <netdb.h>
@@ -109,7 +110,8 @@ int main(int argc, char *argv[]) {
    crypFile("sample.txt",key);
    return 0;
 }
-```
+{% endhighlight %}
+
 
 As you see the algorithm is simple, first we ask the remote server for the key, then the server will return a response containing data related to the status of the request like http headers and such, then the body will contain the k tagged key, so we'll need to parse it, getKey will extract the key and tne crypFile will use it to xor the file in chunks of key size.
 
