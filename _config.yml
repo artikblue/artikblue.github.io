@@ -1,14 +1,14 @@
 # Site setings
 name: 'Artik blue'
-title: 'Artik labs'
-description: 'Hacking, electronics and data'
-meta_description: 'Hacking, electronics and data.'
+title: 'Artik blue's digital thoughts'
+description: 'Alternate use of modern technology also known as hacking.'
+meta_description: 'Alternate use of modern technology also known as hacking.'
 #logo: 'assets/images/logo.png'
 logo: 'assets/images/logo.png'
 favicon: 'assets/images/favicon.ico'
 baseurl: /
 production_url: https://artik.blue/
-disqus: 'arrtikblue'
+disqus: 'artikblue'
 cover_image: bc_1.jpg
 # Add your GA Tracking Id
 ga_analytics: ''
@@ -66,6 +66,7 @@ permalink: /:title
 
 # Other
 markdown: kramdown
+highlighter: rouge
 
 # Sass
 sass:
