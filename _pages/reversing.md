@@ -37,5 +37,5 @@ comments: false
   <li><a href="https://artik.blue/reversing-radare-14">Reverse engineering x64 binaries with Radare2 - 14 (the windows api: theory, helloworld and files)</a></li>
   <li><a href="https://artik.blue/reversing-radare-15">Reverse engineering x64 binaries with Radare2 - 15 - I (unix sockets fundamentals)</a></li>
   <li><a href="https://artik.blue/reversing-radare-16">Reverse engineering x64 binaries with Radare2 - 15 - II (more sockets, http emulation, radasm, ragg and shellcode)</a></li>
-  <li><a href="https://artik.blue/reversing-radare-16">Reverse engineering x64 binaries with Radare2 - 16 (winsock, udp C&C and file exfiltration through DNS)</a></li>
+  <li><a href="https://artik.blue/reversing-radare-17">Reverse engineering x64 binaries with Radare2 - 16 (winsock, udp C&C and file exfiltration through DNS)</a></li>
 </ul>
