@@ -331,7 +331,8 @@ The disasm, as usual:
 ```
 We can start breaking it down here:
 
-```|           0x561f897ed4ce      488b45f8       mov rax, qword [local_8h]
+```
+|           0x561f897ed4ce      488b45f8       mov rax, qword [local_8h]
 |           0x561f897ed4d2      4889c7         mov rdi, rax
 |           0x561f897ed4d5      e84bffffff     call sym.configure_context
 |           0x561f897ed4da      bf5b110000     mov edi, 0x115b
