@@ -119,7 +119,7 @@ scanf("%[^\n]",text);
 Will allow spaces to be registered. Consider the following link https://www.includehelp.com/c/c-program-to-read-string-with-spaces-using-scanf-function.aspx if you want to go deeper on the topic. For now its ok to know that scanf reads from input based on a specifier, the same way printf outputs content.
 
 #### Puts and gets
-Other methods for receiving strings from the input or printing them out are gets and puts. Gets eeads characters from the standard input and stores them as a string and prints characters from the standard output. Both act in a similar way as printf and scanf, the main difference here is that there is no specification on the format. The main difference here comes from the format (https://www.geeksforgeeks.org/difference-between-scanf-and-gets-in-c/) as, for example, by default gets won't stop if it encounters a whitespace. Same thing with puts, puts will just dump the contents of the char array interpreting it as a string.
+Other methods for receiving strings from the input or printing them out are gets and puts. Gets reads characters from the standard input and stores them as a string and prints characters from the standard output. Both act in a similar way as printf and scanf, the main difference here is that there is no specification on the format. The main difference here comes from the format (https://www.geeksforgeeks.org/difference-between-scanf-and-gets-in-c/) as, for example, by default gets won't stop if it encounters a whitespace. Same thing with puts, puts will just dump the contents of the char array interpreting it as a string.
 
 Let's inspect the following code:
 ```C
