@@ -3,7 +3,7 @@ layout: post
 title:  "Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows"
 tags: [reversing, c, radare]
 featured_image_thumbnail: assets/images/radare2/radare2_20.png
-featured_image: assets/images/radare2/radare2_19.png
+featured_image: assets/images/radare2/radare2_20.png
 ---
 
 
@@ -736,11 +736,11 @@ void main()
   ret();
 
 ```
+
+```
 from struct import pack
 import socket
 import sys
-
-
 
 
 rip = 0x7fffffffdba8
