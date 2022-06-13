@@ -40,4 +40,6 @@ comments: false
   <li><a href="https://artik.blue/reversing-radare-17">Reverse engineering x64 binaries with Radare2 - 16 (winsock, udp C&C and file exfiltration through DNS)</a></li>
   <li><a href="https://artik.blue/reversing-radare-18">Reverse engineering x64 binaries with Radare2 - 17 (More Winsock, Bind and reverse shells)</a></li>
   <li><a href="https://artik.blue/reversing-radare-19">Reverse engineering x64 binaries with Radare2 - 18 (unix encrypted bind shells over TLS)</a></li>
+  <li><a href="https://artik.blue/reversing-radare-20">Reverse engineering x64 binaries with Radare2 - 19 (Exploiting basic Buffer Overflows)</a></li>
+
 </ul>
