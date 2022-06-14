@@ -129,7 +129,7 @@ The program is simple it calls greet_me() and then we write whatever string to a
 
 So we will run the program, it will ask for some string but... how do we pass it into the radare2 debugger? We can use rarun2 for that. First we create a script such as the following:
 
-``` 
+ 
 ```
 #!/usr/bin/rarun2
 stdio=/dev/pts/1
