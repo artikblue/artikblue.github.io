@@ -45,3 +45,6 @@ comments: false
   <li><a href="https://artik.blue/reversing-radare-22">Reverse engineering x64 binaries with Radare2 - 21 (Enabling code execution on stack)</a></li>
 
 </ul>
+<hr />
+<h3>Malware analysis</h3>
+<hr />
