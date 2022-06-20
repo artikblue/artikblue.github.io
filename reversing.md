@@ -5,6 +5,7 @@ permalink: /reversing
 comments: false
 ---
 
+
 <div class="row justify-content-between">
 <div class="col-md-8 pr-5">
 <p>Some notes on reverse engineering on various architectures, mostly using free software such as the radare2 framework, gdb, frida, x64dbg among others</p>
