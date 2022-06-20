@@ -1,0 +1,23 @@
+<!-- begin footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12 col-m-12">
+        <div class="footer__inner">
+
+          <div class="footer__head">
+            <div class="row">
+              {% include footer-widgets/widget-recent-posts.html %}
+              {% include footer-widgets/widget-gallery.html %}
+              {% include footer-widgets/widget-subscribe.html %}
+            </div>
+          </div>
+        </div>
+
+        {% include social-link.html %}
+        <div class="copyright">{{site.time | date: '%Y'}} &copy; <a href="/">{{site.title}}</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- end footer -->

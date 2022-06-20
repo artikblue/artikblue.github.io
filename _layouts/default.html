@@ -1,95 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+{% include head.html %}
 
-    {% if site.plugins_dir contains 'jekyll-seo-tag' %}
-        {% include head-seo.html %}
-    {% else %}
-        <title>{% if page.title %}{{ page.title | escape }}{% else %}{{ site.name | escape }}{% endif %}</title>
-        <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 | escape }}">
-        <link rel="canonical" href="{{ page.url | replace:'index.html', '' | absolute_url }}">
-    {% endif %}
+<body class="{% if site.blog-theme == 'light' %}light{% elsif site.blog-theme == 'dark' %}dark{% else %}light{% endif %}">
 
-    <!-- Site Favicon -->
-    <link rel="shortcut icon" href="{{ site.url }}/{{ site.baseurl }}{{ site.favicon }}" type="image/png" />
+  {% if site.google-analytics %}
+    {% include google-analytics.html %}
+  {% endif %}
 
-    <!-- Font Embed Code -->
-    <link href="https://fonts.googleapis.com/css?family=Karla:400,400i,700,700i" rel="stylesheet" />
-
-    <!-- CSS Styles -->
-    <link href="{{ site.baseurl }}/assets/css/style.css" rel="stylesheet">
-    <link href="{{ site.baseurl }}/assets/css/light.css" rel="stylesheet">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/styles/default.min.css">
-    
-
-</head>
-
-{% capture layout %}{% if page.layout %}layout-{{ page.layout }}{% endif %}{% endcapture %}
-
-<body class="{{ layout }}">
-    <div id="page" class="site">
-
-        {% if page.url == "/" %}
-
-        <div class="hero-wrap">
-            {% if site.cover_image %}
-            <div class="hero-wrap-bg" style="background-image: url({{ site.baseurl }}/assets/images/{{ site.cover_image }})"></div>
-            {% endif %}
-            {% include header.html %}
-            <section class="hero outer fadeInDown delay_075s">
-                <div class="inner">
-                    {% include author.html %}
-                </div><!-- .inner -->
-            </section><!-- .hero -->
-        </div><!-- .hero-wrap -->
-
-        {% else %}
-        {% include header.html %}
-        {% endif %}
-
+    {% include header.html %}
+    <!-- begin content -->
+    <main class="content" aria-label="Content">
+      <!-- begin wrapper-page -->
+      <div class="wrapper-page">
         {{ content }}
+      </div>
+      <!-- end wrapper-page -->
+    </main>
+    <!-- end content -->
+    <div class="top" title="Top"><i class="ion ion-ios-arrow-round-up"></i></div>
+    {% include footer.html %}
 
-        {% if paginator.total_posts > site.paginate %}
-        {% if page.class == 'tag-template' %}
-        {% include tag-pagination.html %}
-        {% endif %}
-        {% endif %}
-
-        {% if site.mailchimp_url and page.class == 'tag-template' %}
-        {% include newsletter-box.html %}
-        {% endif %}
-
-        <footer id="colophon" class="site-footer outer">
-            <div class="site-footer-inside">
-                {% include social-links.html %}
-                <p class="site-info">
-                    <a href="#">{{ site.name }}</a> &copy; {{ site.time | date: '%Y' }} . Horace theme by
-                    <a target="_blank" href="https://justgoodthemes.com/">JustGoodThemes</a>. <br />
-                    Powered by <a target="_blank" href="https://jekyllrb.com/">Jekyll</a>.
-                </p>
-                <p class="back-to-top">
-                    <a id="top-button" class="top-button" href="#page">
-                        <span class="icon-arrow-up" aria-hidden="true"></span>
-                        <span class="screen-reader-text">Back to top</span>
-                    </a>
-                </p>
-            </div><!-- .site-footer-inside -->
-        </footer><!-- .site-footer -->
-    </div><!-- .site -->
-    <div id="site-overlay" class="site-overlay"></div>
-    {% include sidebar.html %}
-    {% include analytics.html %}
-    <!-- Javascript Assets -->
-    <script src="{{ site.baseurl }}/assets/js/jquery-3.3.1.min.js"></script>
-    <script src="{{ site.baseurl }}/assets/js/plugins.js"></script>
-    <script src="{{ site.baseurl }}/assets/js/custom.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/highlight.min.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="{{ site.baseurl }}/js/scripts.js"></script>
 </body>
 
 </html>

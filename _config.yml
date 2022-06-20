@@ -1,74 +1,118 @@
-# Site setings
-name: 'Artik blue'
-title: 'Artik blue digital thoughts'
-description: 'Alternate use of modern technology also known as hacking.'
-meta_description: 'Alternate use of modern technology also known as hacking.'
-#logo: 'assets/images/logo.png'
-logo: 'assets/images/logo.png'
-favicon: 'assets/images/favicon.ico'
-baseurl: /
-production_url: https://artik.blue/
-disqus: 'artikblue'
-cover_image: bc_1.jpg
-# Add your GA Tracking Id
-ga_analytics: ''
+#-------------------------------
+# General Site Settings
+title: Artik Blue
+logo: # You can add own logo. For example '/images/logo.png'.
+description:  All things cyber
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "https://artik.blue" # the base hostname & protocol for your site, e.g. http://example.com
+blog-theme: dark # By default, Atega theme uses a 'light' color scheme, to change the color scheme to dark use 'dark' value (_includes/color-scheme)
 
 
-# Author
+#-------------------------------
+# Author Settings
 author:
-    name: Artikblue
-    image: avatar.png
-    display_name: Artikblue
-    gravatar: 76ead780a562cf43aaa438f46ad3fb93
-    email: artikblue@protonmail.com
-    web: artik.blue
-    twitter: https://twitter.com/artikblue
-    description: "Alternate use of modern technology also known as hacking."
-# Contact form setings
-email: artikblue@protonmail.com
-contact_page_description: "The alternate use of modern technologies, aka hacking."
-thankyou_page_description: "Thank you"
+  name: Artik BLue
+  image: '/images/front.jpeg'
 
-# Social links
-twitter: 'artikblue'
-#facebook: 'username'
-github: 'artikblue'
-#codepen: 'username'
-#dribbble: 'username'
-medium: '@artikblue'
-#instagram: 'username'
-#pinterest: 'username'
-#linkedin: 'krishnallamilli'
-#producthunt: '@username'
 
-# Navigation
-navigation:
-  - text: About
-    url: /about
-  - text: Reversing
-    url: /reversing
-#  - text: Contact Me
-#    url: /contact
+#-------------------------------
+# Hero Settings
+hero:
+  hero__title: Hi, I'm <span class="hero__name">Paul</span>.
+  hero__job: hacker
+  hero__description: Threat intelligence analyst, security enthusiast and non stop learner.
+  hero__button__text: Read about me
+  hero__button__link: '/about'
+  hero__image: '/images/front.jpeg'
 
-# Required Plugins
-plugins_dir:
-  - jekyll-paginate
-  - jekyll-tagsgenerator
-  - jekyll-seo-tag
-  - jekyll-sitemap
 
-# Pagination
-paginate: 6
-paginate_path: /page:num/
+#-------------------------------
+# Newsletter (_includes/footer-widgets/widget-subscribe.html)
+# mailchimp__title: Subscribe to new posts # Add your Title
+# mailchimp__text: Subscribe to our newsletter and we’ll send you the emails of latest posts. # Add your description.
+# mailchimp__identifier: # Add your MailChimp form identifier. For example - blogenjoyfreedom.us16.list-manage.com/subscribe/post?u=cd56155d76ddeeb4c0bc4d080&amp;id=7a526cd13e
+# mailchimp__button__text: Subscribe # Add your button text
 
-# Permalinks
-permalink: /:title
 
-# Other
+#-------------------------------
+# Contact Settings
+contact:
+  email: artikblue@protonmail.com # Add your email for contant form
+  description: If you are interested to talk, just shoot me a message
+
+# NOTE
+# Atega comes with a built-in contact form, that you can use with Formspree service to handle up to 50 submissions per month for free. You could also easily switch to another contact form service if you want.
+
+
+#-------------------------------
+# Social Links (Footer)
+# Example of adding a new link to the footer - {icon: "ion-logo-facebook", link: "https://facebook.com"}
+# Other icons can be found at https://ionicons.com/v4/
+social:
+- {icon: "ion-logo-twitter", link: "https://twitter.com/artikblue"}
+- {icon: "ion-logo-github", link: "https://github.com/artikblue"}
+# - {icon: "ion-logo-youtube", link: "https://youtube.com"}
+# - {icon: "ion-logo-pinterest", link: "https://pinterest.com"}
+# - {icon: "ion-logo-codepen", link: "https://codepen.io"}
+# - {icon: "ion-logo-vimeo", link: "https://vimeo.com/"}
+
+
+#-------------------------------
+# Comment Section (Disqus)
+disqus-identifier: artikblue # add your shortname for Disqus Comment. For example mr-brown
+
+
+#-------------------------------
+# Gallery Footer Section
+gallery:
+  title: Gallery
+  images:
+    - alt: 'Minimalism'
+      url: '/images/landscape1.jpg'
+    - alt: 'Minimalism'
+      url: '/images/sasha1.jpeg'
+    - alt: 'Minimalism'
+      url: '/images/castle1.jpg'
+    - alt: 'Minimalism'
+      url: '/images/scotland1.jpg'
+    - alt: 'Minimalism'
+      url: '/images/sanfran1.jpg'
+    - alt: 'Minimalism'
+      url: '/images/newyork1.jpg'
+
+
+#-------------------------------
+# Google Analytics
+google-analytics: # Add your identifier. For example UA-99631805-1.
+
+
+#-------------------------------
+# Build Settings
 markdown: kramdown
-highlighter: rouge
+permalink: /:title
+plugins:
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll/tagging
 
-# Sass
+paginate: 9
+paginate_path: "/page/:num"
+
+# Pages Path
+defaults:
+  - scope:
+      path: '_pages'
+    values:
+      permalink: /:basename:output_ext
+
+include:
+  - _pages
+
+# Tags
+tag_page_dir:         tag
+tag_page_layout:      tag_page
+tag_permalink_style:  /:title
+
 sass:
   sass_dir: _sass
   style: compressed

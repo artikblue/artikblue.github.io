@@ -1,0 +1,27 @@
+.tag {
+  padding: 70px 0;
+  margin-bottom: 70px;
+  text-align: center;
+  background: $background-color-alt;
+
+  .tag__meta {
+    font-size: 16px;
+    color: $text-color-alt;
+  }
+
+  .tag__title {
+    margin: 0;
+    font-size: 50px;
+  }
+
+
+  @media only screen and (max-width: $tablet) {
+    padding: 60px 0;
+    margin-bottom: 60px;
+  }
+
+  @media only screen and (max-width: $mobile) {
+    padding: 40px 0;
+    margin-bottom: 40px;
+  }
+}

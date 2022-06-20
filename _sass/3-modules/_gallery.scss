@@ -1,0 +1,46 @@
+/* Gallery */
+.gallery-box {
+  margin: 40px 0;
+
+  &.gallery-footer {
+    margin: 0;
+  }
+
+  em {
+    display: block;
+    margin-top: 15px;
+    font-size: 14px;
+    line-height: 22px;
+    font-style: normal;
+    font-weight: normal;
+    text-align: center;
+    color: $heading-font-color;
+
+    a {
+      border-bottom: 1px solid $heading-font-color;
+      &:hover {
+        color: $link-color-hover;
+        border-color: $brand-color;
+      }
+    }
+  }
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  justify-content: center;
+  align-content: center;
+  grid-gap: 10px;
+  .gallery__image {
+    background: $background-color;
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+    }
+  }
+
+}

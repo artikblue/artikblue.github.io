@@ -1,0 +1,63 @@
+<!-- begin hero -->
+{% if page.id %}
+  {% assign class = 'hero--post' %}
+{% elsif page.path contains '_pages' or page.url contains '404' %}
+  {% assign class = 'hero--page' %}
+{% else %}
+  {% assign class = 'hero--home' %}
+{% endif %}
+<section class="hero {{class}}">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="hero__inner">
+          <div class="hero__left">
+            {% if page.id %}
+
+            <div class="article__meta">
+              <span class="article__date"><time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date_to_string }}</time></span>
+              {% if page.tags.size >= 1 %}
+              <div class="article-tags__box">
+                {% for tag in page.tags %}
+                  <a href="{{ site.baseurl }}/tag/{{ tag }}" class="article__tag">{{ tag }}</a>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <h1 class="hero__title">{{ page.title }}</h1>
+            <a href="{{site.baseurl}}/about/" class="article__author-link"><span>By</span> {{site.author.name}}</a>
+
+            {% elsif page.path contains '_pages' or page.url contains '404' %}
+            <h1 class="hero__title">{{ page.title }}</h1>
+
+            {% else %}
+
+            <h1 class="hero__title">{{ site.hero.hero__title }}</h1>
+            <h2 class="hero__job">{{ site.hero.hero__job }}</h2>
+            <p class="hero__description">{{ site.hero.hero__description }}</p>
+            <a class="hero__button" href="{{ site.hero.hero__button__link | relative_url }}"><span class="button-arrow"><i class="ion ion-ios-arrow-forward"></i></span><span>{{ site.hero.hero__button__text }}</span></a>
+
+            {% endif %}
+          </div>
+
+          <div class="hero__right">
+
+            {% if page.id or page.path contains '_pages' %}
+            <div class="hero__image">
+              <img class="lazy" data-src="{{site.baseurl}}{{page.image}}" alt="{{ page.title }}">
+            </div>
+
+            {% else %}
+            <div class="hero__image">
+              <img class="lazy" data-src="{{ site.hero.hero__image }}" alt="{{site.author.name}}'s Picture">
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- end hero -->

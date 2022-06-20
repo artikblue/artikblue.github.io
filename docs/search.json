@@ -1,0 +1,13 @@
+[
+  
+    {
+      "title"    : "Selectors in Ember Page Object",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/selectors-in-ember-page-object'> <img src='/images//emberjs_daily.png' alt='Selectors in Ember Page Object'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/selectors-in-ember-page-object'>Selectors in Ember Page Object</a> </h2> <p class='article__excerpt'> Selectors in Ember Page Object
+Ember CLI Page Object is a fantastic addon. It’s an implementation of Page Object Pattern f... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Pavlo Osadchyi</a> <span class='article__date'><time datetime='2019-01-19T14:01:35-08:00'>19 Jan 2019</time></span>  <div class='article-tags__box'>  <a href='/tag/Ember.js' class='article__tag'>Ember.js</a>  <a href='/tag/Testing' class='article__tag'>Testing</a>  <a href='/tag/Patterns' class='article__tag'>Patterns</a>  <a href='/tag/JavaScript' class='article__tag'>JavaScript</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "Ember.js, Testing, Patterns, and JavaScript",
+      "url"      : "/selectors-in-ember-page-object",
+      "date"     : "2019-01-19 14:01:35 -0800"
+    } 
+  
+]

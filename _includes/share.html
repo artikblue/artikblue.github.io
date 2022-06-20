@@ -1,34 +1,20 @@
-<div class="share sticky-top sticky-top-offset">
-    <p>
-        Share
-    </p>
-    <ul>
-        <li class="ml-1 mr-1">
-            <a target="_blank" href="https://twitter.com/intent/tweet?text={{ page.title }}&url={{ page.url | absolute_url }}" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
-                <i class="fab fa-twitter"></i>
-            </a>
-        </li>
+<div class="post__share">
+  <ul class="share__list list-reset">
+    <li class="share__item">
+      <a class="share__link share__facebook" href="https://www.facebook.com/sharer/sharer.php?u={{ site.url }}{{ site.baseurl }}{{ page.url }}"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Facebook" rel="nofollow"><i class="ion ion-logo-facebook"></i></a>
+    </li>
 
-        <li class="ml-1 mr-1">
-            <a target="_blank" href="https://facebook.com/sharer.php?u={{ page.url | absolute_url }}" onclick="window.open(this.href, 'facebook-share', 'width=550,height=435');return false;">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-        </li>
+    <li class="share__item">
+      <a class="share__link share__twitter" href="https://twitter.com/intent/tweet?text={{ page.title | uri_escape }}&url={{ site.url }}{{ site.baseurl }}{{ page.url }}"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Twitter" rel="nofollow"><i class="ion ion-logo-twitter"></i></a>
+    </li>
 
-        <li class="ml-1 mr-1">
-            <a target="_blank" href="https://www.linkedin.com/shareArticle?mini=true&url={{ page.url | absolute_url }}" onclick="window.open(this.href, 'width=550,height=435');return false;">
-                <i class="fab fa-linkedin-in"></i>
-            </a>
-        </li>
-
-    </ul>
-    {% if page.comments != false %}
-    <div class="sep">
-    </div>
-    <ul>
-        <li>
-        <a class="small smoothscroll" href="#disqus_thread"></a>
-        </li>
-    </ul>
-    {% endif %}
+    <li class="share__item">
+      <a class="share__link share__linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url={{ site.url }}{{ site.baseurl }}{{ page.url }}&title={{ page.title | uri_escape }}&summary={{ page.description | uri_escape }}&source={{ site.title | uri_escape }}"
+      onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn" rel="nofollow"><i class="ion ion-logo-linkedin"></i></a>
+    </li>
+  </ul>
 </div>

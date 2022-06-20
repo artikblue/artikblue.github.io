@@ -1,0 +1,25 @@
+/* Scheme dark */
+$brand-color: #0070ff;
+$white: #fff;
+$dark: #131212;
+
+$background-color: #131212;
+$background-color-alt: #161d25;
+
+$text-color: #fff;
+$text-color-alt: #ccc;
+
+$heading-font-color: $text-color;
+
+$link-color: $text-color;
+$link-color-hover: $text-color;
+
+$button-color: $text-color;
+$button-background-color: $brand-color;
+$button-background-hover: darken($brand-color, 5%);
+
+$border-color: #131212;
+
+$hr-color: #000;
+
+$syntax-highlighting-background: $background-color-alt;

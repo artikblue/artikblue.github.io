@@ -1,20 +1,52 @@
-<header id="masthead" class="site-header outer">
-    <div class="site-header-inside">
-        <div class="site-branding">
-            {% if site.logo != null %}
-                <p class="site-logo"><a href="{{ site.baseurl }}/" rel="home"><img src="{{ site.baseurl }}/{{ site.logo }}" alt="{{ site.name }}" /></a></p>
-                <h1 class="site-title screen-reader-text"><a href="{{ site.baseurl }}" rel="home">{{site.title}}</a></h1>
-            {% else %}
-                <h1 class="site-title"><a href="{{ site.baseurl }}/" rel="home">{{site.name}}</a></h1>
-            {% endif %}
-        </div><!-- .site-branding -->
-        <nav id="main-navigation" class="site-navigation" aria-label="Primary Navigation">
-            <ul class="menu">
-            {% for link in site.navigation %}
-                <li class="menu-item"><a href="{{ link.url }}">{{ link.text }}</a></li>
-            {% endfor %}
+<!-- begin header -->
+<header class="header">
+  <div class="container">
+    <div class="row">
+      <div class="header__inner col col-12">
+
+        <div class="logo">
+          <a class="logo__link" href="{{ site.baseurl }}/">
+          {%if site.logo %}
+            <img class="logo__image" src="{{ site.baseurl }}{{ site.logo }}" alt="{{ site.title }}">
+          {% else %}
+            {{ site.title }}
+          {% endif %}
+          </a>
+        </div>
+
+        <nav class="main-nav">
+          <div class="main-nav__box">
+            <div class="nav__icon-close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <div class="nav__title">Menu</div>
+            <ul class="nav__list list-reset">
+              <li class="nav__item">
+                <a href="{{ site.baseurl }}/" class="nav__link">Home</a>
+              </li>
+              {% for page in site.pages %}
+                {% unless page.name == 'tags.html' or page.name == '404.html' %}
+                  {% if page.title %}
+                  <li class="nav__item">
+                    <a href="{{ page.url | prepend: site.baseurl }}" class="nav__link">{{ page.title }}</a>
+                  </li>
+                  {% endif %}
+                {% endunless %}
+              {% endfor %}
             </ul>
-            <button id="sidebar-show" class="sidebar-toggle"><span class="screen-reader-text">Open Sidebar</span><span class="icon-more" aria-hidden="true"></span></button>
-        </nav><!-- .site-navigation -->
-    </div><!-- .site-header-inside -->
-</header><!-- .site-header -->
+          </div>
+        </nav>
+
+        <div class="nav-buttons">
+          <i class="nav__icon nav__icon-menu ion ion-md-menu"></i>
+          <i class="nav__icon nav__icon-search ion ion-md-search"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="header__overlay"></div>
+</header>
+<!-- end header -->
+
+{% include search.html %}

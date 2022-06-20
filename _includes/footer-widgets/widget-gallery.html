@@ -1,0 +1,18 @@
+<div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-gallery">
+    <div class="widget__head">
+      <h3 class="widget__title">{{ site.gallery.title }}</h3>
+    </div>
+    {% if site.gallery %}
+    <div class="gallery-box gallery-footer">
+      <div class="gallery">
+        {% for image in site.gallery.images %}
+        <div class="gallery__image">
+          <img class="lazy" data-src="{{site.baseurl}}{{image.url}}" alt="{{image.alt}}">
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>

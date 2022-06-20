@@ -1,34 +1,23 @@
 ---
 layout: default
-title: Home
 ---
 
-{% if page.url == "/" %}
-<!-- Featured-->
-<div class="featured-posts outer">
-    {% for post in site.posts %}
-        {% if post.featured == true %}
-            {% include featuredbox.html %}
-        {% endif %}
-    {% endfor %}
-</div>
-{% endif %}
-<!-- Posts Index -->
-<div class="outer">
-    {% if page.url == "/" %}
-    <div class="post-feed-title inner">Latest Articles</div>
-    {% endif %}
-    <div class="post-feed inner-wide">
-        {% for post in paginator.posts %}
-            {% include postbox.html %}
-        {% endfor %}
+{% include hero.html %}
+
+<div class="container">
+  <div class="row">
+    <div class="col col-12">
+      <div class="contaniner__inner animate">
+        <div class="row">
+          {% if site.posts.size > 0 %}
+            {% for post in paginator.posts %}
+              {% include article-content.html %}
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
     </div>
+  </div>
 </div>
-<!-- Pagination-->
+
 {% include pagination.html %}
-{% if site.mailchimp_url %}
-    {% include newsletter-box.html %}
-{% endif %}
-
-
-

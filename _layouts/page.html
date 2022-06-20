@@ -2,21 +2,16 @@
 layout: default
 ---
 
-<div id="content" class="site-content fadeInDown delay_075s">
-    <main id="main" class="site-main outer">
-        <article class="post-full inner">
-            <header class="post-header">
-                <h1 class="post-title">{{ page.title }}</h1>
-            </header><!-- .post-header -->
-            {% if page.featured_image %}
-            <div class="post-thumbnail"><img src="{{ site.baseurl }}{{ page.featured_image }}" alt="{% if page.featured_image_alt %}{{ page.featured_image_alt }}{% else %}{{ page.title }}{% endif %}" /></div>
-            {% endif %}
-            <div class="post-content">
-                {{content}}
-            </div>
-        </article>
-        {% if site.mailchimp_url %}
-        {% include newsletter-box.html %}
-        {% endif %}
-    </main>
+{% include hero.html %}
+
+<!-- begin page -->
+<div class="container">
+  <article class="page animate">
+
+    <div class="page__content">
+      {{ content }}
+    </div>
+
+  </article>
 </div>
+<!-- end page -->

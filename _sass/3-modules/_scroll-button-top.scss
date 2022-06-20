@@ -1,0 +1,36 @@
+.top {
+  position: fixed;
+  bottom: 40px;
+  right: -100px;
+  z-index: 1;
+  width: 28px;
+  height: 40px;
+  font-size: 28px;
+  line-height: 40px;
+  text-align: center;
+  border-radius: 6px;
+  background-color: $background-color-alt;
+  color: $text-color;
+  cursor: pointer;
+  transition: all .25s ease;
+  box-shadow: 0px 0px 20px rgba(0,0,0,0.05);
+
+  &:hover {
+    color: $white;
+    background-color: $brand-color;
+  }
+
+  &.is-active {
+    right: 40px;
+  }
+}
+
+@media only screen and (max-width: $tablet) {
+  .top {
+    bottom: 25px;
+
+    &.is-active {
+      right: 30px;
+    }
+  }
+}
