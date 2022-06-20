@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 11 (more pointers and dynamic structs)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_10.png
-featured_image: assets/images/radare2/radare2_10.png
+title:  Reverse engineering 32 and 64 bits binaries with Radare2 - 11 (more pointers and dynamic structs)
+tags: reversing c radare
+image: '/images//radare2/radare2_10.png'
+date: 2020-05-07 15:01:35 -0700
 ---
 As pointers and dynamic memory in general are a very relevant topics that play a criticcal role in modern programs they deserve more than one post. If you wanna get into vuln research or exploit writting having a perfect understanding of how memory is managed in modern software is a must, if you are up to get into security research or reverse engineering, the ability to interpret what the program is doing (/ what a cpu is doing) at a given time on a given context is fundamental.
 

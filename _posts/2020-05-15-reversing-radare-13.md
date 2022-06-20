@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering x64 binaries with Radare2 - 14 - I (linux systems programming: theory, syscalls, files and ESIL)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_14.png
-featured_image: assets/images/radare2/radare2_14.png
+title:  Reverse engineering x64 binaries with Radare2 - 14 - I (linux systems programming; theory, syscalls, files and ESIL)
+tags: reversing c radare
+image: '/images//radare2/radare2_14.png'
+date: 2020-05-15 15:01:35 -0700
 ---
 
 What's up family, today we are going one step further in reversing. From our fist reversing tutorial untill now, we saw the very basics of reverse engineering, particularly reverse engineering focused on x86-64 bits linux binaries written in C. Eventhough our main target were c written binaries for linux the techniques and tricks we went through are pretty common and can be used let's say when reversing 32 bits windows C++ binaries for example (at the end we were only dealing with libraries such as stdio and strings that are common in both Win/Linux). On the other hand we've been using radare2, same thing, the knowledge we got can be applied when doing reversing with other tools such as ghidra, IDA, binaryninja, etc. 

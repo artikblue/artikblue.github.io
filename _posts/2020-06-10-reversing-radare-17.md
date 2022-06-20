@@ -1,9 +1,9 @@
 ---
 layout: post
 title:  "Reverse engineering x64 binaries with Radare2 - 17 (winsock, udp C&C and file exfiltration through DNS)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_17.png
-featured_image: assets/images/radare2/radare2_17.png
+tags: eversing c radare
+image: '/images//radare2/radare2_17.png'
+date: 2020-06-10 15:01:35 -0700
 ---
 
 Buckle up kids cause this post is going to be _LONG_. 

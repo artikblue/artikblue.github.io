@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Embedded systems programming with atmel328 - 6"
-tags: [arduino, atmel, processing, relay]
-featured_image_thumbnail: assets/images/arduino/keypad.jpg
-featured_image: assets/images/arduino/keypad.jpg
+title:  Embedded systems programming with atmel328 - 6
+tags: arduino atmel processing relay
+image: '/images//arduino/keypad.jpg'
+date: 2020-01-25 15:01:35 -0700
 ---
 
 

@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 12 (linked lists, enums, bitwise operations and r2pipe)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_12.png
-featured_image: assets/images/radare2/radare2_12.png
+title:  Reverse engineering 32 and 64 bits binaries with Radare2 - 12 (linked lists, enums, bitwise operations and r2pipe)
+tags: reversing c radare
+image: '/images//radare2/radare2_12.png'
+date: 2020-05-11 15:01:35 -0700
 ---
 Hello everybody!
 

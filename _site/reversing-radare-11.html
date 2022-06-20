@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Reverse engineering 32 and 64 bits binaries with Radare2 - 12 (linked lists, enums, bitwise operations and r2pipe)</title>
+  <meta name='description' content='All things cyber'>
+
+  <link rel="canonical" href="http://localhost:4000/reversing-radare-11">
+  <link rel="alternate" type="application/rss+xml" title="Artik Blue" href="/feed.xml">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Ionicons -->
+  <link href="https://unpkg.com/ionicons@4.2.2/dist/css/ionicons.min.css" rel="stylesheet">
+
+  <style>
+  
+      /*!------------------------------------------------------------------
+[MAIN STYLESHEET]
+-------------------------------------------------------------------*/.list-reset{list-style-type:none;margin:0;padding:0}.clearfix::after,.clearfix ::before{content:"";display:table;clear:both}.screen-reader-text{clip:rect(1px, 1px, 1px, 1px);height:1px;overflow:hidden;position:absolute !important;width:1px;word-wrap:normal !important}/*! normalize.css v8.0.0 | MIT License | github.com/necolas/normalize.css */html{line-height:1.15;-webkit-text-size-adjust:100%}body{margin:0}h1{font-size:2em;margin:0.67em 0}hr{box-sizing:content-box;height:0;overflow:visible}pre{font-family:monospace, monospace;font-size:1em}a{background-color:transparent}abbr[title]{border-bottom:none;text-decoration:underline;text-decoration:underline dotted}b,strong{font-weight:bolder}code,kbd,samp{font-family:monospace, monospace;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-0.25em}sup{top:-0.5em}img{border-style:none}button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;line-height:1.15;margin:0}button,input{overflow:visible}button,select{text-transform:none}button,[type="button"],[type="reset"],[type="submit"]{-webkit-appearance:button}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner{border-style:none;padding:0}button:-moz-focusring,[type="button"]:-moz-focusring,[type="reset"]:-moz-focusring,[type="submit"]:-moz-focusring{outline:1px dotted ButtonText}fieldset{padding:0.35em 0.75em 0.625em}legend{box-sizing:border-box;color:inherit;display:table;max-width:100%;padding:0;white-space:normal}progress{vertical-align:baseline}textarea{overflow:auto}[type="checkbox"],[type="radio"]{box-sizing:border-box;padding:0}[type="number"]::-webkit-inner-spin-button,[type="number"]::-webkit-outer-spin-button{height:auto}[type="search"]{-webkit-appearance:textfield;outline-offset:-2px}[type="search"]::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}details{display:block}summary{display:list-item}template{display:none}[hidden]{display:none}body,h1,h2,h3,h4,h5,h6,p,blockquote,pre,dl,dd,ol,ul,fieldset,legend,figure,hr{margin:0;padding:0}li>ul,li>ol{margin-bottom:0}table{border-collapse:collapse;border-spacing:0}h1,h2,h3,h4,h5,h6,ul,ol,dl,blockquote,p,address,hr,table,fieldset,figure,pre{margin-bottom:30px}ul,ol,dd{margin-left:15px}ul li,ol li{margin-bottom:10px}.highlight{background:#161d25}.highlighter-rouge .highlight{background:#eef}.highlight .c{color:#998;font-style:italic}.highlight .err{color:#a61717;background-color:#e3d2d2}.highlight .k{font-weight:bold}.highlight .o{font-weight:bold}.highlight .cm{color:#998;font-style:italic}.highlight .cp{color:#999;font-weight:bold}.highlight .c1{color:#998;font-style:italic}.highlight .cs{color:#999;font-weight:bold;font-style:italic}.highlight .gd{color:#000;background-color:#fdd}.highlight .gd .x{color:#000;background-color:#faa}.highlight .ge{font-style:italic}.highlight .gr{color:#a00}.highlight .gh{color:#999}.highlight .gi{color:#000;background-color:#dfd}.highlight .gi .x{color:#000;background-color:#afa}.highlight .go{color:#888}.highlight .gp{color:#555}.highlight .gs{font-weight:bold}.highlight .gu{color:#aaa}.highlight .gt{color:#a00}.highlight .kc{font-weight:bold}.highlight .kd{font-weight:bold}.highlight .kp{font-weight:bold}.highlight .kr{font-weight:bold}.highlight .kt{color:#458;font-weight:bold}.highlight .m{color:#099}.highlight .s{color:#d14}.highlight .na{color:teal}.highlight .nb{color:#0086B3}.highlight .nc{color:#458;font-weight:bold}.highlight .no{color:teal}.highlight .ni{color:purple}.highlight .ne{color:#900;font-weight:bold}.highlight .nf{color:#900;font-weight:bold}.highlight .nn{color:#555}.highlight .nt{color:navy}.highlight .nv{color:teal}.highlight .ow{font-weight:bold}.highlight .w{color:#bbb}.highlight .mf{color:#099}.highlight .mh{color:#099}.highlight .mi{color:#099}.highlight .mo{color:#099}.highlight .sb{color:#d14}.highlight .sc{color:#d14}.highlight .sd{color:#d14}.highlight .s2{color:#d14}.highlight .se{color:#d14}.highlight .sh{color:#d14}.highlight .si{color:#d14}.highlight .sx{color:#d14}.highlight .sr{color:#009926}.highlight .s1{color:#d14}.highlight .ss{color:#990073}.highlight .bp{color:#999}.highlight .vc{color:teal}.highlight .vg{color:teal}.highlight .vi{color:teal}.highlight .il{color:#099}.container{max-width:1270px;padding-left:15px;padding-right:15px;margin:0 auto}@media only screen and (max-width: 1300px){.container{max-width:1100px}}@media only screen and (max-width: 1130px){.container{max-width:1000px}}@media only screen and (max-width: 1024px){.container{max-width:740px}}@media only screen and (max-width: 768px){.container{max-width:540px}}@media only screen and (max-width: 576px){.container{max-width:380px}}.row{display:flex;flex-wrap:wrap;flex:0 1 auto;flex-direction:row;box-sizing:border-box;margin-left:-15px;margin-right:-15px}.col{padding-left:15px;padding-right:15px}[class^="col-"]{flex:auto}.col-0{width:0%}.col-1{width:8.3333333333%}.col-2{width:16.6666666667%}.col-3{width:25%}.col-4{width:33.3333333333%}.col-5{width:41.6666666667%}.col-6{width:50%}.col-7{width:58.3333333333%}.col-8{width:66.6666666667%}.col-9{width:75%}.col-10{width:83.3333333333%}.col-11{width:91.6666666667%}.col-12{width:100%}.push-0{margin-left:0%}.push-1{margin-left:8.3333333333%}.push-2{margin-left:16.6666666667%}.push-3{margin-left:25%}.push-4{margin-left:33.3333333333%}.push-5{margin-left:41.6666666667%}.push-6{margin-left:50%}.push-7{margin-left:58.3333333333%}.push-8{margin-left:66.6666666667%}.push-9{margin-left:75%}.push-10{margin-left:83.3333333333%}.push-11{margin-left:91.6666666667%}.push-12{margin-left:100%}.pull-0{margin-right:0%}.pull-1{margin-right:8.3333333333%}.pull-2{margin-right:16.6666666667%}.pull-3{margin-right:25%}.pull-4{margin-right:33.3333333333%}.pull-5{margin-right:41.6666666667%}.pull-6{margin-right:50%}.pull-7{margin-right:58.3333333333%}.pull-8{margin-right:66.6666666667%}.pull-9{margin-right:75%}.pull-10{margin-right:83.3333333333%}.pull-11{margin-right:91.6666666667%}.pull-12{margin-right:100%}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}img[data-action="zoom"]{cursor:pointer;cursor:-webkit-zoom-in;cursor:-moz-zoom-in}.zoom-img,.zoom-img-wrap{position:relative;z-index:666;-webkit-transition:all 300ms;-o-transition:all 300ms;transition:all 300ms}img.zoom-img{cursor:pointer;cursor:-webkit-zoom-out;cursor:-moz-zoom-out}.zoom-overlay{z-index:420;background:#161d25;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;opacity:0;-webkit-transition:opacity 300ms;-o-transition:opacity 300ms;transition:opacity 300ms}.zoom-overlay-open .zoom-overlay{opacity:1}.zoom-overlay-open,.zoom-overlay-transitioning{cursor:default}.animate{animation:animateElement cubic-bezier(0.3, 0.45, 0.45, 0.95) 0.75s;animation-duration:0.5s;animation-iteration-count:1;transition:transform .15s}@keyframes animateElement{0%{opacity:0;transform:translate(0px, 50px)}100%{opacity:1;transform:translate(0px, 0px)}}*,*::after,*::before{box-sizing:border-box}body{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-size:18px;line-height:34px;border:10px solid #131212;color:#fff;background-color:#131212;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}body.dark .footer__head{background:#131212}@media only screen and (max-width: 768px){body.dark .footer__head{padding:40px}}@media only screen and (max-width: 576px){body.dark .footer__head{padding:30px}}body.dark .subscribe-form .subscribe-email{background:#161d25}@media only screen and (max-width: 576px){body{font-size:16px;line-height:29px;border-width:5px}}*::selection{color:#fff;background-color:rgba(0,112,255,0.8)}h1,h2,h3,h4,h5,h6{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-weight:700;line-height:1.3;letter-spacing:-1px}h1{font-size:36px}h2{font-size:28px}h3{font-size:24px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px}blockquote{position:relative;margin-top:30px;padding:25px 25px 15px 60px;font-size:30px;line-height:45px;font-weight:600;font-style:normal}blockquote::before{content:'\201C';position:absolute;top:0.35em;left:0.05em;font-size:3.5em;color:#0070ff}blockquote p{margin-bottom:10px}blockquote cite{display:inline-block;margin-top:7px;font-size:15px;font-style:normal;color:#ccc}blockquote cite:before{content:'\2014' '\00a0'}@media only screen and (max-width: 1024px){blockquote{font-size:24px;line-height:37px}}@media only screen and (max-width: 576px){blockquote{padding:38px 0 15px 35px;font-size:21px;line-height:31px}}pre{overflow:auto;padding:15px;margin-bottom:0;font-size:14px;white-space:pre-wrap;word-wrap:break-word;word-break:break-all}img,.zoom-img-wrap{max-width:100%;height:auto;vertical-align:middle}img+em,.zoom-img-wrap+em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}img+em a,.zoom-img-wrap+em a{border-bottom:1px solid #fff}img+em a:hover,.zoom-img-wrap+em a:hover{color:#fff;border-color:#0070ff}a{text-decoration:none;color:#fff;transition:all 0.35s}a:hover{color:#fff}hr{display:block;height:1px;width:100px;margin:50px 0;border:0;background:#000}.wrapper-page{margin-bottom:70px}@media only screen and (max-width: 768px){.wrapper-page{margin-bottom:60px}}@media only screen and (max-width: 576px){.wrapper-page{margin-bottom:40px}}.button{display:inline-block;height:45px;padding:0 20px;font-size:15px;font-weight:700;border:none;outline:none;color:#fff;background:#0070ff;transition:all 0.35s;cursor:pointer}.button:hover{color:#fff;background:#0065e6}.lazy{opacity:0;transition:0.3s}.lazy.loaded{opacity:1}.top{position:fixed;bottom:40px;right:-100px;z-index:1;width:28px;height:40px;font-size:28px;line-height:40px;text-align:center;border-radius:6px;background-color:#161d25;color:#fff;cursor:pointer;transition:all .25s ease;box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.top:hover{color:#fff;background-color:#0070ff}.top.is-active{right:40px}@media only screen and (max-width: 768px){.top{bottom:25px}.top.is-active{right:30px}}.header{height:auto;border-bottom:1px solid #131212;background:#161d25;transition:all 0.35s}.header .header__overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:15;background-color:rgba(17,17,17,0.7);cursor:pointer;opacity:0;visibility:hidden;transition:all 0.5s ease}@media only screen and (max-width: 1024px){.header .header__overlay.is-visible{opacity:1;visibility:visible}}.header__inner{position:relative;display:flex;align-items:center;min-height:80px}.logo__link{font-size:20px;line-height:26px;font-weight:700}.logo__link:hover{color:#0070ff}.logo__image{max-height:50px}.main-nav{margin-left:80px}@media only screen and (max-width: 1024px){.main-nav{position:fixed;top:0;left:inherit;right:-300px;bottom:0;transform:none;z-index:100;width:300px;height:100vh;padding:40px 30px 30px;border:10px solid #131212;transition:right 0.5s cubic-bezier(0.7, 0.4, 0, 1);background:#161d25}.main-nav.is-open{right:0}.main-nav .nav__list{width:100%}.main-nav .nav__list .nav__item{display:block;margin:0 10px}.main-nav .nav__list .nav__item:last-child{margin-right:10px}.main-nav .nav__list .nav__item .nav__link{display:block;padding:10px 0;font-size:16px;line-height:26px;font-weight:500}}@media only screen and (max-width: 576px){.main-nav{padding:20px 30px;border-width:5px}}.main-nav__box{display:flex;align-items:center}.main-nav__box .nav__icon-close{display:none;font-size:24px;text-align:right}.main-nav__box .nav__icon-close .ion-md-close{transition:all 0.35s;cursor:pointer}.main-nav__box .nav__icon-close .ion-md-close:hover{color:#0070ff}.main-nav__box .nav__title{display:none}@media only screen and (max-width: 1024px){.main-nav__box{display:block}.main-nav__box .nav__icon-close{display:block}.main-nav__box .nav__title{display:block;margin:0 10px 15px;padding-bottom:15px;font-size:24px;font-weight:700;color:#fff;border-bottom:1px solid #131212}}.nav__list .nav__item{display:inline-block;margin:0 20px}.nav__list .nav__item:last-child{margin-right:40px}.nav__list .nav__item .nav__link{font-size:15px;line-height:24px;font-weight:500}.nav__list .nav__item .nav__link:hover{color:#0070ff}.nav-buttons{display:flex;align-items:center;margin-left:auto;font-size:21px;color:#fff;cursor:pointer}.nav-buttons .nav__icon{transition:all 0.35s}.nav-buttons .nav__icon:hover{color:#0070ff}.nav-buttons .nav__icon:first-child{margin-right:15px}.nav-buttons .nav__icon-menu{display:none}@media only screen and (max-width: 1024px){.nav-buttons{margin-left:auto}.nav-buttons .nav__icon-menu{display:block}}.search{position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;transform:scale(0.95);overflow:auto;opacity:0;background:#131212;transition:all .25s ease}.search.is-visible{transform:scale(1);z-index:100;opacity:1;transition:all .25s ease}.search__box{width:50%;margin:0 auto;padding-top:140px}@media only screen and (max-width: 1024px){.search__box{width:80%;padding-top:100px}}.search__group{position:relative;margin-bottom:50px}.search__group .search__close{position:absolute;right:20px;top:17px;font-size:27px;line-height:40px;cursor:pointer;transition:all .2s}.search__group .search__close:hover{color:#0070ff}.search__group .search__text{width:100%;padding:20px;font-size:21px;line-height:31px;border:2px solid transparent;border-radius:4px;color:#fff;background:#161d25;outline:none;transition:all .2s}.search__group .search__text:focus{border-color:#0070ff}.search__group .search__text::placeholder{font-weight:500;color:#fff}.search__group .search__text::-ms-clear{display:none}.search-results-list .no-results{width:100%;font-size:21px;font-weight:600;text-align:center;color:#fff}.pagination{margin-top:40px}@media only screen and (max-width: 768px){.pagination{margin-top:30px}}@media only screen and (max-width: 576px){.pagination{margin-top:20px}}.pagination__inner{display:flex;justify-content:center;align-items:center}.pagination__list{display:flex;font-weight:600;height:40px;padding:0 20px;font-size:14px;line-height:40px;border-radius:3px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);color:#fff;background-color:#161d25}.pagination__count{display:inline-block;padding:0 15px;margin:0 15px;font-size:13px;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1);color:#ccc}.pagination__next i,.pagination__prev i{font-size:13px}.pagination__next:hover,.pagination__prev:hover{color:#0070ff}.pagination__next.disabled,.pagination__prev.disabled{opacity:0.2;cursor:not-allowed;color:inherit}.pagination__next i{margin-left:4px}.pagination__prev i{margin-right:4px}.footer{padding-top:70px;background:#161d25}.footer .row .col{flex-grow:1}.footer .footer__inner{padding:60px 0;margin:0 60px 0;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.footer .footer__head{margin:0 -60px;padding:60px;background:#161d25;box-shadow:0 10px 40px rgba(0,0,0,0.07)}.footer .footer__content{padding:60px 0}@media only screen and (max-width: 1024px){.footer .row .col:last-child>.widget{margin-bottom:0}}@media only screen and (max-width: 768px){.footer{padding-top:60px}.footer .footer__inner{padding:0;margin:0;background-image:none}.footer .footer__head{margin:0;padding:0;box-shadow:none}}@media only screen and (max-width: 576px){.footer{padding-top:50px}}@media only screen and (max-width: 1024px){.widget{margin-bottom:30px}}@media only screen and (max-width: 576px){.widget{margin-bottom:40px}}.widget__head{margin-bottom:20px}.widget__head .widget__title{margin:0;font-size:24px;color:#fff}.widget-gallery{padding:0 35px}@media only screen and (max-width: 1024px){.widget-gallery{padding:0}}.recent-posts{position:relative;display:flex;margin-bottom:15px}.recent-posts:last-child{margin-bottom:0}.recent-posts__header{margin-right:15px}.recent-posts__image{position:relative;display:block;margin-right:15px;min-width:80px;height:80px;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:#131212}.recent-posts__image img{position:absolute;top:0;width:100%;height:100%;object-fit:cover}.recent-posts__date{margin-bottom:5px;font-size:13px;line-height:16px;color:#ccc}.recent-posts__title{margin-bottom:0;font-size:17px;line-height:22px;font-weight:700}.recent-posts__title a{color:#fff}.recent-posts__title a:hover{color:#fff}.widget-subscribe .subscribe__inner{display:flex;flex-direction:column;justify-content:space-between}.widget-subscribe .subscribe__group{margin-bottom:20px}.widget-subscribe .subscribe__group .subscribe__title{margin-bottom:15px;color:#fff}.widget-subscribe .subscribe__group .subscribe__description{font-size:15px;line-height:22px;color:#ccc}.widget-subscribe .subscribe-form{position:relative;height:60px}.widget-subscribe .subscribe-form .subscribe-email{width:100%;height:100%;padding:20px;font-size:14px;line-height:19px;font-weight:500;color:rgba(255,255,255,0.8);border:2px solid #131212;background:transparent;transition:border-color .2s ease-in-out;outline:0}.widget-subscribe .subscribe-form .subscribe-email::placeholder{color:rgba(255,255,255,0.8)}.widget-subscribe .subscribe-form .subscribe-email:focus{color:rgba(255,255,255,0.8);border-color:#0070ff}.widget-subscribe .subscribe-form .subscribe-button{position:absolute;top:10px;right:10px;height:40px;padding:0 15px;font-size:14px}@media only screen and (max-width: 1130px){.widget-subscribe .subscribe-form .subscribe-email{font-size:13px}.widget-subscribe .subscribe-form .subscribe-button{font-size:14px}}.copyright{padding:0 0 30px;margin-top:10px;font-size:13px;font-weight:500;text-align:center;color:#ccc}.copyright a:hover{color:#0070ff}@media only screen and (max-width: 768px){.copyright{text-align:left}}.gallery-box{margin:40px 0}.gallery-box.gallery-footer{margin:0}.gallery-box em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}.gallery-box em a{border-bottom:1px solid #fff}.gallery-box em a:hover{color:#fff;border-color:#0070ff}.gallery{display:grid;grid-template-columns:repeat(3, auto);justify-content:center;align-content:center;grid-gap:10px}.gallery .gallery__image{background:#131212}.gallery .gallery__image img{display:block;width:100%;height:auto;object-fit:cover}.social{margin:60px 0 0;text-align:center}.social .social__list{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}.social .social__item{display:inline-block;margin:0 2px}.social .social__link{position:relative;z-index:1;padding:0 10px;font-size:21px;line-height:1}.social .social__link:hover{color:#fff}.social .social__link:hover::after{transform:translate3d(-50%, -50%, 0) scale(1)}.social .social__link::after{content:'';display:block;position:absolute;z-index:-1;top:50%;left:50%;transform:translate3d(-50%, -50%, 0) scale(0);width:100%;height:0;padding-bottom:100%;border-radius:50%;background:#0070ff;transition:all .25s}@media only screen and (max-width: 768px){.social{margin:50px 0 0;text-align:left}.social .social__list{justify-content:start}}.hero{padding:60px 0 70px;margin-bottom:70px;background:#161d25}.hero.hero--post .article__meta{margin-bottom:13px;font-size:14px;font-weight:500}.hero.hero--post .article__meta .article__date::before{content:none}.hero.hero--post .article__author-link{font-size:14px;line-height:20px;font-weight:500;color:#ccc}.hero.hero--post .article__author-link span{color:#ccc}.hero.hero--post .article__author-link:hover{color:#fff}.hero.hero--page .hero__title{margin-bottom:0}@media only screen and (max-width: 768px){.hero{padding:60px 0 60px;margin-bottom:60px}}@media only screen and (max-width: 576px){.hero{padding:40px 0 40px;margin-bottom:40px}}.hero__inner{display:flex;align-items:center}@media only screen and (max-width: 768px){.hero__inner{flex-direction:column}}.hero__left,.hero__right{width:50%}@media only screen and (max-width: 768px){.hero__left,.hero__right{width:100%}}.hero__left .hero__title,.hero__left .hero__job{font-size:50px;font-weight:700;letter-spacing:-2px;color:#fff}@media only screen and (max-width: 1130px){.hero__left .hero__title,.hero__left .hero__job{font-size:40px;line-height:1.2}}@media only screen and (max-width: 1024px){.hero__left .hero__title,.hero__left .hero__job{font-size:33px}}@media only screen and (max-width: 576px){.hero__left .hero__title,.hero__left .hero__job{font-size:27px}}.hero__left .hero__title{margin-right:20px;margin-bottom:10px}@media only screen and (max-width: 768px){.hero__left .hero__title{margin-right:0}}.hero__left .hero__job{margin-bottom:20px}.hero__left .hero__name{position:relative;font-weight:400}.hero__left .hero__name::after{content:"";position:absolute;left:0;bottom:0px;width:100%;height:38%;background-color:rgba(0,112,255,0.1)}.hero__left .hero__description{max-width:550px;margin:0;font-size:21px;font-weight:500;color:#ccc}@media only screen and (max-width: 1024px){.hero__left .hero__description{font-size:16px;line-height:26px}}.hero__left .hero__button{margin-top:20px;padding-right:12px;display:inline-block;font-size:16px;line-height:16px;font-weight:700;color:#fff;outline:none;cursor:pointer;transition:all 0.35s}.hero__left .hero__button:hover{color:#fff;background:#0065e6}.hero__left .hero__button .button-arrow{display:inline-block;margin-right:10px;width:30px;height:30px;line-height:30px;text-align:center;color:#fff;background:#0070ff}.hero__right{position:relative}.hero__right::after{content:"";position:absolute;top:50%;transform:translateY(-50%);display:block;width:100%;height:50%;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.hero__right .hero__image{position:relative;z-index:10;width:370px;height:470px;margin:0 auto}.hero__right .hero__image::before{content:"";display:block;position:absolute;top:0;z-index:1;width:100%;height:100%;background:#131212}.hero__right .hero__image img{position:absolute;top:0;z-index:1;height:100%;width:100%;object-fit:cover;box-shadow:10px 10px 0 #0070ff;background:#131212}@media only screen and (max-width: 1130px){.hero__right .hero__image{width:270px;height:370px}}@media only screen and (max-width: 1024px){.hero__right .hero__image{width:230px;height:330px}}@media only screen and (max-width: 768px){.hero__right{order:-1}.hero__right .hero__image{width:100%;height:330px;margin-bottom:40px}}@media only screen and (max-width: 576px){.hero__right .hero__image{height:270px;margin-bottom:30px}.hero__right .hero__image img{box-shadow:none}}.contact-head{margin-bottom:30px}.form-box{max-width:750px;margin:0 auto}.form__group{margin-bottom:20px}.form__group:last-child{margin-bottom:0}.form__input{width:100%;padding:20px;font-size:14px;font-weight:500;border:1px solid #131212;outline:none;transition:250ms;resize:vertical;color:rgba(255,255,255,0.8);background:#161d25}.form__input::placeholder{color:rgba(255,255,255,0.8)}.form__input:focus{border:1px solid #0070ff}.article{margin-bottom:30px;border-radius:3px;overflow:hidden;transition:transform .2s}.article:hover{transform:translateY(-3px)}.article__inner{box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.image-wrap{padding:15px 15px 0 15px;background:#161d25}.article__image{position:relative;display:block;height:0;padding-bottom:56.25%;background:#131212;overflow:hidden}.article__image img{position:absolute;width:100%;height:100%;object-fit:cover}.article__content{padding:25px;background:#161d25}.article__title{margin-bottom:10px;font-size:22px;line-height:32px}.article__title a:hover{color:#fff}.article__excerpt{font-size:15px;line-height:24px;font-weight:500;margin-bottom:20px;color:#ccc}.article__meta{display:flex;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:500;line-height:20px}.article__meta .article__author-link{color:#ccc}.article__meta .article__author-link:hover{color:#fff}.article__meta .article-tags__box{display:flex}.article__meta .article-tags__box::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}.article__meta .article-tags__box .article__tag{color:#ccc}.article__meta .article-tags__box .article__tag:hover{color:#fff}.article__meta .article-tags__box .article__tag::after{content:",";display:inline-block;margin:0 2px}.article__meta .article-tags__box .article__tag:last-child::after{content:none}.article__meta .article__date{color:#ccc}.article__meta .article__date::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}img[src$="centerme"]{display:block;margin:0 auto}.post,.page{max-width:850px;margin:0 auto;color:#fff}.post__content a,.page__content a{text-decoration:underline}.image-box{margin:40px 0}.post__share{margin:50px 0}.post__share .share__list{display:flex;justify-content:center;align-items:center;width:100%}.post__share .share__item{margin:0 2px;text-align:center}.post__share .share__link{display:block;padding:2px 12px;font-size:18px;color:#161d25}.post__share .share__link.share__facebook,.post__share .share__link.share__twitter,.post__share .share__link.share__linkedin,.post__share .share__link.share__pinterest{border:1px solid #131212;background:#161d25}.post__share .share__link.share__facebook:hover,.post__share .share__link.share__twitter:hover,.post__share .share__link.share__linkedin:hover,.post__share .share__link.share__pinterest:hover{color:#fff}.post__share .share__link.share__facebook{color:#3b5998}.post__share .share__link.share__facebook:hover{background:#3b5998}.post__share .share__link.share__twitter{color:#55acee}.post__share .share__link.share__twitter:hover{background:#55acee}.post__share .share__link.share__linkedin{color:#0077b5}.post__share .share__link.share__linkedin:hover{background:#0077b5}.post__share .share__link.share__pinterest{color:#bd081c}.post__share .share__link.share__pinterest:hover{background:#bd081c}@media only screen and (max-width: 576px){.post__share{margin:40px 0}}.post__navigation{display:flex;justify-content:space-between;margin-bottom:20px}.post__navigation .post__prev,.post__navigation .post__next{display:flex;width:48%;padding:25px;margin-bottom:30px;background:#161d25;box-shadow:0px 0px 20px rgba(0,0,0,0.05);transition:transform .2s}.post__navigation .post__prev:hover,.post__navigation .post__next:hover{transform:translateY(-3px)}.post__navigation .post__prev .prev__image,.post__navigation .post__prev .next__image,.post__navigation .post__next .prev__image,.post__navigation .post__next .next__image{position:relative;display:block;width:100px;min-width:100px;height:100px;background-color:#131212}.post__navigation .post__prev .prev__image img,.post__navigation .post__prev .next__image img,.post__navigation .post__next .prev__image img,.post__navigation .post__next .next__image img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.post__navigation .post__prev .prev__image,.post__navigation .post__next .prev__image{margin-right:15px}.post__navigation .post__prev .next__image,.post__navigation .post__next .next__image{margin-left:15px}.post__navigation .post__prev .post__nav,.post__navigation .post__next .post__nav{display:inline-block;margin-bottom:5px;font-size:13px;line-height:1;font-weight:500;color:#ccc}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{margin-bottom:0;font-size:18px;line-height:24px}.post__navigation .post__prev .post__nav__title a:hover,.post__navigation .post__next .post__nav__title a:hover{color:#fff}.post__navigation .post__next{text-align:right;margin-left:auto;justify-content:flex-end}@media only screen and (max-width: 768px){.post__navigation{flex-wrap:wrap}.post__navigation .post__prev,.post__navigation .post__next{width:100%}.post__navigation .post__prev{margin-bottom:30px}.post__navigation .next__box{margin-left:auto}}@media only screen and (max-width: 576px){.post__navigation{margin-bottom:10px}.post__navigation .post__prev,.post__navigation .post__next{padding:20px}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{font-size:15px;line-height:20px}}.post__comments{padding:40px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);background:#161d25}@media only screen and (max-width: 576px){.post__comments{padding:30px}}.error{margin-bottom:30px;text-align:center}.error .error__title{margin-bottom:0;font-size:100px}.error .error__text{margin-bottom:20px;font-size:21px;color:#ccc}.error .error__button{line-height:45px}.tag{padding:70px 0;margin-bottom:70px;text-align:center;background:#161d25}.tag .tag__meta{font-size:16px;color:#ccc}.tag .tag__title{margin:0;font-size:50px}@media only screen and (max-width: 768px){.tag{padding:60px 0;margin-bottom:60px}}@media only screen and (max-width: 576px){.tag{padding:40px 0;margin-bottom:40px}}
+
+  </style>
+</head>
+
+<body class="dark">
+
+  
+
+    <!-- begin header -->
+<header class="header">
+  <div class="container">
+    <div class="row">
+      <div class="header__inner col col-12">
+
+        <div class="logo">
+          <a class="logo__link" href="/">
+          
+            Artik Blue
+          
+          </a>
+        </div>
+
+        <nav class="main-nav">
+          <div class="main-nav__box">
+            <div class="nav__icon-close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <div class="nav__title">Menu</div>
+            <ul class="nav__list list-reset">
+              <li class="nav__item">
+                <a href="/" class="nav__link">Home</a>
+              </li>
+              
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/about/" class="nav__link">About</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/reversing" class="nav__link">Reversing</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+            </ul>
+          </div>
+        </nav>
+
+        <div class="nav-buttons">
+          <i class="nav__icon nav__icon-menu ion ion-md-menu"></i>
+          <i class="nav__icon nav__icon-search ion ion-md-search"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="header__overlay"></div>
+</header>
+<!-- end header -->
+
+<!-- begin search -->
+<div class="search">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="search__box">
+          <div class="search__group">
+            <div class="search__close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <label for="js-search-input" class="screen-reader-text">Search for Blog</label>
+            <input type="text" id="js-search-input" class="search__text" autocomplete="off" placeholder="Type to search...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="container__inner">
+          <div class="row search-results-list" id="js-results-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- end search -->
+    <!-- begin content -->
+    <main class="content" aria-label="Content">
+      <!-- begin wrapper-page -->
+      <div class="wrapper-page">
+        <!-- begin hero -->
+
+<section class="hero hero--post">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="hero__inner">
+          <div class="hero__left">
+            
+
+            <div class="article__meta">
+              <span class="article__date"><time datetime="2020-05-12T00:01:35+02:00">12 May 2020</time></span>
+              
+              <div class="article-tags__box">
+                
+                  <a href="/tag/reversing" class="article__tag">reversing</a>
+                
+                  <a href="/tag/c" class="article__tag">c</a>
+                
+                  <a href="/tag/radare" class="article__tag">radare</a>
+                
+              </div>
+              
+            </div>
+
+            <h1 class="hero__title">Reverse engineering 32 and 64 bits binaries with Radare2 - 12 (linked lists, enums, bitwise operations and r2pipe)</h1>
+            <a href="/about/" class="article__author-link"><span>By</span> Artik Blue</a>
+
+            
+          </div>
+
+          <div class="hero__right">
+
+            
+            <div class="hero__image">
+              <img class="lazy" data-src="/images//radare2/radare2_12.png" alt="Reverse engineering 32 and 64 bits binaries with Radare2 - 12 (linked lists, enums, bitwise operations and r2pipe)">
+            </div>
+
+            
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- end hero -->
+
+<!-- begin post -->
+<div class="container">
+  <article class="post animate">
+
+    <div class="post__content">
+      <p>Hello everybody!</p>
+
+<p>We are about to end this first part of the course, aren’t you excited? I’m sure you are.</p>
+
+<p>Today we will be finally done with dynamic memory after studying linked lists, then we will jump to another topic and review bitwise operations, a very simple but important topic, very present in many programs.</p>
+
+<h4 id="linked-lists">Linked lists</h4>
+<p>As far as we know, everytime we need to work with multiple succesive data inputs we need to either define limits or ask the user about how many values is going to enter, it does not matter if the memory is dynamic or static, fas far as we know the user needs to specify the number of values to enter… What if we want the user to keep adding new values untill the end of time (memory)?</p>
+
+<p>Linked lists are an easy way to solve that. As far as we know, we can create structs of any type so, what if we create a struct containing a pointer to another struct? Everytime we add a new value we’ll update the previous struct to make it point to the next creating a chain! We can store a reference to the “previous” struct while the user is entering values, after all is done, we’ll only need a reference to the first element to loop through all of them.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// Linked list implementation in C
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+// Creating a node
+struct node {
+  int data;
+  struct node *next;
+};
+
+// print the linked list data
+void printLinkedlist(struct node *p) {
+  while (p != NULL) {
+    printf("%d ", p-&gt;data);
+    p = p-&gt;next;
+  }
+}
+
+int main() {
+  // Initialize nodes
+  struct node *head;
+  struct node *one = NULL;
+  struct node *two = NULL;
+  struct node *three = NULL;
+
+  // Allocate memory
+  one = malloc(sizeof(struct node));
+  two = malloc(sizeof(struct node));
+  three = malloc(sizeof(struct node));
+
+  // Assign data values
+  one-&gt;data = 1;
+  two-&gt;data = 2;
+  three-&gt;data = 3;
+
+  // Connect nodes
+  one-&gt;next = two;
+  two-&gt;next = three;
+  three-&gt;next = NULL;
+
+  // printing node-data
+  head = one;
+  printLinkedlist(head);
+}
+</code></pre></div></div>
+<p>As you can see, three nodes are being created and then linked at the end. Note that the node struct contains a pointer to a node struct, that may sound strange to you as the node struct has not been completely declared and it is already referencing its type, just know that it can be done, no problem. Also note that NULL can be used as an END value, we’ll see what NULL means internally.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5558a1d96182]&gt; pdf
+            ; DATA XREF from entry0 @ 0x5558a1d9607d
+┌ 167: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_20h @ rbp-0x20
+│           ; var int64_t var_18h @ rbp-0x18
+│           ; var int64_t var_10h @ rbp-0x10
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x5558a1d96182      55             push rbp
+│           0x5558a1d96183      4889e5         mov rbp, rsp
+│           0x5558a1d96186      4883ec20       sub rsp, 0x20
+│           0x5558a1d9618a      48c745e00000.  mov qword [var_20h], 0
+│           0x5558a1d96192      48c745e80000.  mov qword [var_18h], 0
+│           0x5558a1d9619a      48c745f00000.  mov qword [var_10h], 0
+│           0x5558a1d961a2      bf10000000     mov edi, 0x10           ; 16
+│           0x5558a1d961a7      e894feffff     call sym.imp.malloc     ;  void *malloc(size_t size)
+│           0x5558a1d961ac      488945e0       mov qword [var_20h], rax
+│           0x5558a1d961b0      bf10000000     mov edi, 0x10           ; 16
+│           0x5558a1d961b5      e886feffff     call sym.imp.malloc     ;  void *malloc(size_t size)
+│           0x5558a1d961ba      488945e8       mov qword [var_18h], rax
+│           0x5558a1d961be      bf10000000     mov edi, 0x10           ; 16
+│           0x5558a1d961c3      e878feffff     call sym.imp.malloc     ;  void *malloc(size_t size)
+│           0x5558a1d961c8      488945f0       mov qword [var_10h], rax
+│           0x5558a1d961cc      488b45e0       mov rax, qword [var_20h]
+│           0x5558a1d961d0      c70001000000   mov dword [rax], 1
+│           0x5558a1d961d6      488b45e8       mov rax, qword [var_18h]
+│           0x5558a1d961da      c70002000000   mov dword [rax], 2
+│           0x5558a1d961e0      488b45f0       mov rax, qword [var_10h]
+│           0x5558a1d961e4      c70003000000   mov dword [rax], 3
+│           0x5558a1d961ea      488b45e0       mov rax, qword [var_20h]
+│           0x5558a1d961ee      488b55e8       mov rdx, qword [var_18h]
+│           0x5558a1d961f2      48895008       mov qword [rax + 8], rdx
+│           0x5558a1d961f6      488b45e8       mov rax, qword [var_18h]
+│           0x5558a1d961fa      488b55f0       mov rdx, qword [var_10h]
+│           0x5558a1d961fe      48895008       mov qword [rax + 8], rdx
+│           0x5558a1d96202      488b45f0       mov rax, qword [var_10h]
+│           0x5558a1d96206      48c740080000.  mov qword [rax + 8], 0
+│           0x5558a1d9620e      488b45e0       mov rax, qword [var_20h]
+│           0x5558a1d96212      488945f8       mov qword [var_8h], rax
+│           0x5558a1d96216      488b45f8       mov rax, qword [var_8h]
+│           0x5558a1d9621a      4889c7         mov rdi, rax
+│           0x5558a1d9621d      e823ffffff     call sym.printLinkedlist
+│           0x5558a1d96222      b800000000     mov eax, 0
+│           0x5558a1d96227      c9             leave
+└           0x5558a1d96228      c3             ret
+[0x5558a1d96182]&gt; 
+</code></pre></div></div>
+<p>The program begins by keeping 32 bytes in the stack for variables as you can see here, then three variables are being initialized with zero, what do they mean? why are those being initialized to zero?</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5558a1d96186      4883ec20       sub rsp, 0x20
+│           0x5558a1d9618a      48c745e00000.  mov qword [var_20h], 0
+│           0x5558a1d96192      48c745e80000.  mov qword [var_18h], 0
+│           0x5558a1d9619a      48c745f00000.  mov qword [var_10h], 0
+</code></pre></div></div>
+<p>If we don’t know about the original code, at this exact point we can’t tell if those vars are just ints or whatever, but as we know about the original code we can quickly relate those to our initial node initialization with NULL, so those vars will reference our nodes (structs).</p>
+
+<p>Then malloc is called with those three vars:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5558a1d961a2      bf10000000     mov edi, 0x10           ; 16
+│           0x5558a1d961a7      e894feffff     call sym.imp.malloc     ;  void *malloc(size_t size)
+│           0x5558a1d961ac      488945e0       mov qword [var_20h], rax
+│           0x5558a1d961b0      bf10000000     mov edi, 0x10           ; 16
+│           0x5558a1d961b5      e886feffff     call sym.imp.malloc     ;  void *malloc(size_t size)
+│           0x5558a1d961ba      488945e8       mov qword [var_18h], rax
+│           0x5558a1d961be      bf10000000     mov edi, 0x10           ; 16
+│           0x5558a1d961c3      e878feffff     call sym.imp.malloc     ;  void *malloc(size_t size)
+</code></pre></div></div>
+<p>Malloc keeps 16 bytes for each node, count 4 bytes for the int and at least 8 bytes more for the struct pointer, it also keeps a bit more space for that. The base addresses of those are kept in the previously NULL initialized vars.</p>
+
+<p>Let’s proceed</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>           0x5558a1d961cc      488b45e0       mov rax, qword [var_20h]
+│           0x5558a1d961d0      c70001000000   mov dword [rax], 1
+│           0x5558a1d961d6      488b45e8       mov rax, qword [var_18h]
+│           0x5558a1d961da      c70002000000   mov dword [rax], 2
+│           0x5558a1d961e0      488b45f0       mov rax, qword [var_10h]
+│           0x5558a1d961e4      c70003000000   mov dword [rax], 3
+</code></pre></div></div>
+<p>At this point the INT var value of those structs is getting initialized to 1,2,3. Note that here [rax] is used, that means that var_20h, 18, 10 store POINTERS to STRUCT. At the previous part of the code, the POINTER was set to NULL, not the value, that is important. A null pointer == pointer that points to 0x0 is considered NULL and can be easily identified.</p>
+
+<p>The next part of the code actually links those structs by the use of pointers:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5558a1d961ea      488b45e0       mov rax, qword [var_20h]
+│           0x5558a1d961ee      488b55e8       mov rdx, qword [var_18h]
+│           0x5558a1d961f2      48895008       mov qword [rax + 8], rdx
+│           0x5558a1d961f6      488b45e8       mov rax, qword [var_18h]
+│           0x5558a1d961fa      488b55f0       mov rdx, qword [var_10h]
+│           0x5558a1d961fe      48895008       mov qword [rax + 8], rdx
+│           0x5558a1d96202      488b45f0       mov rax, qword [var_10h]
+│           0x5558a1d96206      48c740080000.  mov qword [rax + 8], 0
+</code></pre></div></div>
+<p>So, as you can see as each *next var is a pointer so the program just copies the addr of the pointed var there, easy. Also note that +8 is used here, that is because the pointer goes right after the int in the var.</p>
+
+<p>Then a weird thing is done for passing the first pointer as an argument to printLinkedList</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5558a1d9620e      488b45e0       mov rax, qword [var_20h]
+│           0x5558a1d96212      488945f8       mov qword [var_8h], rax
+│           0x5558a1d96216      488b45f8       mov rax, qword [var_8h]
+│           0x5558a1d9621a      4889c7         mov rdi, rax
+│           0x5558a1d9621d      e823ffffff     call sym.printLinkedlist
+</code></pre></div></div>
+<p>Let’s inspect that function.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5558a1d96145]&gt; pdf
+            ; CALL XREF from main @ 0x5558a1d9621d
+┌ 61: sym.printLinkedlist (int64_t arg1);
+│           ; var int64_t var_8h @ rbp-0x8
+│           ; arg int64_t arg1 @ rdi
+│           0x5558a1d96145      55             push rbp
+│           0x5558a1d96146      4889e5         mov rbp, rsp
+│           0x5558a1d96149      4883ec10       sub rsp, 0x10
+│           0x5558a1d9614d      48897df8       mov qword [var_8h], rdi ; arg1
+│       ┌─&lt; 0x5558a1d96151      eb25           jmp 0x5558a1d96178
+│      ┌──&gt; 0x5558a1d96153      488b45f8       mov rax, qword [var_8h]
+│      ╎│   0x5558a1d96157      8b00           mov eax, dword [rax]
+│      ╎│   0x5558a1d96159      89c6           mov esi, eax
+│      ╎│   0x5558a1d9615b      488d3da20e00.  lea rdi, [0x5558a1d97004] ; "%d "
+│      ╎│   0x5558a1d96162      b800000000     mov eax, 0
+│      ╎│   0x5558a1d96167      e8c4feffff     call sym.imp.printf     ; int printf(const char *format)
+│      ╎│   0x5558a1d9616c      488b45f8       mov rax, qword [var_8h]
+│      ╎│   0x5558a1d96170      488b4008       mov rax, qword [rax + 8]
+│      ╎│   0x5558a1d96174      488945f8       mov qword [var_8h], rax
+│      ╎│   ; CODE XREF from sym.printLinkedlist @ 0x5558a1d96151
+│      ╎└─&gt; 0x5558a1d96178      48837df800     cmp qword [var_8h], 0
+│      └──&lt; 0x5558a1d9617d      75d4           jne 0x5558a1d96153
+│           0x5558a1d9617f      90             nop
+│           0x5558a1d96180      c9             leave
+└           0x5558a1d96181      c3             ret
+[0x5558a1d96145]&gt; 
+</code></pre></div></div>
+<p>Inside printLinkedList, the argument (pointer) passed through rdi is loaded inside the local variable created by the compiler: var_8h</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5558a1d9614d      48897df8       mov qword [var_8h], rdi ; arg1
+│       ┌─&lt; 0x5558a1d96151      eb25           jmp 0x5558a1d96178
+│      ┌──&gt; 0x5558a1d96153      488b45f8       mov rax, qword [var_8h]
+</code></pre></div></div>
+<p>Then the progam enters inside the loop and this is what it does:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|      ┌──&gt; 0x5558a1d96153      488b45f8       mov rax, qword [var_8h]
+│      ╎│   0x5558a1d96157      8b00           mov eax, dword [rax]
+│      ╎│   0x5558a1d96159      89c6           mov esi, eax
+│      ╎│   0x5558a1d9615b      488d3da20e00.  lea rdi, [0x5558a1d97004] ; "%d "
+│      ╎│   0x5558a1d96162      b800000000     mov eax, 0
+│      ╎│   0x5558a1d96167      e8c4feffff     call sym.imp.printf     ; int printf(const char *format)
+│      ╎│   0x5558a1d9616c      488b45f8       mov rax, qword [var_8h]
+│      ╎│   0x5558a1d96170      488b4008       mov rax, qword [rax + 8]
+│      ╎│   0x5558a1d96174      488945f8       mov qword [var_8h], rax
+</code></pre></div></div>
+<p>The contents of what is pointed by var_8h (pointer to struct) is loaded inside eax and then printed. After that, the magic happens. The pointer of the ACTUAL node is loaded inside rax, then added by 8 (pointer), and loaded again inside var_8h, in other terms, var_8h is a pointer to the actua node and by doing that +8 we load the contents of the next node inside the actual node struct inside the varible.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│      ╎│   ; CODE XREF from sym.printLinkedlist @ 0x5558a1d96151
+│      ╎└─&gt; 0x5558a1d96178      48837df800     cmp qword [var_8h], 0
+│      └──&lt; 0x5558a1d9617d      75d4           jne 0x5558a1d96153
+</code></pre></div></div>
+<p>The comparision (exit condition) of the loop is done at the end, comparing the POINTER with 0, as comparing a pointer with 0x0 then it means the pointer being compared to NULL.</p>
+
+<p>And that’s aaaaaaall with dynamic memory. I think you got the concept right, debug the program yourself as an exercise!</p>
+
+<h4 id="discovering-r2pipe">Discovering r2pipe</h4>
+
+<p>There may be situations when the code is complex, and the progam repeats actions or follows long patters of code before generating any interesting results. Other situations may include doing the exact same analysis multiple times under different input values, or doing the same analysis on many many binaries in batch. We may also want to calculate something, using the memory of the program, to reveal hidden features, discover bugs or interesting leaks or whatever.</p>
+
+<p>In all of those situations, the solution comes with the usage of r2pipe.</p>
+
+<p>r2pipe is kind of the r2 api. It let’s us interact with r2 scripting in several programming languages such as python or javascript. On this example we are going to use r2pipe under python, for doing automatic analysis of a simple binary. We can install it using pip with:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip3 install r2pipe
+</code></pre></div></div>
+<p>Then we start using r2pipe with:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import r2pipe
+r = r2pipe.open('binary')
+</code></pre></div></div>
+<p>After that the r variable will be a link to r2pipe, doing r.cmd(‘aaa’) will be the same as being in a r2 session and actually running the command “aaa”. In r2 a lot of commands can be executed appending a “j” at the end, that “j” will turn the output into a json object making things easy for us when using r2pipe.</p>
+
+<p>A typical hello world using r2pipe may be something like:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import r2pipe as r2
+import json
+
+r = r2.open('superlist')
+
+r.cmd('aaa')
+print(r.cmd('iL'))
+print(r.cmd('afl'))
+</code></pre></div></div>
+
+<p>Let’s now get hands on with it, consider the following:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+#include &lt;stdlib.h&gt;
+
+int randy(){
+	int r = rand(); 
+
+	return r % 20 + 5;
+
+}
+
+struct node {
+  int i;
+  struct node *next;
+};
+
+
+int main(){
+	srand(time(NULL));   // Initialization, should only be called once.
+	int ran = 0;
+
+	struct node *ant; 
+	struct node *first_node = NULL;
+
+	first_node = malloc(sizeof(struct node));
+
+	first_node-&gt;i = 1;
+	ant = first_node;
+
+
+	for(int i = 0; i &lt; randy(); i++){
+
+		struct node *actual;
+		actual =  malloc(sizeof(struct node));
+		actual-&gt;next = NULL;
+		actual-&gt;i = randy();
+
+		ant-&gt;next = actual;
+		ant = actual;
+
+	}
+
+	return 0;
+}
+</code></pre></div></div>
+<p>As you can see this program is a bit tricky. It initializes a dynamic linked list of N random elements, each element containing a random int + a pointer to the next element (NULL if last element). The tricky thing here is that, as you can see, on the program there is no printf call, at the end there is no way for the user to know about how many values the list does have and their content.</p>
+
+<p>We can disasm the program like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>            ; DATA XREF from entry0 @ 0x5582293f909d
+┌ 171: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_20h @ rbp-0x20
+│           ; var int64_t var_1ch @ rbp-0x1c
+│           ; var int64_t var_18h @ rbp-0x18
+│           ; var int64_t var_10h @ rbp-0x10
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x5582293f919e      55             push rbp
+│           0x5582293f919f      4889e5         mov rbp, rsp
+│           0x5582293f91a2      4883ec20       sub rsp, 0x20
+│           0x5582293f91a6      bf00000000     mov edi, 0
+│           0x5582293f91ab      e890feffff     call sym.imp.time       ; time_t time(time_t *timer)
+│           0x5582293f91b0      89c7           mov edi, eax
+│           0x5582293f91b2      e879feffff     call sym.imp.srand      ; void srand(int seed)
+│           0x5582293f91b7      c745e4000000.  mov dword [var_1ch], 0
+│           0x5582293f91be      48c745f00000.  mov qword [var_10h], 0
+│           0x5582293f91c6      bf10000000     mov edi, 0x10           ; 16
+│           0x5582293f91cb      e880feffff     call sym.imp.malloc     ;  void *malloc(size_t size)
+│           0x5582293f91d0      488945f0       mov qword [var_10h], rax
+│           0x5582293f91d4      488b45f0       mov rax, qword [var_10h]
+│           0x5582293f91d8      c70001000000   mov dword [rax], 1
+│           0x5582293f91de      488b45f0       mov rax, qword [var_10h]
+│           0x5582293f91e2      488945e8       mov qword [var_18h], rax
+│           0x5582293f91e6      c745e0000000.  mov dword [var_20h], 0
+│       ┌─&lt; 0x5582293f91ed      eb44           jmp 0x5582293f9233
+│      ┌──&gt; 0x5582293f91ef      bf10000000     mov edi, 0x10           ; 16
+│      ╎│   0x5582293f91f4      e857feffff     call sym.imp.malloc     ;  void *malloc(size_t size)
+│      ╎│   0x5582293f91f9      488945f8       mov qword [var_8h], rax
+│      ╎│   0x5582293f91fd      488b45f8       mov rax, qword [var_8h]
+│      ╎│   0x5582293f9201      48c740080000.  mov qword [rax + 8], 0
+│      ╎│   0x5582293f9209      b800000000     mov eax, 0
+│      ╎│   0x5582293f920e      e852ffffff     call sym.randy
+│      ╎│   0x5582293f9213      89c2           mov edx, eax
+│      ╎│   0x5582293f9215      488b45f8       mov rax, qword [var_8h]
+│      ╎│   0x5582293f9219      8910           mov dword [rax], edx
+│      ╎│   0x5582293f921b      488b45e8       mov rax, qword [var_18h]
+│      ╎│   0x5582293f921f      488b55f8       mov rdx, qword [var_8h]
+│      ╎│   0x5582293f9223      48895008       mov qword [rax + 8], rdx
+│      ╎│   0x5582293f9227      488b45f8       mov rax, qword [var_8h]
+│      ╎│   0x5582293f922b      488945e8       mov qword [var_18h], rax
+│      ╎│   0x5582293f922f      8345e001       add dword [var_20h], 1
+│      ╎│   ; CODE XREF from main @ 0x5582293f91ed
+│      ╎└─&gt; 0x5582293f9233      b800000000     mov eax, 0
+│      ╎    0x5582293f9238      e828ffffff     call sym.randy
+│      ╎    0x5582293f923d      3945e0         cmp dword [var_20h], eax
+│      └──&lt; 0x5582293f9240      7cad           jl 0x5582293f91ef
+│           0x5582293f9242      b800000000     mov eax, 0
+│           0x5582293f9247      c9             leave
+└           0x5582293f9248      c3             ret
+[0x5582293f919e]&gt; 
+</code></pre></div></div>
+<p>And as you can see the magic happens inside that loop there, the randy() function gets called and the program generates and links those nodes there, nothing new for us. Extracting all of those nodes manually may be tedious, we can set a breakpoint at the end of the function, then do afvd and use px or pf to inspect the memory, and so forth. As the list is dynamic and we don’t have a fixed size if we go manually we’ll have to set breakpoints on the first randy call to know how many values are up to be generated, again this can be slow and there is no need to do it manually, specially if need to do some kind of operation with those numbers, or we need to dump them many times to check for vuln research or whatever (I don’t know, maybe a crypto attack?).</p>
+
+<p>We can automate the whole thing using r2pipe. What I would do manually is (blindly): set a breakpoint where the first node is initialized and then at the end of the main where all of the nodes should be set and linked. Then I would inspect the first node, dump the value and note it, then extract the pointer to next, go there and repeat the process until the next pointer is 0x0 NULL, does that make sense? Another option my be: set a breakpoint after the initial randy call and, note how many nodes are going to be generted, set a breakpoint at the end of code and from there do a pf Ni..p or whatever but I will assume that those nodes may not be one right after the other in memory, so the first option makes more sense for me now.</p>
+
+<p>Based on the logic we presented, I generated the following script with python using r2pipe. I’m not a professional developer so… the code just works and I think it is clear enough:</p>
+
+<p><img src="https://static-s.aa-cdn.net/img/gp/20600004843148/6nzSMduRrevd8Zn9D6ldcy0E13toZ4ZB-LODfPwMrSoh4BDyhgOEOKYSBNHd-9is0A8=w300?v=1" alt="rapper" /></p>
+
+<p>Here’s the code:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">r2pipe</span> <span class="k">as</span> <span class="n">r2</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">r2</span><span class="p">.</span><span class="nb">open</span><span class="p">(</span><span class="s">'superlist'</span><span class="p">)</span>
+
+<span class="n">r</span><span class="p">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">'doo; s main'</span><span class="p">)</span>
+
+<span class="n">disasm</span> <span class="o">=</span> <span class="n">json</span><span class="p">.</span><span class="n">loads</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">"pdj"</span><span class="p">))</span>
+
+<span class="c1"># mov dword [rax], 1
+</span><span class="k">print</span><span class="p">(</span><span class="s">"[+] linked list initialization detected at: "</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">hex</span><span class="p">(</span><span class="n">disasm</span><span class="p">[</span><span class="mi">13</span><span class="p">][</span><span class="s">"offset"</span><span class="p">]))</span><span class="o">+</span><span class="s">" "</span><span class="o">+</span><span class="n">disasm</span><span class="p">[</span><span class="mi">13</span><span class="p">][</span><span class="s">"disasm"</span><span class="p">])</span>
+<span class="n">list_base_addr</span> <span class="o">=</span> <span class="nb">hex</span><span class="p">(</span><span class="n">disasm</span><span class="p">[</span><span class="mi">13</span><span class="p">][</span><span class="s">"offset"</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s">"[+] setting a breakpoint at: "</span><span class="o">+</span><span class="n">list_base_addr</span><span class="p">)</span>
+<span class="n">r</span><span class="p">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">'db '</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">list_base_addr</span><span class="p">))</span>
+<span class="n">r</span><span class="p">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">'dc'</span><span class="p">)</span>
+<span class="n">initial_regs</span> <span class="o">=</span> <span class="n">json</span><span class="p">.</span><span class="n">loads</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">'drj'</span><span class="p">))</span>
+
+<span class="n">list_first_node</span> <span class="o">=</span> <span class="n">initial_regs</span><span class="p">[</span><span class="s">"rax"</span><span class="p">]</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">"[+] list initial node base address: "</span><span class="o">+</span><span class="nb">hex</span><span class="p">(</span><span class="n">list_first_node</span><span class="p">))</span>
+
+<span class="c1"># leave
+</span><span class="k">print</span><span class="p">(</span><span class="s">"[+] end of the main function detected at"</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">hex</span><span class="p">(</span><span class="n">disasm</span><span class="p">[</span><span class="mi">39</span><span class="p">][</span><span class="s">"offset"</span><span class="p">]))</span><span class="o">+</span><span class="s">" "</span><span class="o">+</span><span class="n">disasm</span><span class="p">[</span><span class="mi">39</span><span class="p">][</span><span class="s">"disasm"</span><span class="p">])</span>
+<span class="n">main_end</span> <span class="o">=</span> <span class="nb">hex</span><span class="p">(</span><span class="n">disasm</span><span class="p">[</span><span class="mi">39</span><span class="p">][</span><span class="s">"offset"</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s">"[+] setting a breakpoint at: "</span><span class="o">+</span><span class="n">main_end</span><span class="p">)</span>
+<span class="n">r</span><span class="p">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">'db '</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">main_end</span><span class="p">))</span>
+<span class="n">r</span><span class="p">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">'dc'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">"[+] the end of the program has been reached"</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">"[+] parsing the list now"</span><span class="p">)</span>
+
+<span class="n">node_int</span> <span class="o">=</span> <span class="n">json</span><span class="p">.</span><span class="n">loads</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">'pfj i @ '</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">list_first_node</span><span class="p">)))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">"[+] int item val = "</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">node_int</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">"value"</span><span class="p">]))</span>
+
+<span class="n">next_addr</span> <span class="o">=</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">list_first_node</span><span class="p">)</span><span class="o">+</span><span class="mi">8</span><span class="p">)</span>
+
+<span class="n">node_pointer</span> <span class="o">=</span>  <span class="n">json</span><span class="p">.</span><span class="n">loads</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">'pfj p @ '</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">next_addr</span><span class="p">)))</span>
+<span class="n">next_addr</span> <span class="o">=</span>  <span class="nb">int</span><span class="p">(</span><span class="n">node_pointer</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">"value"</span><span class="p">])</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">"[+] next node located @ "</span><span class="o">+</span> <span class="nb">hex</span><span class="p">(</span><span class="n">node_pointer</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">"value"</span><span class="p">]))</span>
+
+<span class="k">while</span> <span class="n">next_addr</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+	<span class="n">node_int</span> <span class="o">=</span> <span class="n">json</span><span class="p">.</span><span class="n">loads</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">'pfj i @ '</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">hex</span><span class="p">(</span><span class="n">next_addr</span><span class="p">))))</span>
+	<span class="k">print</span><span class="p">(</span><span class="s">"[+] int item val = "</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">node_int</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">"value"</span><span class="p">]))</span>
+	
+	<span class="n">next_addr</span> <span class="o">=</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">next_addr</span><span class="p">)</span><span class="o">+</span><span class="mi">8</span><span class="p">)</span>
+	<span class="n">node_pointer</span> <span class="o">=</span>  <span class="n">json</span><span class="p">.</span><span class="n">loads</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">'pfj p @ '</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">next_addr</span><span class="p">)))</span>
+	<span class="n">next_addr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">node_pointer</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">"value"</span><span class="p">])</span>
+	<span class="k">print</span><span class="p">(</span><span class="s">"[+] next node located @ "</span><span class="o">+</span> <span class="nb">hex</span><span class="p">(</span><span class="n">node_pointer</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">"value"</span><span class="p">]))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">"[*] End Of List"</span><span class="p">)</span>
+</code></pre></div></div>
+<p>As you can see, there is no mystery here, just a bunch of r2 commands one after another, the key concept here is that we can implement our own logic to automate stuff.</p>
+
+<p>Aaaand the script will output something like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Process with PID 23857 started...
+= attach 23857 23857
+File dbg:///home/lab/rev/superlist  reopened in read-write mode
+[+] linked list initialization detected at: 
+0x5591047661d8 mov dword [rax], 1
+[+] setting a breakpoint at: 0x5591047661d8
+hit breakpoint at: 5591047661d8
+[+] list initial node base address: 0x559104c23260
+[+] end of the main function detected at
+0x559104766247 leave
+[+] setting a breakpoint at: 0x559104766247
+hit breakpoint at: 559104766247
+[+] the end of the program has been reached
+[+] parsing the list now
+[+] int item val = 1
+[+] next node located @ 0x559104c23280
+[+] int item val = 20
+[+] next node located @ 0x559104c232a0
+[+] int item val = 21
+[+] next node located @ 0x559104c232c0
+[+] int item val = 6
+[+] next node located @ 0x559104c232e0
+[+] int item val = 19
+[+] next node located @ 0x559104c23300
+[+] int item val = 16
+[+] next node located @ 0x559104c23320
+[+] int item val = 16
+[+] next node located @ 0x559104c23340
+[+] int item val = 23
+[+] next node located @ 0x559104c23360
+[+] int item val = 15
+[+] next node located @ 0x559104c23380
+[+] int item val = 10
+[+] next node located @ 0x0
+[*] End Of List
+</code></pre></div></div>
+<p>The magic here is as we are exploring the list node by node untill we find a NULL pointer the size of the list does not matter at all. The distribution of the nodes in memory does not matter as well, as we will be following pointers, so we’ll expect the program itself to tell us where the next node can be found. Whatever the size or the distribution are we will be able to extract all of the values, and I think that’s wonderful.</p>
+
+<p>You should now compile the program and try it yourself.</p>
+
+<p>We will now proceed exploring the mysteries of bit wise operations</p>
+
+<h4 id="bitwise-operations">Bitwise operations</h4>
+
+<p><img src="https://preview.redd.it/lwlhsfatbzo01.png?width=960&amp;crop=smart&amp;auto=webp&amp;s=4761a110b7ab032c8777bea0cf99e5f03a649818" alt="Bitwise" /></p>
+
+<p>Bitwise operations are so simple I assume you already know about basic logical operations such as and, or, xor. Let’s look at this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#include &lt;stdio.h&gt;
+ 
+int main() {
+    int a   = 67;
+    int b   =  33;
+ 
+    printf("var a = %d\n", a);
+    printf("var b = %d\n\n", b);
+    printf("  Complement of a = %d\n", ~a);
+    printf("  a AND b = %d\n", a&amp;b);
+    printf("  a OR b =  %d\n", a|b);
+    printf("  a XOR b = %d\n", a^b);
+    printf("  A left shifted 1 = %d\n", a &lt;&lt; 1);
+    printf("  A right shifted 1 = %d\n", a &gt;&gt; 1);
+    getchar();
+    return 0;
+    
+}
+</code></pre></div></div>
+<p>The concept here is simple, just know that in C as well as in other many languages bitwise operations such as those can be easily made. Bitwise operations are present and actively used in some progams, we’ll present a specific example after this first one.</p>
+
+<p>Bitwise operations are mega easy to understand when disasm’ing a code because it is literally the same, it can be even easier to understand in the disasm, let’s see:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x7fa9fae06090]&gt; s main
+[0x55d69499a145]&gt; pdf
+            ; DATA XREF from entry0 @ 0x55d69499a07d
+┌ 225: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_8h @ rbp-0x8
+│           ; var int64_t var_4h @ rbp-0x4
+│           0x55d69499a145      55             push rbp
+│           0x55d69499a146      4889e5         mov rbp, rsp
+│           0x55d69499a149      4883ec10       sub rsp, 0x10
+│           0x55d69499a14d      c745f8430000.  mov dword [var_8h], 0x43 ; 'C' ; 67
+│           0x55d69499a154      c745fc210000.  mov dword [var_4h], 0x21 ; '!' ; 33
+│           0x55d69499a15b      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a15e      89c6           mov esi, eax
+│           0x55d69499a160      488d3d9d0e00.  lea rdi, str.var_a____d ; 0x55d69499b004 ; "var a = %d\n"
+│           0x55d69499a167      b800000000     mov eax, 0
+│           0x55d69499a16c      e8bffeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55d69499a171      8b45fc         mov eax, dword [var_4h]
+│           0x55d69499a174      89c6           mov esi, eax
+│           0x55d69499a176      488d3d930e00.  lea rdi, str.var_b____d ; 0x55d69499b010 ; "var b = %d\n\n"
+│           0x55d69499a17d      b800000000     mov eax, 0
+│           0x55d69499a182      e8a9feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55d69499a187      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a18a      f7d0           not eax
+│           0x55d69499a18c      89c6           mov esi, eax
+│           0x55d69499a18e      488d3d880e00.  lea rdi, str.Complement_of_a____d ; 0x55d69499b01d ; "  Complement of a = %d\n"
+│           0x55d69499a195      b800000000     mov eax, 0
+│           0x55d69499a19a      e891feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55d69499a19f      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a1a2      2345fc         and eax, dword [var_4h]
+│           0x55d69499a1a5      89c6           mov esi, eax
+│           0x55d69499a1a7      488d3d870e00.  lea rdi, str.a_AND_b____d ; 0x55d69499b035 ; "  a AND b = %d\n"
+│           0x55d69499a1ae      b800000000     mov eax, 0
+│           0x55d69499a1b3      e878feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55d69499a1b8      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a1bb      0b45fc         or eax, dword [var_4h]
+│           0x55d69499a1be      89c6           mov esi, eax
+│           0x55d69499a1c0      488d3d7e0e00.  lea rdi, str.a_OR_b_____d ; 0x55d69499b045 ; "  a OR b =  %d\n"
+│           0x55d69499a1c7      b800000000     mov eax, 0
+│           0x55d69499a1cc      e85ffeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55d69499a1d1      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a1d4      3345fc         xor eax, dword [var_4h]
+│           0x55d69499a1d7      89c6           mov esi, eax
+│           0x55d69499a1d9      488d3d750e00.  lea rdi, str.a_XOR_b____d ; 0x55d69499b055 ; "  a XOR b = %d\n"
+│           0x55d69499a1e0      b800000000     mov eax, 0
+│           0x55d69499a1e5      e846feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55d69499a1ea      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a1ed      01c0           add eax, eax
+│           0x55d69499a1ef      89c6           mov esi, eax
+│           0x55d69499a1f1      488d3d6d0e00.  lea rdi, str.A_left_shifted_1____d ; 0x55d69499b065 ; "  A left shifted 1 = %d\n"
+│           0x55d69499a1f8      b800000000     mov eax, 0
+│           0x55d69499a1fd      e82efeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55d69499a202      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a205      d1f8           sar eax, 1
+│           0x55d69499a207      89c6           mov esi, eax
+│           0x55d69499a209      488d3d6e0e00.  lea rdi, str.A_right_shifted_1____d ; 0x55d69499b07e ; "  A right shifted 1 = %d\n"
+│           0x55d69499a210      b800000000     mov eax, 0
+│           0x55d69499a215      e816feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55d69499a21a      e821feffff     call sym.imp.getchar    ; int getchar(void)
+│           0x55d69499a21f      b800000000     mov eax, 0
+│           0x55d69499a224      c9             leave
+└           0x55d69499a225      c3             ret
+[0x55d69499a145]&gt; 
+</code></pre></div></div>
+<p>The complement operation is the equiv of not, all zeros will turn ones and vice-versa, asm not works like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55d69499a187      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a18a      f7d0           not eax
+│           0x55d69499a18c      89c6           mov esi, eax
+│           0x55d69499a18e      488d3d880e00.  lea rdi, str.Complement_of_a____d ; 0x55d69499b01d ; "  Complement of a = %d\n"
+</code></pre></div></div>
+<p>And is also present in the x86/x64 instruction set:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55d69499a19f      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a1a2      2345fc         and eax, dword [var_4h]
+│           0x55d69499a1a5      89c6           mov esi, eax
+│           0x55d69499a1a7      488d3d870e00.  lea rdi, str.a_AND_b____d ; 0x55d69499b035 ; "  a AND b = %d\n"
+</code></pre></div></div>
+<p>As well as or</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55d69499a1b8      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a1bb      0b45fc         or eax, dword [var_4h]
+│           0x55d69499a1be      89c6           mov esi, eax
+│           0x55d69499a1c0      488d3d7e0e00.  lea rdi, str.a_OR_b_____d ; 0x55d69499b045 ; "  a OR b =  %d\n"
+</code></pre></div></div>
+<p>And XOR, keep XOR very present as it is commonly used in shitty crypters/packers</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55d69499a1d1      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a1d4      3345fc         xor eax, dword [var_4h]
+│           0x55d69499a1d7      89c6           mov esi, eax
+│           0x55d69499a1d9      488d3d750e00.  lea rdi, str.a_XOR_b____d ; 0x55d69499b055 ; "  a XOR b = %d\n"
+</code></pre></div></div>
+<p>Shift operations can be used for multiplication/division in the scope of some algorithms. In asm, sar and sal can be used for shift aligns, but also adds and subs can be used as well:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55d69499a1ea      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a1ed      01c0           add eax, eax
+│           0x55d69499a1ef      89c6           mov esi, eax
+│           0x55d69499a1f1      488d3d6d0e00.  lea rdi, str.A_left_shifted_1____d ; 0x55d69499b065 ; "  A left shifted 1 = %d\n"
+
+│           0x55d69499a202      8b45f8         mov eax, dword [var_8h]
+│           0x55d69499a205      d1f8           sar eax, 1
+│           0x55d69499a207      89c6           mov esi, eax
+│           0x55d69499a209      488d3d6e0e00.  lea rdi, str.A_right_shifted_1____d ; 0x55d69499b07e ; "  A right shifted 1 = %d\n"
+</code></pre></div></div>
+
+<h4 id="enums">Enums</h4>
+<p>Remember global constant variables?</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#include &lt;stdio.h&gt;
+
+enum week {Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday};
+
+int main()
+{
+    // creating today variable of enum week type
+    enum week today;
+    today = Wednesday;
+    printf("Day %d",today+1);
+    return 0;
+}
+</code></pre></div></div>
+<p>Enums are kind of lists of constant values, let’s decompile that:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55a7617a5135]&gt; pdf
+            ; DATA XREF from entry0 @ 0x55a7617a506d
+┌ 47: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_4h @ rbp-0x4
+│           0x55a7617a5135      55             push rbp
+│           0x55a7617a5136      4889e5         mov rbp, rsp
+│           0x55a7617a5139      4883ec10       sub rsp, 0x10
+│           0x55a7617a513d      c745fc030000.  mov dword [var_4h], 3
+│           0x55a7617a5144      8b45fc         mov eax, dword [var_4h]
+│           0x55a7617a5147      83c001         add eax, 1
+│           0x55a7617a514a      89c6           mov esi, eax
+│           0x55a7617a514c      488d3db10e00.  lea rdi, str.Day__d     ; 0x55a7617a6004 ; "Day %d"
+│           0x55a7617a5153      b800000000     mov eax, 0
+│           0x55a7617a5158      e8d3feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55a7617a515d      b800000000     mov eax, 0
+│           0x55a7617a5162      c9             leave
+└           0x55a7617a5163      c3             ret
+[0x55a7617a5135]&gt; 
+</code></pre></div></div>
+<p>Those enums are auto indexed, so for example, Sunday will be represented as 0, Monday 1 and so forth, said that we can easily understand that Wednesday == 3. Now the program is easy to understand. Also note that, as those enus are 100% constant static structs, that is a thing that is directly passed to the compiler, the compiler then builds a program according to that (so everytime a compiler reads Wednesday it will just put a 3 there).</p>
+
+<p>Enums are commonly used along with bitwise operations to pass flags to functions.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#include &lt;stdio.h&gt;
+
+enum designFlags {
+	BOLD = 1,
+	ITALICS = 2,
+	UNDERLINE = 4
+};
+
+int main() {
+	int myDesign = BOLD | UNDERLINE; 
+
+        //    
+        //  | 
+        //  ___________
+        //    
+
+	printf("%d", myDesign);
+
+	return 0;
+}
+</code></pre></div></div>
+<p>Imagine you have a function that already receives a lot of parameters, and you need even more parameters, such as permissions, format relatd stuff, access modes or whatever and those parameters can even go together, parameters can easily grow and make the code very hard to read. Enums along with bitwise operations can help with that.</p>
+
+<p>Look at the previous example imagine passing BOLD as a parameter to a function, that would be something like: 00000001, but also imagine that you want your text bold as well as underline (as presented in the code), underline would be: 00000100, why pass those values? We can logically add them with an or and we’ll get this: 00000101, that is 5. So if the function gets a five it will know that 5 can only be a combination of BOLD and UNDERLINE. Think about chmod, do you get it now?</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5560d3fdd135]&gt; pdf
+            ; DATA XREF from entry0 @ 0x5560d3fdd06d
+┌ 44: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_4h @ rbp-0x4
+│           0x5560d3fdd135      55             push rbp
+│           0x5560d3fdd136      4889e5         mov rbp, rsp
+│           0x5560d3fdd139      4883ec10       sub rsp, 0x10
+│           0x5560d3fdd13d      c745fc050000.  mov dword [var_4h], 5
+│           0x5560d3fdd144      8b45fc         mov eax, dword [var_4h]
+│           0x5560d3fdd147      89c6           mov esi, eax
+│           0x5560d3fdd149      488d3db40e00.  lea rdi, [0x5560d3fde004] ; "%d"
+│           0x5560d3fdd150      b800000000     mov eax, 0
+│           0x5560d3fdd155      e8d6feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x5560d3fdd15a      b800000000     mov eax, 0
+│           0x5560d3fdd15f      c9             leave
+└           0x5560d3fdd160      c3             ret
+[0x5560d3fdd135]&gt; 
+</code></pre></div></div>
+<p>In this case, the compiler resolves the logical OR operation and directly introduces a 5 inside the var, cool!</p>
+
+    </div>
+
+    <div class="post__share">
+  <ul class="share__list list-reset">
+    <li class="share__item">
+      <a class="share__link share__facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/reversing-radare-11"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Facebook" rel="nofollow"><i class="ion ion-logo-facebook"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__twitter" href="https://twitter.com/intent/tweet?text=Reverse%20engineering%2032%20and%2064%20bits%20binaries%20with%20Radare2%20-%2012%20(linked%20lists,%20enums,%20bitwise%20operations%20and%20r2pipe)&url=http://localhost:4000/reversing-radare-11"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Twitter" rel="nofollow"><i class="ion ion-logo-twitter"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url=http://localhost:4000/reversing-radare-11&title=Reverse%20engineering%2032%20and%2064%20bits%20binaries%20with%20Radare2%20-%2012%20(linked%20lists,%20enums,%20bitwise%20operations%20and%20r2pipe)&summary=&source=Artik%20Blue"
+      onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn" rel="nofollow"><i class="ion ion-logo-linkedin"></i></a>
+    </li>
+  </ul>
+</div>
+
+
+    <div class="post__navigation">
+  
+  <a class="post__prev" href="/reversing-radare-10">
+    <div class="prev__image">
+      <img class="lazy" data-src="/images//radare2/radare2_10.png" alt="Reverse engineering 32 and 64 bits binaries with Radare2 - 12 (linked lists, enums, bitwise operations and r2pipe)">
+    </div>
+    <div class="prev__box">
+      <span class="post__nav post__nav__prev">Older post</span>
+      <h2 class="post__nav__title">Reverse engineering 32 and 64 bits binaries with Radare2 - 11 (more pointers and dynamic structs)</h2>
+    </div>
+  </a>
+  
+
+  
+  <a class="post__next" href="/reversing-radare-12">
+    <div class="next__box">
+      <span class="post__nav post__nav__next">Newer post</span>
+      <h2 class="post__nav__title">Reverse engineering 32 and 64 bits binaries with Radare2 - 13 (defines, unions and bitmaps)</h2>
+    </div>
+    <div class="next__image">
+      <img class="lazy" data-src="/images//radare2/radare2_12.png" alt="Reverse engineering 32 and 64 bits binaries with Radare2 - 12 (linked lists, enums, bitwise operations and r2pipe)">
+    </div>
+  </a>
+  
+</div>
+
+     <!-- begin comments -->
+<div id="disqus_thread" class="post__comments">
+  <div id="disqus_empty"></div>
+</div>
+
+<script>
+  function load_disqus() {
+    var disqus_shortname = 'artikblue',
+      is_disqus_empty = document.getElementById('disqus_empty'),
+      disqus_target = document.getElementById('disqus_thread'),
+      disqus_embed = document.createElement('script'),
+      disqus_hook = (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]);
+
+    if (disqus_target && is_disqus_empty) {
+      disqus_embed.type = 'text/javascript';
+      disqus_embed.async = true;
+      disqus_embed.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      disqus_hook.appendChild(disqus_embed);
+      is_disqus_empty.remove();
+    }
+  }
+
+  window.addEventListener('scroll', function (e) {
+    var currentScroll = document.scrollingElement.scrollTop;
+    var disqus_target = document.getElementById('disqus_thread');
+
+    if (disqus_target && (currentScroll > disqus_target.getBoundingClientRect().top - 150)) {
+      load_disqus('disqus_shortname');
+    }
+  }, false);
+
+</script>
+<noscript>Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+</noscript>
+<!-- end comments --> 
+
+  </article>
+</div>
+<!-- end post -->
+      </div>
+      <!-- end wrapper-page -->
+    </main>
+    <!-- end content -->
+    <div class="top" title="Top"><i class="ion ion-ios-arrow-round-up"></i></div>
+    <!-- begin footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12 col-m-12">
+        <div class="footer__inner">
+
+          <div class="footer__head">
+            <div class="row">
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-recent">
+    <div class="widget__head">
+      <h3 class="widget__title">Recent Posts</h3>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-22">
+        <img class="lazy" data-src="/images//radare2/radare2_22.png" alt="Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-20T00:01:35+02:00">Jun 20, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-22">Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack</a></h4>
+      </div>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-21">
+        <img class="lazy" data-src="/images//radare2/radare2_21.png" alt="Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-15T00:01:35+02:00">Jun 15, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-21">Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains</a></h4>
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-gallery">
+    <div class="widget__head">
+      <h3 class="widget__title">Gallery</h3>
+    </div>
+    
+    <div class="gallery-box gallery-footer">
+      <div class="gallery">
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/landscape1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sasha1.jpeg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/castle1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/scotland1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sanfran1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/newyork1.jpg" alt="Minimalism">
+        </div>
+        
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-subscribe">
+    <div class="widget__head">
+      <h3 class="widget__title"></h3>
+    </div>
+    <div class="subscribe__inner">
+      <div class="subscribe__group">
+        <div class="subscribe__description"></div>
+      </div>
+      <!-- <form class="subscribe-form validate"
+           action="#" method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form" target="_blank" novalidate>
+           <label class="screen-reader-text" for="mce-EMAIL">Email address</label>
+           <input class="subscribe-email required email" id="mce-EMAIL" type="text" name="EMAIL"
+           placeholder="Your email address">
+           <button class="button subscribe-button" id="membedded-subscribe" type="submit" name="subscribe"></button>
+           </form> -->
+    </div>
+  </div>
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        
+  <div class="social">
+    <ul class="social__list list-reset">
+      
+      <li class="social__item">
+        <a class="social__link" href="https://twitter.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-twitter"></i></a>
+      </li>
+      
+      <li class="social__item">
+        <a class="social__link" href="https://github.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-github"></i></a>
+      </li>
+      
+    </ul>
+  </div>
+
+        <div class="copyright">2022 &copy; <a href="/">Artik Blue</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- end footer -->
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="/js/scripts.js"></script>
+</body>
+
+</html>

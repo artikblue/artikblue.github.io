@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Reverse engineering 32 and 64 bits binaries with Radare2 - 9 (files; read, write, seek and some heaps :O)</title>
+  <meta name='description' content='All things cyber'>
+
+  <link rel="canonical" href="http://localhost:4000/reversing-radare-8">
+  <link rel="alternate" type="application/rss+xml" title="Artik Blue" href="/feed.xml">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Ionicons -->
+  <link href="https://unpkg.com/ionicons@4.2.2/dist/css/ionicons.min.css" rel="stylesheet">
+
+  <style>
+  
+      /*!------------------------------------------------------------------
+[MAIN STYLESHEET]
+-------------------------------------------------------------------*/.list-reset{list-style-type:none;margin:0;padding:0}.clearfix::after,.clearfix ::before{content:"";display:table;clear:both}.screen-reader-text{clip:rect(1px, 1px, 1px, 1px);height:1px;overflow:hidden;position:absolute !important;width:1px;word-wrap:normal !important}/*! normalize.css v8.0.0 | MIT License | github.com/necolas/normalize.css */html{line-height:1.15;-webkit-text-size-adjust:100%}body{margin:0}h1{font-size:2em;margin:0.67em 0}hr{box-sizing:content-box;height:0;overflow:visible}pre{font-family:monospace, monospace;font-size:1em}a{background-color:transparent}abbr[title]{border-bottom:none;text-decoration:underline;text-decoration:underline dotted}b,strong{font-weight:bolder}code,kbd,samp{font-family:monospace, monospace;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-0.25em}sup{top:-0.5em}img{border-style:none}button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;line-height:1.15;margin:0}button,input{overflow:visible}button,select{text-transform:none}button,[type="button"],[type="reset"],[type="submit"]{-webkit-appearance:button}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner{border-style:none;padding:0}button:-moz-focusring,[type="button"]:-moz-focusring,[type="reset"]:-moz-focusring,[type="submit"]:-moz-focusring{outline:1px dotted ButtonText}fieldset{padding:0.35em 0.75em 0.625em}legend{box-sizing:border-box;color:inherit;display:table;max-width:100%;padding:0;white-space:normal}progress{vertical-align:baseline}textarea{overflow:auto}[type="checkbox"],[type="radio"]{box-sizing:border-box;padding:0}[type="number"]::-webkit-inner-spin-button,[type="number"]::-webkit-outer-spin-button{height:auto}[type="search"]{-webkit-appearance:textfield;outline-offset:-2px}[type="search"]::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}details{display:block}summary{display:list-item}template{display:none}[hidden]{display:none}body,h1,h2,h3,h4,h5,h6,p,blockquote,pre,dl,dd,ol,ul,fieldset,legend,figure,hr{margin:0;padding:0}li>ul,li>ol{margin-bottom:0}table{border-collapse:collapse;border-spacing:0}h1,h2,h3,h4,h5,h6,ul,ol,dl,blockquote,p,address,hr,table,fieldset,figure,pre{margin-bottom:30px}ul,ol,dd{margin-left:15px}ul li,ol li{margin-bottom:10px}.highlight{background:#161d25}.highlighter-rouge .highlight{background:#eef}.highlight .c{color:#998;font-style:italic}.highlight .err{color:#a61717;background-color:#e3d2d2}.highlight .k{font-weight:bold}.highlight .o{font-weight:bold}.highlight .cm{color:#998;font-style:italic}.highlight .cp{color:#999;font-weight:bold}.highlight .c1{color:#998;font-style:italic}.highlight .cs{color:#999;font-weight:bold;font-style:italic}.highlight .gd{color:#000;background-color:#fdd}.highlight .gd .x{color:#000;background-color:#faa}.highlight .ge{font-style:italic}.highlight .gr{color:#a00}.highlight .gh{color:#999}.highlight .gi{color:#000;background-color:#dfd}.highlight .gi .x{color:#000;background-color:#afa}.highlight .go{color:#888}.highlight .gp{color:#555}.highlight .gs{font-weight:bold}.highlight .gu{color:#aaa}.highlight .gt{color:#a00}.highlight .kc{font-weight:bold}.highlight .kd{font-weight:bold}.highlight .kp{font-weight:bold}.highlight .kr{font-weight:bold}.highlight .kt{color:#458;font-weight:bold}.highlight .m{color:#099}.highlight .s{color:#d14}.highlight .na{color:teal}.highlight .nb{color:#0086B3}.highlight .nc{color:#458;font-weight:bold}.highlight .no{color:teal}.highlight .ni{color:purple}.highlight .ne{color:#900;font-weight:bold}.highlight .nf{color:#900;font-weight:bold}.highlight .nn{color:#555}.highlight .nt{color:navy}.highlight .nv{color:teal}.highlight .ow{font-weight:bold}.highlight .w{color:#bbb}.highlight .mf{color:#099}.highlight .mh{color:#099}.highlight .mi{color:#099}.highlight .mo{color:#099}.highlight .sb{color:#d14}.highlight .sc{color:#d14}.highlight .sd{color:#d14}.highlight .s2{color:#d14}.highlight .se{color:#d14}.highlight .sh{color:#d14}.highlight .si{color:#d14}.highlight .sx{color:#d14}.highlight .sr{color:#009926}.highlight .s1{color:#d14}.highlight .ss{color:#990073}.highlight .bp{color:#999}.highlight .vc{color:teal}.highlight .vg{color:teal}.highlight .vi{color:teal}.highlight .il{color:#099}.container{max-width:1270px;padding-left:15px;padding-right:15px;margin:0 auto}@media only screen and (max-width: 1300px){.container{max-width:1100px}}@media only screen and (max-width: 1130px){.container{max-width:1000px}}@media only screen and (max-width: 1024px){.container{max-width:740px}}@media only screen and (max-width: 768px){.container{max-width:540px}}@media only screen and (max-width: 576px){.container{max-width:380px}}.row{display:flex;flex-wrap:wrap;flex:0 1 auto;flex-direction:row;box-sizing:border-box;margin-left:-15px;margin-right:-15px}.col{padding-left:15px;padding-right:15px}[class^="col-"]{flex:auto}.col-0{width:0%}.col-1{width:8.3333333333%}.col-2{width:16.6666666667%}.col-3{width:25%}.col-4{width:33.3333333333%}.col-5{width:41.6666666667%}.col-6{width:50%}.col-7{width:58.3333333333%}.col-8{width:66.6666666667%}.col-9{width:75%}.col-10{width:83.3333333333%}.col-11{width:91.6666666667%}.col-12{width:100%}.push-0{margin-left:0%}.push-1{margin-left:8.3333333333%}.push-2{margin-left:16.6666666667%}.push-3{margin-left:25%}.push-4{margin-left:33.3333333333%}.push-5{margin-left:41.6666666667%}.push-6{margin-left:50%}.push-7{margin-left:58.3333333333%}.push-8{margin-left:66.6666666667%}.push-9{margin-left:75%}.push-10{margin-left:83.3333333333%}.push-11{margin-left:91.6666666667%}.push-12{margin-left:100%}.pull-0{margin-right:0%}.pull-1{margin-right:8.3333333333%}.pull-2{margin-right:16.6666666667%}.pull-3{margin-right:25%}.pull-4{margin-right:33.3333333333%}.pull-5{margin-right:41.6666666667%}.pull-6{margin-right:50%}.pull-7{margin-right:58.3333333333%}.pull-8{margin-right:66.6666666667%}.pull-9{margin-right:75%}.pull-10{margin-right:83.3333333333%}.pull-11{margin-right:91.6666666667%}.pull-12{margin-right:100%}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}img[data-action="zoom"]{cursor:pointer;cursor:-webkit-zoom-in;cursor:-moz-zoom-in}.zoom-img,.zoom-img-wrap{position:relative;z-index:666;-webkit-transition:all 300ms;-o-transition:all 300ms;transition:all 300ms}img.zoom-img{cursor:pointer;cursor:-webkit-zoom-out;cursor:-moz-zoom-out}.zoom-overlay{z-index:420;background:#161d25;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;opacity:0;-webkit-transition:opacity 300ms;-o-transition:opacity 300ms;transition:opacity 300ms}.zoom-overlay-open .zoom-overlay{opacity:1}.zoom-overlay-open,.zoom-overlay-transitioning{cursor:default}.animate{animation:animateElement cubic-bezier(0.3, 0.45, 0.45, 0.95) 0.75s;animation-duration:0.5s;animation-iteration-count:1;transition:transform .15s}@keyframes animateElement{0%{opacity:0;transform:translate(0px, 50px)}100%{opacity:1;transform:translate(0px, 0px)}}*,*::after,*::before{box-sizing:border-box}body{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-size:18px;line-height:34px;border:10px solid #131212;color:#fff;background-color:#131212;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}body.dark .footer__head{background:#131212}@media only screen and (max-width: 768px){body.dark .footer__head{padding:40px}}@media only screen and (max-width: 576px){body.dark .footer__head{padding:30px}}body.dark .subscribe-form .subscribe-email{background:#161d25}@media only screen and (max-width: 576px){body{font-size:16px;line-height:29px;border-width:5px}}*::selection{color:#fff;background-color:rgba(0,112,255,0.8)}h1,h2,h3,h4,h5,h6{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-weight:700;line-height:1.3;letter-spacing:-1px}h1{font-size:36px}h2{font-size:28px}h3{font-size:24px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px}blockquote{position:relative;margin-top:30px;padding:25px 25px 15px 60px;font-size:30px;line-height:45px;font-weight:600;font-style:normal}blockquote::before{content:'\201C';position:absolute;top:0.35em;left:0.05em;font-size:3.5em;color:#0070ff}blockquote p{margin-bottom:10px}blockquote cite{display:inline-block;margin-top:7px;font-size:15px;font-style:normal;color:#ccc}blockquote cite:before{content:'\2014' '\00a0'}@media only screen and (max-width: 1024px){blockquote{font-size:24px;line-height:37px}}@media only screen and (max-width: 576px){blockquote{padding:38px 0 15px 35px;font-size:21px;line-height:31px}}pre{overflow:auto;padding:15px;margin-bottom:0;font-size:14px;white-space:pre-wrap;word-wrap:break-word;word-break:break-all}img,.zoom-img-wrap{max-width:100%;height:auto;vertical-align:middle}img+em,.zoom-img-wrap+em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}img+em a,.zoom-img-wrap+em a{border-bottom:1px solid #fff}img+em a:hover,.zoom-img-wrap+em a:hover{color:#fff;border-color:#0070ff}a{text-decoration:none;color:#fff;transition:all 0.35s}a:hover{color:#fff}hr{display:block;height:1px;width:100px;margin:50px 0;border:0;background:#000}.wrapper-page{margin-bottom:70px}@media only screen and (max-width: 768px){.wrapper-page{margin-bottom:60px}}@media only screen and (max-width: 576px){.wrapper-page{margin-bottom:40px}}.button{display:inline-block;height:45px;padding:0 20px;font-size:15px;font-weight:700;border:none;outline:none;color:#fff;background:#0070ff;transition:all 0.35s;cursor:pointer}.button:hover{color:#fff;background:#0065e6}.lazy{opacity:0;transition:0.3s}.lazy.loaded{opacity:1}.top{position:fixed;bottom:40px;right:-100px;z-index:1;width:28px;height:40px;font-size:28px;line-height:40px;text-align:center;border-radius:6px;background-color:#161d25;color:#fff;cursor:pointer;transition:all .25s ease;box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.top:hover{color:#fff;background-color:#0070ff}.top.is-active{right:40px}@media only screen and (max-width: 768px){.top{bottom:25px}.top.is-active{right:30px}}.header{height:auto;border-bottom:1px solid #131212;background:#161d25;transition:all 0.35s}.header .header__overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:15;background-color:rgba(17,17,17,0.7);cursor:pointer;opacity:0;visibility:hidden;transition:all 0.5s ease}@media only screen and (max-width: 1024px){.header .header__overlay.is-visible{opacity:1;visibility:visible}}.header__inner{position:relative;display:flex;align-items:center;min-height:80px}.logo__link{font-size:20px;line-height:26px;font-weight:700}.logo__link:hover{color:#0070ff}.logo__image{max-height:50px}.main-nav{margin-left:80px}@media only screen and (max-width: 1024px){.main-nav{position:fixed;top:0;left:inherit;right:-300px;bottom:0;transform:none;z-index:100;width:300px;height:100vh;padding:40px 30px 30px;border:10px solid #131212;transition:right 0.5s cubic-bezier(0.7, 0.4, 0, 1);background:#161d25}.main-nav.is-open{right:0}.main-nav .nav__list{width:100%}.main-nav .nav__list .nav__item{display:block;margin:0 10px}.main-nav .nav__list .nav__item:last-child{margin-right:10px}.main-nav .nav__list .nav__item .nav__link{display:block;padding:10px 0;font-size:16px;line-height:26px;font-weight:500}}@media only screen and (max-width: 576px){.main-nav{padding:20px 30px;border-width:5px}}.main-nav__box{display:flex;align-items:center}.main-nav__box .nav__icon-close{display:none;font-size:24px;text-align:right}.main-nav__box .nav__icon-close .ion-md-close{transition:all 0.35s;cursor:pointer}.main-nav__box .nav__icon-close .ion-md-close:hover{color:#0070ff}.main-nav__box .nav__title{display:none}@media only screen and (max-width: 1024px){.main-nav__box{display:block}.main-nav__box .nav__icon-close{display:block}.main-nav__box .nav__title{display:block;margin:0 10px 15px;padding-bottom:15px;font-size:24px;font-weight:700;color:#fff;border-bottom:1px solid #131212}}.nav__list .nav__item{display:inline-block;margin:0 20px}.nav__list .nav__item:last-child{margin-right:40px}.nav__list .nav__item .nav__link{font-size:15px;line-height:24px;font-weight:500}.nav__list .nav__item .nav__link:hover{color:#0070ff}.nav-buttons{display:flex;align-items:center;margin-left:auto;font-size:21px;color:#fff;cursor:pointer}.nav-buttons .nav__icon{transition:all 0.35s}.nav-buttons .nav__icon:hover{color:#0070ff}.nav-buttons .nav__icon:first-child{margin-right:15px}.nav-buttons .nav__icon-menu{display:none}@media only screen and (max-width: 1024px){.nav-buttons{margin-left:auto}.nav-buttons .nav__icon-menu{display:block}}.search{position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;transform:scale(0.95);overflow:auto;opacity:0;background:#131212;transition:all .25s ease}.search.is-visible{transform:scale(1);z-index:100;opacity:1;transition:all .25s ease}.search__box{width:50%;margin:0 auto;padding-top:140px}@media only screen and (max-width: 1024px){.search__box{width:80%;padding-top:100px}}.search__group{position:relative;margin-bottom:50px}.search__group .search__close{position:absolute;right:20px;top:17px;font-size:27px;line-height:40px;cursor:pointer;transition:all .2s}.search__group .search__close:hover{color:#0070ff}.search__group .search__text{width:100%;padding:20px;font-size:21px;line-height:31px;border:2px solid transparent;border-radius:4px;color:#fff;background:#161d25;outline:none;transition:all .2s}.search__group .search__text:focus{border-color:#0070ff}.search__group .search__text::placeholder{font-weight:500;color:#fff}.search__group .search__text::-ms-clear{display:none}.search-results-list .no-results{width:100%;font-size:21px;font-weight:600;text-align:center;color:#fff}.pagination{margin-top:40px}@media only screen and (max-width: 768px){.pagination{margin-top:30px}}@media only screen and (max-width: 576px){.pagination{margin-top:20px}}.pagination__inner{display:flex;justify-content:center;align-items:center}.pagination__list{display:flex;font-weight:600;height:40px;padding:0 20px;font-size:14px;line-height:40px;border-radius:3px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);color:#fff;background-color:#161d25}.pagination__count{display:inline-block;padding:0 15px;margin:0 15px;font-size:13px;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1);color:#ccc}.pagination__next i,.pagination__prev i{font-size:13px}.pagination__next:hover,.pagination__prev:hover{color:#0070ff}.pagination__next.disabled,.pagination__prev.disabled{opacity:0.2;cursor:not-allowed;color:inherit}.pagination__next i{margin-left:4px}.pagination__prev i{margin-right:4px}.footer{padding-top:70px;background:#161d25}.footer .row .col{flex-grow:1}.footer .footer__inner{padding:60px 0;margin:0 60px 0;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.footer .footer__head{margin:0 -60px;padding:60px;background:#161d25;box-shadow:0 10px 40px rgba(0,0,0,0.07)}.footer .footer__content{padding:60px 0}@media only screen and (max-width: 1024px){.footer .row .col:last-child>.widget{margin-bottom:0}}@media only screen and (max-width: 768px){.footer{padding-top:60px}.footer .footer__inner{padding:0;margin:0;background-image:none}.footer .footer__head{margin:0;padding:0;box-shadow:none}}@media only screen and (max-width: 576px){.footer{padding-top:50px}}@media only screen and (max-width: 1024px){.widget{margin-bottom:30px}}@media only screen and (max-width: 576px){.widget{margin-bottom:40px}}.widget__head{margin-bottom:20px}.widget__head .widget__title{margin:0;font-size:24px;color:#fff}.widget-gallery{padding:0 35px}@media only screen and (max-width: 1024px){.widget-gallery{padding:0}}.recent-posts{position:relative;display:flex;margin-bottom:15px}.recent-posts:last-child{margin-bottom:0}.recent-posts__header{margin-right:15px}.recent-posts__image{position:relative;display:block;margin-right:15px;min-width:80px;height:80px;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:#131212}.recent-posts__image img{position:absolute;top:0;width:100%;height:100%;object-fit:cover}.recent-posts__date{margin-bottom:5px;font-size:13px;line-height:16px;color:#ccc}.recent-posts__title{margin-bottom:0;font-size:17px;line-height:22px;font-weight:700}.recent-posts__title a{color:#fff}.recent-posts__title a:hover{color:#fff}.widget-subscribe .subscribe__inner{display:flex;flex-direction:column;justify-content:space-between}.widget-subscribe .subscribe__group{margin-bottom:20px}.widget-subscribe .subscribe__group .subscribe__title{margin-bottom:15px;color:#fff}.widget-subscribe .subscribe__group .subscribe__description{font-size:15px;line-height:22px;color:#ccc}.widget-subscribe .subscribe-form{position:relative;height:60px}.widget-subscribe .subscribe-form .subscribe-email{width:100%;height:100%;padding:20px;font-size:14px;line-height:19px;font-weight:500;color:rgba(255,255,255,0.8);border:2px solid #131212;background:transparent;transition:border-color .2s ease-in-out;outline:0}.widget-subscribe .subscribe-form .subscribe-email::placeholder{color:rgba(255,255,255,0.8)}.widget-subscribe .subscribe-form .subscribe-email:focus{color:rgba(255,255,255,0.8);border-color:#0070ff}.widget-subscribe .subscribe-form .subscribe-button{position:absolute;top:10px;right:10px;height:40px;padding:0 15px;font-size:14px}@media only screen and (max-width: 1130px){.widget-subscribe .subscribe-form .subscribe-email{font-size:13px}.widget-subscribe .subscribe-form .subscribe-button{font-size:14px}}.copyright{padding:0 0 30px;margin-top:10px;font-size:13px;font-weight:500;text-align:center;color:#ccc}.copyright a:hover{color:#0070ff}@media only screen and (max-width: 768px){.copyright{text-align:left}}.gallery-box{margin:40px 0}.gallery-box.gallery-footer{margin:0}.gallery-box em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}.gallery-box em a{border-bottom:1px solid #fff}.gallery-box em a:hover{color:#fff;border-color:#0070ff}.gallery{display:grid;grid-template-columns:repeat(3, auto);justify-content:center;align-content:center;grid-gap:10px}.gallery .gallery__image{background:#131212}.gallery .gallery__image img{display:block;width:100%;height:auto;object-fit:cover}.social{margin:60px 0 0;text-align:center}.social .social__list{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}.social .social__item{display:inline-block;margin:0 2px}.social .social__link{position:relative;z-index:1;padding:0 10px;font-size:21px;line-height:1}.social .social__link:hover{color:#fff}.social .social__link:hover::after{transform:translate3d(-50%, -50%, 0) scale(1)}.social .social__link::after{content:'';display:block;position:absolute;z-index:-1;top:50%;left:50%;transform:translate3d(-50%, -50%, 0) scale(0);width:100%;height:0;padding-bottom:100%;border-radius:50%;background:#0070ff;transition:all .25s}@media only screen and (max-width: 768px){.social{margin:50px 0 0;text-align:left}.social .social__list{justify-content:start}}.hero{padding:60px 0 70px;margin-bottom:70px;background:#161d25}.hero.hero--post .article__meta{margin-bottom:13px;font-size:14px;font-weight:500}.hero.hero--post .article__meta .article__date::before{content:none}.hero.hero--post .article__author-link{font-size:14px;line-height:20px;font-weight:500;color:#ccc}.hero.hero--post .article__author-link span{color:#ccc}.hero.hero--post .article__author-link:hover{color:#fff}.hero.hero--page .hero__title{margin-bottom:0}@media only screen and (max-width: 768px){.hero{padding:60px 0 60px;margin-bottom:60px}}@media only screen and (max-width: 576px){.hero{padding:40px 0 40px;margin-bottom:40px}}.hero__inner{display:flex;align-items:center}@media only screen and (max-width: 768px){.hero__inner{flex-direction:column}}.hero__left,.hero__right{width:50%}@media only screen and (max-width: 768px){.hero__left,.hero__right{width:100%}}.hero__left .hero__title,.hero__left .hero__job{font-size:50px;font-weight:700;letter-spacing:-2px;color:#fff}@media only screen and (max-width: 1130px){.hero__left .hero__title,.hero__left .hero__job{font-size:40px;line-height:1.2}}@media only screen and (max-width: 1024px){.hero__left .hero__title,.hero__left .hero__job{font-size:33px}}@media only screen and (max-width: 576px){.hero__left .hero__title,.hero__left .hero__job{font-size:27px}}.hero__left .hero__title{margin-right:20px;margin-bottom:10px}@media only screen and (max-width: 768px){.hero__left .hero__title{margin-right:0}}.hero__left .hero__job{margin-bottom:20px}.hero__left .hero__name{position:relative;font-weight:400}.hero__left .hero__name::after{content:"";position:absolute;left:0;bottom:0px;width:100%;height:38%;background-color:rgba(0,112,255,0.1)}.hero__left .hero__description{max-width:550px;margin:0;font-size:21px;font-weight:500;color:#ccc}@media only screen and (max-width: 1024px){.hero__left .hero__description{font-size:16px;line-height:26px}}.hero__left .hero__button{margin-top:20px;padding-right:12px;display:inline-block;font-size:16px;line-height:16px;font-weight:700;color:#fff;outline:none;cursor:pointer;transition:all 0.35s}.hero__left .hero__button:hover{color:#fff;background:#0065e6}.hero__left .hero__button .button-arrow{display:inline-block;margin-right:10px;width:30px;height:30px;line-height:30px;text-align:center;color:#fff;background:#0070ff}.hero__right{position:relative}.hero__right::after{content:"";position:absolute;top:50%;transform:translateY(-50%);display:block;width:100%;height:50%;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.hero__right .hero__image{position:relative;z-index:10;width:370px;height:470px;margin:0 auto}.hero__right .hero__image::before{content:"";display:block;position:absolute;top:0;z-index:1;width:100%;height:100%;background:#131212}.hero__right .hero__image img{position:absolute;top:0;z-index:1;height:100%;width:100%;object-fit:cover;box-shadow:10px 10px 0 #0070ff;background:#131212}@media only screen and (max-width: 1130px){.hero__right .hero__image{width:270px;height:370px}}@media only screen and (max-width: 1024px){.hero__right .hero__image{width:230px;height:330px}}@media only screen and (max-width: 768px){.hero__right{order:-1}.hero__right .hero__image{width:100%;height:330px;margin-bottom:40px}}@media only screen and (max-width: 576px){.hero__right .hero__image{height:270px;margin-bottom:30px}.hero__right .hero__image img{box-shadow:none}}.contact-head{margin-bottom:30px}.form-box{max-width:750px;margin:0 auto}.form__group{margin-bottom:20px}.form__group:last-child{margin-bottom:0}.form__input{width:100%;padding:20px;font-size:14px;font-weight:500;border:1px solid #131212;outline:none;transition:250ms;resize:vertical;color:rgba(255,255,255,0.8);background:#161d25}.form__input::placeholder{color:rgba(255,255,255,0.8)}.form__input:focus{border:1px solid #0070ff}.article{margin-bottom:30px;border-radius:3px;overflow:hidden;transition:transform .2s}.article:hover{transform:translateY(-3px)}.article__inner{box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.image-wrap{padding:15px 15px 0 15px;background:#161d25}.article__image{position:relative;display:block;height:0;padding-bottom:56.25%;background:#131212;overflow:hidden}.article__image img{position:absolute;width:100%;height:100%;object-fit:cover}.article__content{padding:25px;background:#161d25}.article__title{margin-bottom:10px;font-size:22px;line-height:32px}.article__title a:hover{color:#fff}.article__excerpt{font-size:15px;line-height:24px;font-weight:500;margin-bottom:20px;color:#ccc}.article__meta{display:flex;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:500;line-height:20px}.article__meta .article__author-link{color:#ccc}.article__meta .article__author-link:hover{color:#fff}.article__meta .article-tags__box{display:flex}.article__meta .article-tags__box::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}.article__meta .article-tags__box .article__tag{color:#ccc}.article__meta .article-tags__box .article__tag:hover{color:#fff}.article__meta .article-tags__box .article__tag::after{content:",";display:inline-block;margin:0 2px}.article__meta .article-tags__box .article__tag:last-child::after{content:none}.article__meta .article__date{color:#ccc}.article__meta .article__date::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}img[src$="centerme"]{display:block;margin:0 auto}.post,.page{max-width:850px;margin:0 auto;color:#fff}.post__content a,.page__content a{text-decoration:underline}.image-box{margin:40px 0}.post__share{margin:50px 0}.post__share .share__list{display:flex;justify-content:center;align-items:center;width:100%}.post__share .share__item{margin:0 2px;text-align:center}.post__share .share__link{display:block;padding:2px 12px;font-size:18px;color:#161d25}.post__share .share__link.share__facebook,.post__share .share__link.share__twitter,.post__share .share__link.share__linkedin,.post__share .share__link.share__pinterest{border:1px solid #131212;background:#161d25}.post__share .share__link.share__facebook:hover,.post__share .share__link.share__twitter:hover,.post__share .share__link.share__linkedin:hover,.post__share .share__link.share__pinterest:hover{color:#fff}.post__share .share__link.share__facebook{color:#3b5998}.post__share .share__link.share__facebook:hover{background:#3b5998}.post__share .share__link.share__twitter{color:#55acee}.post__share .share__link.share__twitter:hover{background:#55acee}.post__share .share__link.share__linkedin{color:#0077b5}.post__share .share__link.share__linkedin:hover{background:#0077b5}.post__share .share__link.share__pinterest{color:#bd081c}.post__share .share__link.share__pinterest:hover{background:#bd081c}@media only screen and (max-width: 576px){.post__share{margin:40px 0}}.post__navigation{display:flex;justify-content:space-between;margin-bottom:20px}.post__navigation .post__prev,.post__navigation .post__next{display:flex;width:48%;padding:25px;margin-bottom:30px;background:#161d25;box-shadow:0px 0px 20px rgba(0,0,0,0.05);transition:transform .2s}.post__navigation .post__prev:hover,.post__navigation .post__next:hover{transform:translateY(-3px)}.post__navigation .post__prev .prev__image,.post__navigation .post__prev .next__image,.post__navigation .post__next .prev__image,.post__navigation .post__next .next__image{position:relative;display:block;width:100px;min-width:100px;height:100px;background-color:#131212}.post__navigation .post__prev .prev__image img,.post__navigation .post__prev .next__image img,.post__navigation .post__next .prev__image img,.post__navigation .post__next .next__image img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.post__navigation .post__prev .prev__image,.post__navigation .post__next .prev__image{margin-right:15px}.post__navigation .post__prev .next__image,.post__navigation .post__next .next__image{margin-left:15px}.post__navigation .post__prev .post__nav,.post__navigation .post__next .post__nav{display:inline-block;margin-bottom:5px;font-size:13px;line-height:1;font-weight:500;color:#ccc}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{margin-bottom:0;font-size:18px;line-height:24px}.post__navigation .post__prev .post__nav__title a:hover,.post__navigation .post__next .post__nav__title a:hover{color:#fff}.post__navigation .post__next{text-align:right;margin-left:auto;justify-content:flex-end}@media only screen and (max-width: 768px){.post__navigation{flex-wrap:wrap}.post__navigation .post__prev,.post__navigation .post__next{width:100%}.post__navigation .post__prev{margin-bottom:30px}.post__navigation .next__box{margin-left:auto}}@media only screen and (max-width: 576px){.post__navigation{margin-bottom:10px}.post__navigation .post__prev,.post__navigation .post__next{padding:20px}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{font-size:15px;line-height:20px}}.post__comments{padding:40px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);background:#161d25}@media only screen and (max-width: 576px){.post__comments{padding:30px}}.error{margin-bottom:30px;text-align:center}.error .error__title{margin-bottom:0;font-size:100px}.error .error__text{margin-bottom:20px;font-size:21px;color:#ccc}.error .error__button{line-height:45px}.tag{padding:70px 0;margin-bottom:70px;text-align:center;background:#161d25}.tag .tag__meta{font-size:16px;color:#ccc}.tag .tag__title{margin:0;font-size:50px}@media only screen and (max-width: 768px){.tag{padding:60px 0;margin-bottom:60px}}@media only screen and (max-width: 576px){.tag{padding:40px 0;margin-bottom:40px}}
+
+  </style>
+</head>
+
+<body class="dark">
+
+  
+
+    <!-- begin header -->
+<header class="header">
+  <div class="container">
+    <div class="row">
+      <div class="header__inner col col-12">
+
+        <div class="logo">
+          <a class="logo__link" href="/">
+          
+            Artik Blue
+          
+          </a>
+        </div>
+
+        <nav class="main-nav">
+          <div class="main-nav__box">
+            <div class="nav__icon-close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <div class="nav__title">Menu</div>
+            <ul class="nav__list list-reset">
+              <li class="nav__item">
+                <a href="/" class="nav__link">Home</a>
+              </li>
+              
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/about/" class="nav__link">About</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/reversing" class="nav__link">Reversing</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+            </ul>
+          </div>
+        </nav>
+
+        <div class="nav-buttons">
+          <i class="nav__icon nav__icon-menu ion ion-md-menu"></i>
+          <i class="nav__icon nav__icon-search ion ion-md-search"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="header__overlay"></div>
+</header>
+<!-- end header -->
+
+<!-- begin search -->
+<div class="search">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="search__box">
+          <div class="search__group">
+            <div class="search__close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <label for="js-search-input" class="screen-reader-text">Search for Blog</label>
+            <input type="text" id="js-search-input" class="search__text" autocomplete="off" placeholder="Type to search...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="container__inner">
+          <div class="row search-results-list" id="js-results-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- end search -->
+    <!-- begin content -->
+    <main class="content" aria-label="Content">
+      <!-- begin wrapper-page -->
+      <div class="wrapper-page">
+        <!-- begin hero -->
+
+<section class="hero hero--post">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="hero__inner">
+          <div class="hero__left">
+            
+
+            <div class="article__meta">
+              <span class="article__date"><time datetime="2020-05-06T00:01:35+02:00">06 May 2020</time></span>
+              
+              <div class="article-tags__box">
+                
+                  <a href="/tag/reversing" class="article__tag">reversing</a>
+                
+                  <a href="/tag/c" class="article__tag">c</a>
+                
+                  <a href="/tag/radare" class="article__tag">radare</a>
+                
+              </div>
+              
+            </div>
+
+            <h1 class="hero__title">Reverse engineering 32 and 64 bits binaries with Radare2 - 9 (files; read, write, seek and some heaps :O)</h1>
+            <a href="/about/" class="article__author-link"><span>By</span> Artik Blue</a>
+
+            
+          </div>
+
+          <div class="hero__right">
+
+            
+            <div class="hero__image">
+              <img class="lazy" data-src="/images//radare2/radare2_9.png" alt="Reverse engineering 32 and 64 bits binaries with Radare2 - 9 (files; read, write, seek and some heaps :O)">
+            </div>
+
+            
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- end hero -->
+
+<!-- begin post -->
+<div class="container">
+  <article class="post animate">
+
+    <div class="post__content">
+      <p>Heeello!</p>
+
+<p>Today I want to talk you about file operations. File read and write operations are very important as most of the programs somehow work with files, for storing projects, for opening files for editing, for storing temp information, etc. Files are nothing more than information containers and can be represented as, for example, char arrays on memory.</p>
+<h4 id="write-to-file">Write to file</h4>
+<p>Let’s start with this program:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+</span><span class="n">main</span><span class="p">(){</span>
+<span class="n">func</span><span class="p">();</span>
+<span class="n">getchar</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="n">func</span><span class="p">()</span>
+<span class="p">{</span> 
+
+   <span class="kt">FILE</span><span class="o">*</span> <span class="n">ftest</span><span class="p">;</span>
+ 
+    <span class="n">ftest</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="s">"test.txt"</span><span class="p">,</span> <span class="s">"wt"</span><span class="p">);</span>
+    <span class="n">fputs</span><span class="p">(</span><span class="s">"This is a line</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">ftest</span><span class="p">);</span>
+    <span class="n">fputs</span><span class="p">(</span><span class="s">"Another line"</span><span class="p">,</span> <span class="n">ftest</span><span class="p">);</span>
+    <span class="n">fputs</span><span class="p">(</span><span class="s">" that follows the second line</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">ftest</span><span class="p">);</span>
+    <span class="n">fclose</span><span class="p">(</span><span class="n">ftest</span><span class="p">);</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+<p>To warm this thing up a little bit, let’s inspect the program information:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x7f9d4a962090]&gt; iI
+arch     x86
+baddr    0x55ea4645b000
+binsz    6605
+bintype  elf
+bits     64
+canary   false
+class    ELF64
+compiler GCC: (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0
+crypto   false
+endian   little
+havecode true
+intrp    /lib64/ld-linux-x86-64.so.2
+laddr    0x0
+lang     c
+linenum  true
+lsyms    true
+machine  AMD x86-64 architecture
+maxopsz  16
+minopsz  1
+nx       true
+os       linux
+pcalign  0
+pic      true
+relocs   true
+relro    full
+rpath    NONE
+sanitiz  false
+static   false
+stripped false
+subsys   linux
+va       true
+[0x7f9d4a962090]&gt; 
+</code></pre></div></div>
+<p>Then the strings</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x7f9d4a962090]&gt; iz
+[Strings]
+nth paddr      vaddr          len size section type  string
+―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+0   0x0000084b 0x55ea4645b84b 8   9    .rodata ascii test.txt
+1   0x00000854 0x55ea4645b854 15  16   .rodata ascii This is a line\n
+2   0x00000864 0x55ea4645b864 12  13   .rodata ascii Another line
+3   0x00000878 0x55ea4645b878 30  31   .rodata ascii  that follows the second line\n
+
+[0x7f9d4a962090]&gt; 
+</code></pre></div></div>
+<p>And the imports:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x7f9d4a962090]&gt; iS
+[Sections]
+
+nth paddr        size vaddr           vsize perm name
+―――――――――――――――――――――――――――――――――――――――――――――――――――――
+0   0x00000000    0x0 0x00000000        0x0 ---- 
+1   0x00000238   0x1c 0x55ea4645b238   0x1c -r-- .interp
+2   0x00000254   0x20 0x55ea4645b254   0x20 -r-- .note.ABI_tag
+3   0x00000274   0x24 0x55ea4645b274   0x24 -r-- .note.gnu.build_id
+4   0x00000298   0x1c 0x55ea4645b298   0x1c -r-- .gnu.hash
+5   0x000002b8   0xf0 0x55ea4645b2b8   0xf0 -r-- .dynsym
+6   0x000003a8   0x99 0x55ea4645b3a8   0x99 -r-- .dynstr
+7   0x00000442   0x14 0x55ea4645b442   0x14 -r-- .gnu.version
+8   0x00000458   0x20 0x55ea4645b458   0x20 -r-- .gnu.version_r
+9   0x00000478   0xc0 0x55ea4645b478   0xc0 -r-- .rela.dyn
+10  0x00000538   0x60 0x55ea4645b538   0x60 -r-- .rela.plt
+11  0x00000598   0x17 0x55ea4645b598   0x17 -r-x .init
+12  0x000005b0   0x50 0x55ea4645b5b0   0x50 -r-x .plt
+13  0x00000600    0x8 0x55ea4645b600    0x8 -r-x .plt.got
+14  0x00000610  0x222 0x55ea4645b610  0x222 -r-x .text
+15  0x00000834    0x9 0x55ea4645b834    0x9 -r-x .fini
+16  0x00000840   0x57 0x55ea4645b840   0x57 -r-- .rodata
+17  0x00000898   0x44 0x55ea4645b898   0x44 -r-- .eh_frame_hdr
+18  0x000008e0  0x128 0x55ea4645b8e0  0x128 -r-- .eh_frame
+19  0x00000da0    0x8 0x55ea4665bda0    0x8 -rw- .init_array
+20  0x00000da8    0x8 0x55ea4665bda8    0x8 -rw- .fini_array
+21  0x00000db0  0x1f0 0x55ea4665bdb0  0x1f0 -rw- .dynamic
+22  0x00000fa0   0x60 0x55ea4665bfa0   0x60 -rw- .got
+23  0x00001000   0x10 0x55ea4665c000   0x10 -rw- .data
+24  0x00001010    0x0 0x55ea4665c010    0x8 -rw- .bss
+25  0x00001010   0x29 0x00000000       0x29 ---- .comment
+26  0x00001040  0x648 0x00000000      0x648 ---- .symtab
+27  0x00001688  0x247 0x00000000      0x247 ---- .strtab
+28  0x000018cf   0xfe 0x00000000       0xfe ---- .shstrtab
+[0x7f9d4a962090]&gt; 
+</code></pre></div></div>
+<p>Great, now we can disasm the principal function:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55ea4645b734]&gt; pdf
+            ; CALL XREF from main @ 0x55ea4645b723
+┌ 133: sym.func ();
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x55ea4645b734      55             push rbp
+│           0x55ea4645b735      4889e5         mov rbp, rsp
+│           0x55ea4645b738      4883ec10       sub rsp, 0x10
+│           0x55ea4645b73c      488d35050100.  lea rsi, [0x55ea4645b848] ; "wt"
+│           0x55ea4645b743      488d3d010100.  lea rdi, str.test.txt   ; 0x55ea4645b84b ; "test.txt"
+│           0x55ea4645b74a      e891feffff     call sym.imp.fopen      ; file*fopen(const char *filename, const char *mode)
+│           0x55ea4645b74f      488945f8       mov qword [var_8h], rax
+│           0x55ea4645b753      488b45f8       mov rax, qword [var_8h]
+│           0x55ea4645b757      4889c1         mov rcx, rax
+│           0x55ea4645b75a      ba0f000000     mov edx, 0xf            ; 15
+│           0x55ea4645b75f      be01000000     mov esi, 1
+│           0x55ea4645b764      488d3de90000.  lea rdi, str.This_is_a_line ; 0x55ea4645b854 ; "This is a line\n"
+│           0x55ea4645b76b      e880feffff     call sym.imp.fwrite     ; size_t fwrite(const void *ptr, size_t size, size_t nitems, FILE *stream)
+│           0x55ea4645b770      488b45f8       mov rax, qword [var_8h]
+│           0x55ea4645b774      4889c1         mov rcx, rax
+│           0x55ea4645b777      ba0c000000     mov edx, 0xc            ; 12
+│           0x55ea4645b77c      be01000000     mov esi, 1
+│           0x55ea4645b781      488d3ddc0000.  lea rdi, str.Another_line ; 0x55ea4645b864 ; "Another line"
+│           0x55ea4645b788      e863feffff     call sym.imp.fwrite     ; size_t fwrite(const void *ptr, size_t size, size_t nitems, FILE *stream)
+│           0x55ea4645b78d      488b45f8       mov rax, qword [var_8h]
+│           0x55ea4645b791      4889c1         mov rcx, rax
+│           0x55ea4645b794      ba1e000000     mov edx, 0x1e           ; 30
+│           0x55ea4645b799      be01000000     mov esi, 1
+│           0x55ea4645b79e      488d3dd30000.  lea rdi, str.that_follows_the_second_line ; 0x55ea4645b878 ; " that follows the second line\n"
+│           0x55ea4645b7a5      e846feffff     call sym.imp.fwrite     ; size_t fwrite(const void *ptr, size_t size, size_t nitems, FILE *stream)
+│           0x55ea4645b7aa      488b45f8       mov rax, qword [var_8h]
+│           0x55ea4645b7ae      4889c7         mov rdi, rax
+│           0x55ea4645b7b1      e80afeffff     call sym.imp.fclose     ; int fclose(FILE *stream)
+│           0x55ea4645b7b6      90             nop
+│           0x55ea4645b7b7      c9             leave
+└           0x55ea4645b7b8      c3             ret
+[0x55ea4645b734]&gt; 
+</code></pre></div></div>
+<p>And after seeing the disasm, we can quickly see how simple this looks like. It basically calles fopen passing “text.txt” and “wt”(Open a text file, text.txt in this case, for writing. If the file already exists, its contents are destroyed.) fopen returns a file identifier through rax that is stored inside var_8h, then that pointer along with 0xf and “This is a line\n” is passed to fwrite. After that the same operation repeats another two times with different a string each time. Finally the reference to the file is passed to fclose and the function ends. By know you should perfectly know how parameters are passed to functions in the x64 world.</p>
+
+<p>In C, we start working with files by opening them, using functions such as fopen. In brief, fopen() receives a file path and access permissions (read, write) and creates a FILE structure in the user heap containing a file descriptor fs and a fbuf of BLKSIZE size. As I assume that you already have some fundamental knowledge on operating systems I assume that you should know that a file descriptor in this case identifies the open file within the OS level (https://en.wikipedia.org/wiki/File_descriptor). It is important to remark though that what is returned by fopen is not a file descriptor, fopen returns a pointer to a FILE strruct. A file struct contains relevant information related to the file, to make things easy for us humans when working with files, we can use that FILE struct to work with many functions (https://www.studytonight.com/c/file-input-output.php). The thing is that, eventhough some fields like the file descriptor or fields related to buffers or size will be always present, the FILE struct or the way C deals with it may vary with the OS. Windows deals with that using calls to the win api, linux uses syscalls to the kernel some versions of gcc have slightly different details etc, so I wont’ go into a lot of details related to that struct at least for now, I will try to teach you how to deal with that without having any previous knowledge on the struct format.</p>
+
+<p>In general terms, what we must know here is that fopen returns a pointer that points to a place that contains relevant information related to the file (perhaps the content?) and that point is passed to functions that work with the file (for writting, reading, etc).</p>
+
+<p>As we know, functions such as fopen make use of the heap, we’ll inspect the heap with dmhg</p>
+
+<p>We can place a breakpoint after the call and inspect the heap, it will look like:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55fe49a82743      488d3d010100.  lea rdi, str.test.txt   ; 0x55fe49a8284b ; "test.txt"
+│           ;-- rip:
+│           0x55fe49a8274a b    e891feffff     call sym.imp.fopen      ; file*fopen(const char *filename, const char *mode)
+│           0x55fe49a8274f b    488945f8       mov qword [var_8h], rax
+│           0x55fe49a82753      488b45f8       mov rax, qword [var_8h]
+
+
+[0x55fe49a8274a]&gt; dmhg
+No Heap section
+</code></pre></div></div>
+<p>But right after executing the fopen:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55fe49a8274f]&gt; dr
+rax = 0x55fe4ada2260
+rbx = 0x00000000
+rcx = 0x00000063
+rdx = 0x55fe49a8284a
+r8 = 0x0000002c
+r9 = 0x00000000
+[...]
+[0x55fe49a8274f]&gt; dmhg
+Heap Layout
+┌────────────────────────────────────┐
+│    Malloc chunk @ 0x55fe4ada2250   │
+│ size: 0x230 status: allocated      │
+└────────────────────────────────────┘
+    v
+    │
+    └──┐
+       │
+   ┌───────────────────────────────┐
+   │  Top chunk @ 0x55fe4ada2480   │
+   └───────────────────────────────┘
+
+[0x55fe49a8274f]&gt; 
+
+</code></pre></div></div>
+<p>If we follow the execution right to the next hot spot, after the first call to fwrite, we’ll see how more content gets added to the heap and that structure gets updated:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55fe49a82770]&gt; dmhg
+Heap Layout
+┌────────────────────────────────────┐
+│    Malloc chunk @ 0x55fe4ada2250   │
+│ size: 0x230 status: allocated      │
+└────────────────────────────────────┘
+    v
+    │
+    │
+┌────────────────────────────────────┐
+│    Malloc chunk @ 0x55fe4ada2480   │
+│ size: 0x1010 status: allocated     │
+└────────────────────────────────────┘
+    v
+    │
+    └──┐
+       │
+   ┌───────────────────────────────┐
+   │  Top chunk @ 0x55fe4ada3490   │
+   └───────────────────────────────┘
+
+[0x55fe49a82770]&gt; pxw @ 0x55fe4ada2480
+0x55fe4ada2480  0x33b4ad60 0x00007f00 0x00001011 0x00000000  `..3............
+0x55fe4ada2490  0x73696854 0x20736920 0x696c2061 0x000a656e  This is a line..
+0x55fe4ada24a0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada24b0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+</code></pre></div></div>
+<p>It looks like we succesfully identified a potential buffer for our file. If we follow the execution through all the successive fwrites, we should see the content being written there, the heap space at the end of the execution will look like:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55fe49a827aa]&gt; pxw 900 @ 0x55fe4ada2250
+0x55fe4ada2250  0x00000000 0x00000000 0x00000231 0x00000000  ........1.......
+0x55fe4ada2260  0xfbad2c84 0x00000000 0x4ada2490 0x000055fe  .,.......$.J.U..
+0x55fe4ada2270  0x4ada2490 0x000055fe 0x4ada2490 0x000055fe  .$.J.U...$.J.U..
+0x55fe4ada2280  0x4ada2490 0x000055fe 0x4ada24c9 0x000055fe  .$.J.U...$.J.U..
+0x55fe4ada2290  0x4ada3490 0x000055fe 0x4ada2490 0x000055fe  .4.J.U...$.J.U..
+0x55fe4ada22a0  0x4ada3490 0x000055fe 0x00000000 0x00000000  .4.J.U..........
+0x55fe4ada22b0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada22c0  0x00000000 0x00000000 0x33b4f680 0x00007f00  ...........3....
+0x55fe4ada22d0  0x00000003 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada22e0  0x00000000 0x00000000 0x4ada2340 0x000055fe  ........@#.J.U..
+0x55fe4ada22f0  0xffffffff 0xffffffff 0x00000000 0x00000000  ................
+0x55fe4ada2300  0x4ada2350 0x000055fe 0x00000000 0x00000000  P#.J.U..........
+0x55fe4ada2310  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2320  0xffffffff 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2330  0x00000000 0x00000000 0x33b4b2a0 0x00007f00  ...........3....
+0x55fe4ada2340  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2350  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2360  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2370  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2380  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2390  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada23a0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada23b0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada23c0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada23d0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada23e0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada23f0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2400  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2410  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2420  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2430  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2440  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2450  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2460  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2470  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55fe4ada2480  0x33b4ad60 0x00007f00 0x00001011 0x00000000  `..3............
+0x55fe4ada2490  0x73696854 0x20736920 0x696c2061 0x410a656e  This is a line.A
+0x55fe4ada24a0  0x68746f6e 0x6c207265 0x20656e69 0x74616874  nother line that
+0x55fe4ada24b0  0x6c6f6620 0x73776f6c 0x65687420 0x63657320   follows the sec
+0x55fe4ada24c0  0x20646e6f 0x656e696c 0x0000000a 0x00000000  ond line........
+</code></pre></div></div>
+<p>Voilà, there is the content that goes written to the test.txt file. Was that useful in this case? Depends a lot on what you are looking for though…but you can be sure that inspecting the heap after suspicious functions get executed can lead to good findings.</p>
+
+<h4 id="read-from-file">Read from file</h4>
+<p>The last one was simple, let’s now read from a file.</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+</span><span class="n">main</span><span class="p">(){</span>
+<span class="n">funcion</span><span class="p">();</span>
+<span class="n">getchar</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="n">funcion</span><span class="p">()</span>
+<span class="p">{</span> 
+
+    <span class="kt">FILE</span><span class="o">*</span> <span class="n">ftest</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">name</span><span class="p">[</span><span class="mi">80</span><span class="p">]</span> <span class="o">=</span> <span class="s">"test.txt"</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">line</span><span class="p">[</span><span class="mi">81</span><span class="p">];</span>
+ 
+    <span class="n">ftest</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s">"rt"</span><span class="p">);</span>
+ 
+    <span class="k">if</span> <span class="p">(</span><span class="n">ftest</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="n">printf</span><span class="p">(</span><span class="s">"file not found!</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+      <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">fgets</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="n">ftest</span><span class="p">);</span>
+    <span class="n">puts</span><span class="p">(</span><span class="n">line</span><span class="p">);</span>
+    <span class="n">fgets</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="n">ftest</span><span class="p">);</span>
+    <span class="n">puts</span><span class="p">(</span><span class="n">line</span><span class="p">);</span>
+    <span class="n">fclose</span><span class="p">(</span><span class="n">ftest</span><span class="p">);</span>
+
+
+<span class="p">}</span>
+</code></pre></div></div>
+<p>This time, the program initializes some space in memory, and opens text.txt with fopen. Fopen will return NULL if there is some error opening the file, so the program uses cmp and jne here to check if the file opens corrrectly or not, if there is some kind of error opening the file, the program calls exit(); and quits.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55d1449c31c9      48b874657374.  movabs rax, 0x7478742e74736574 ; 'test.txt'
+│           0x55d1449c31d3      ba00000000     mov edx, 0
+│           0x55d1449c31d8      48898550ffff.  mov qword [var_b0h], rax
+│           0x55d1449c31df      48899558ffff.  mov qword [var_a8h], rdx
+│           0x55d1449c31e6      48c78560ffff.  mov qword [var_a0h], 0
+│           0x55d1449c31f1      48c78568ffff.  mov qword [var_98h], 0
+│           0x55d1449c31fc      48c78570ffff.  mov qword [var_90h], 0
+│           0x55d1449c3207      48c78578ffff.  mov qword [var_88h], 0
+│           0x55d1449c3212      48c745800000.  mov qword [var_80h], 0
+│           0x55d1449c321a      48c745880000.  mov qword [var_78h], 0
+│           0x55d1449c3222      48c745900000.  mov qword [var_70h], 0
+│           0x55d1449c322a      48c745980000.  mov qword [var_68h], 0
+│           0x55d1449c3232      488d8550ffff.  lea rax, [var_b0h]
+│           0x55d1449c3239      488d35c40d00.  lea rsi, [0x55d1449c4004] ; "rt"
+│           0x55d1449c3240      4889c7         mov rdi, rax
+│           0x55d1449c3243      e838feffff     call sym.imp.fopen      ; file*fopen(const char *filename, const char *mode)
+│           0x55d1449c3248 b    48898548ffff.  mov qword [var_b8h], rax
+│           0x55d1449c324f      4883bd48ffff.  cmp qword [var_b8h], 0
+│       ┌─&lt; 0x55d1449c3257      7516           jne 0x55d1449c326f
+</code></pre></div></div>
+<p>As we see, the check is done here, if file is not found the program will prompt it and will exit with the code 1 (exit with error).</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│       ┌─&lt; 0x55d1449c3257      7516           jne 0x55d1449c326f
+│       │   0x55d1449c3259      488d3da70d00.  lea rdi, str.file_not_found ; 0x55d1449c4007 ; "file not found!"
+│       │   0x55d1449c3260      e8cbfdffff     call sym.imp.puts       ; int puts(const char *s)
+│       │   0x55d1449c3265      bf01000000     mov edi, 1
+│       │   0x55d1449c326a      e821feffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x55d1449c326f      488b9548ffff.  mov rdx, qword [var_b8h]
+</code></pre></div></div>
+<p>Then here we have the file pointer:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55d1449c3240      4889c7         mov rdi, rax
+│           0x55d1449c3243      e838feffff     call sym.imp.fopen      ; file*fopen(const char *filename, const char *mode)
+│           ;-- rip:
+│           0x55d1449c3248 b    48898548ffff.  mov qword [var_b8h], rax
+│           0x55d1449c324f      4883bd48ffff.  cmp qword [var_b8h], 0
+</code></pre></div></div>
+<p>In memory:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55d1449c3248]&gt; dr
+rax = 0x55d145eef260
+rbx = 0x00000000
+rcx = 0x00000005
+rdx = 0x00000000
+r8 = 0x00000000
+r9 = 0x55d1449c4006
+r10 = 0x00000000
+r11 = 0x00000246
+r12 = 0x55d1449c30b0
+r13 = 0x7ffc18e1dc20
+r14 = 0x00000000
+r15 = 0x00000000
+rsi = 0x00000000
+rdi = 0x55d1449c4005
+rsp = 0x7ffc18e1da70
+rbp = 0x7ffc18e1db30
+rip = 0x55d1449c3248
+rflags = 0x00000206
+orax = 0xffffffffffffffff
+[0x55d1449c3248]&gt; pxw @ 0x55d145eef260
+0x55d145eef260  0xfbad2488 0x00000000 0x00000000 0x00000000  .$..............
+0x55d145eef270  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55d145eef280  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55d145eef290  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55d145eef2a0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55d145eef2b0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55d145eef2c0  0x00000000 0x00000000 0xf2630680 0x00007f28  ..........c.(...
+0x55d145eef2d0  0x00000003 0x00000000 0x00000000 0x00000000  ................
+0x55d145eef2e0  0x00000000 0x00000000 0x45eef340 0x000055d1  ........@..E.U..
+0x55d145eef2f0  0xffffffff 0xffffffff 0x00000000 0x00000000  ................
+0x55d145eef300  0x45eef350 0x000055d1 0x00000000 0x00000000  P..E.U..........
+0x55d145eef310  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55d145eef320  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x55d145eef330  0x00000000 0x00000000 0xf2631560 0x00007f28  ........`.c.(...
+0x55d145eef340  0x00000000 0x00000000 0x00000000 0x00000000  ................
+</code></pre></div></div>
+<p>If we inspect the disasm we will see that fgets(line, 80, ftest); uses three parameters, it sends a pointer to a space in memory, a number and then a pointer to a FILE struct. So in this case, fgets will dump 80 characters (or everything untill the end of the file or a line jump is detected) to memory starting at the address pointed by the parameter we pass to it. We can debug the program and see it like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55d1449c3282]&gt; dr
+rax = 0x7ffc18e1dad0
+rbx = 0x00000000
+rcx = 0x00000005
+rdx = 0x55d145eef260
+r8 = 0x00000000
+r9 = 0x55d1449c4006
+r10 = 0x00000000
+r11 = 0x00000246
+r12 = 0x55d1449c30b0
+r13 = 0x7ffc18e1dc20
+r14 = 0x00000000
+r15 = 0x00000000
+rsi = 0x00000050
+rdi = 0x7ffc18e1dad0
+rsp = 0x7ffc18e1da70
+rbp = 0x7ffc18e1db30
+rip = 0x55d1449c3282
+rflags = 0x00000206
+orax = 0xffffffffffffffff
+# BEFORE fgets() IS CALLED
+[0x55d1449c3282]&gt; pxw @ 0x7ffc18e1dad0
+0x7ffc18e1dad0  0x00000000 0x00000000 0x00f0b5ff 0x00000000  ................
+0x7ffc18e1dae0  0x000000c2 0x00000000 0x18e1db16 0x00007ffc  ................
+0x7ffc18e1daf0  0x00000001 0x00000000 0xf2505b55 0x00007f28  ........U[P.(...
+0x7ffc18e1db00  0x00000000 0x00000000 0x449c3325 0x000055d1  ........%3.D.U..
+0x7ffc18e1db10  0xf2661b20 0x00007f28 0x00000000 0x00000000   .f.(...........
+0x7ffc18e1db20  0x449c32e0 0x000055d1 0xb67e8600 0x110eefa4  .2.D.U....~.....
+0x7ffc18e1db30  0x18e1db40 0x00007ffc 0x449c31a3 0x000055d1  @........1.D.U..
+0x7ffc18e1db40  0x449c32e0 0x000055d1 0xf2471b6b 0x00007f28  .2.D.U..k.G.(...
+0x7ffc18e1db50  0x00000000 0x00000000 0x18e1dc28 0x00007ffc  ........(.......
+0x7ffc18e1db60  0x00040000 0x00000001 0x449c3195 0x000055d1  .........1.D.U..
+0x7ffc18e1db70  0x00000000 0x00000000 0xdb1818b4 0xd55ddb37  ............7.].
+0x7ffc18e1db80  0x449c30b0 0x000055d1 0x18e1dc20 0x00007ffc  .0.D.U.. .......
+0x7ffc18e1db90  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x7ffc18e1dba0  0x087818b4 0x810763cc 0x889e18b4 0x80aeb681  ..x..c..........
+0x7ffc18e1dbb0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x7ffc18e1dbc0  0x00000000 0x00000000 0x18e1dc38 0x00007ffc  ........8.......
+[0x55d1449c3282]&gt; dc
+hit breakpoint at: 55d1449c3287
+# AFTER fgets() IS CALLED
+[0x55d1449c3287]&gt; pxw @ 0x7ffc18e1dad0
+0x7ffc18e1dad0  0x4c4c4548 0x4c45484f 0x45484f4c 0x0a4f4c4c  HELLOHELLOHELLO.
+0x7ffc18e1dae0  0x00000000 0x00000000 0x18e1db16 0x00007ffc  ................
+0x7ffc18e1daf0  0x00000001 0x00000000 0xf2505b55 0x00007f28  ........U[P.(...
+0x7ffc18e1db00  0x00000000 0x00000000 0x449c3325 0x000055d1  ........%3.D.U..
+0x7ffc18e1db10  0xf2661b20 0x00007f28 0x00000000 0x00000000   .f.(...........
+0x7ffc18e1db20  0x449c32e0 0x000055d1 0xb67e8600 0x110eefa4  .2.D.U....~.....
+0x7ffc18e1db30  0x18e1db40 0x00007ffc 0x449c31a3 0x000055d1  @........1.D.U..
+0x7ffc18e1db40  0x449c32e0 0x000055d1 0xf2471b6b 0x00007f28  .2.D.U..k.G.(...
+0x7ffc18e1db50  0x00000000 0x00000000 0x18e1dc28 0x00007ffc  ........(.......
+0x7ffc18e1db60  0x00040000 0x00000001 0x449c3195 0x000055d1  .........1.D.U..
+0x7ffc18e1db70  0x00000000 0x00000000 0xdb1818b4 0xd55ddb37  ............7.].
+0x7ffc18e1db80  0x449c30b0 0x000055d1 0x18e1dc20 0x00007ffc  .0.D.U.. .......
+0x7ffc18e1db90  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x7ffc18e1dba0  0x087818b4 0x810763cc 0x889e18b4 0x80aeb681  ..x..c..........
+0x7ffc18e1dbb0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x7ffc18e1dbc0  0x00000000 0x00000000 0x18e1dc38 0x00007ffc  ........8.......
+[0x55d1449c3287]&gt; 
+</code></pre></div></div>
+<p>The second fgets does the same:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+│           ;-- rip:
+│           0x55d1449c32a6 b    e8b5fdffff     call sym.imp.fgets      ; char *fgets(char *s, int size, FILE *stream)
+│           0x55d1449c32ab      488d45a0       lea rax, [var_60h]
+│           0x55d1449c32af      4889c7         mov rdi, rax
+│           0x55d1449c32b2      e879fdffff     call sym.imp.puts       ; int puts(const char *s)
+│           0x55d1449c32b7      488b8548ffff.  mov rax, qword [var_b8h]
+│           0x55d1449c32be      4889c7         mov rdi, rax
+│           0x55d1449c32c1      e87afdffff     call sym.imp.fclose     ; int fclose(FILE *stream)
+│           0x55d1449c32c6      90             nop
+│           0x55d1449c32c7      488b4df8       mov rcx, qword [var_8h]
+│           0x55d1449c32cb      6448330c2528.  xor rcx, qword fs:[0x28]
+│       ┌─&lt; 0x55d1449c32d4      7405           je 0x55d1449c32db
+│       │   0x55d1449c32d6      e875fdffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x55d1449c32db      c9             leave
+└           0x55d1449c32dc      c3             ret
+[0x55d1449c32a6]&gt; db 0x55d1449c32ab
+[0x55d1449c32a6]&gt; pxw @ 0x7ffc18e1dad0
+0x7ffc18e1dad0  0x4c4c4548 0x4c45484f 0x45484f4c 0x0a4f4c4c  HELLOHELLOHELLO.
+0x7ffc18e1dae0  0x00000000 0x00000000 0x18e1db16 0x00007ffc  ................
+0x7ffc18e1daf0  0x00000001 0x00000000 0xf2505b55 0x00007f28  ........U[P.(...
+0x7ffc18e1db00  0x00000000 0x00000000 0x449c3325 0x000055d1  ........%3.D.U..
+0x7ffc18e1db10  0xf2661b20 0x00007f28 0x00000000 0x00000000   .f.(...........
+0x7ffc18e1db20  0x449c32e0 0x000055d1 0xb67e8600 0x110eefa4  .2.D.U....~.....
+0x7ffc18e1db30  0x18e1db40 0x00007ffc 0x449c31a3 0x000055d1  @........1.D.U..
+0x7ffc18e1db40  0x449c32e0 0x000055d1 0xf2471b6b 0x00007f28  .2.D.U..k.G.(...
+0x7ffc18e1db50  0x00000000 0x00000000 0x18e1dc28 0x00007ffc  ........(.......
+0x7ffc18e1db60  0x00040000 0x00000001 0x449c3195 0x000055d1  .........1.D.U..
+0x7ffc18e1db70  0x00000000 0x00000000 0xdb1818b4 0xd55ddb37  ............7.].
+0x7ffc18e1db80  0x449c30b0 0x000055d1 0x18e1dc20 0x00007ffc  .0.D.U.. .......
+0x7ffc18e1db90  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x7ffc18e1dba0  0x087818b4 0x810763cc 0x889e18b4 0x80aeb681  ..x..c..........
+0x7ffc18e1dbb0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x7ffc18e1dbc0  0x00000000 0x00000000 0x18e1dc38 0x00007ffc  ........8.......
+[0x55d1449c32a6]&gt; dc
+hit breakpoint at: 55d1449c32ab
+[0x55d1449c32ab]&gt; pxw @ 0x7ffc18e1dad0
+0x7ffc18e1dad0  0x4c524f57 0x524f5744 0x4f57444c 0x0a444c52  WORLDWORLDWORLD.
+0x7ffc18e1dae0  0x00000000 0x00000000 0x18e1db16 0x00007ffc  ................
+0x7ffc18e1daf0  0x00000001 0x00000000 0xf2505b55 0x00007f28  ........U[P.(...
+0x7ffc18e1db00  0x00000000 0x00000000 0x449c3325 0x000055d1  ........%3.D.U..
+0x7ffc18e1db10  0xf2661b20 0x00007f28 0x00000000 0x00000000   .f.(...........
+0x7ffc18e1db20  0x449c32e0 0x000055d1 0xb67e8600 0x110eefa4  .2.D.U....~.....
+0x7ffc18e1db30  0x18e1db40 0x00007ffc 0x449c31a3 0x000055d1  @........1.D.U..
+0x7ffc18e1db40  0x449c32e0 0x000055d1 0xf2471b6b 0x00007f28  .2.D.U..k.G.(...
+0x7ffc18e1db50  0x00000000 0x00000000 0x18e1dc28 0x00007ffc  ........(.......
+0x7ffc18e1db60  0x00040000 0x00000001 0x449c3195 0x000055d1  .........1.D.U..
+0x7ffc18e1db70  0x00000000 0x00000000 0xdb1818b4 0xd55ddb37  ............7.].
+0x7ffc18e1db80  0x449c30b0 0x000055d1 0x18e1dc20 0x00007ffc  .0.D.U.. .......
+0x7ffc18e1db90  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x7ffc18e1dba0  0x087818b4 0x810763cc 0x889e18b4 0x80aeb681  ..x..c..........
+0x7ffc18e1dbb0  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x7ffc18e1dbc0  0x00000000 0x00000000 0x18e1dc38 0x00007ffc  ........8.......
+[0x55d1449c32ab]&gt; 
+</code></pre></div></div>
+<p>Note that as we are using the same char array (buffer) to read, the second fgets overwrites what was dumped on the first fgets. If we want keep both lines or do some more advanced read/write operations that may include changes of positions we can declare a bigger array and use fgets, seek and fgets, but wait what is seek? Let’s see(k) it.</p>
+
+<h4 id="seek-in-file-and-write">Seek in file and write</h4>
+<p>You may have noticed that as we call fgets multiple times we go forward in the file content, what if we want to go back? What if we want to directly jump at the end? fseek comes in very handy when dealing with these cases. Let’s inspect the following program:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+   <span class="kt">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">;</span>
+
+   <span class="n">fp</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="s">"fseek.txt"</span><span class="p">,</span><span class="s">"w+"</span><span class="p">);</span>
+   <span class="n">fputs</span><span class="p">(</span><span class="s">"This is a simple file, feel free to visit artik.blue to get fresh reversing stuff"</span><span class="p">,</span> <span class="n">fp</span><span class="p">);</span>
+  
+   <span class="n">fseek</span><span class="p">(</span> <span class="n">fp</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">SEEK_SET</span> <span class="p">);</span>
+   <span class="n">fputs</span><span class="p">(</span><span class="s">" C Programming Language"</span><span class="p">,</span> <span class="n">fp</span><span class="p">);</span>
+   <span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+   
+   <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>As we can see, it first writes to a file, then seeks the pointer to the 7th position (think about a char array) then writes content there and then closes the file and exits. Inside radare:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x7f376be20090]&gt; s main
+[0x560d0969d165]&gt; pdf
+            ; DATA XREF from entry0 @ 0x560d0969d09d
+┌ 130: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x560d0969d165      55             push rbp
+│           0x560d0969d166      4889e5         mov rbp, rsp
+│           0x560d0969d169      4883ec10       sub rsp, 0x10
+│           0x560d0969d16d      488d35940e00.  lea rsi, [0x560d0969e008] ; "w+"
+│           0x560d0969d174      488d3d900e00.  lea rdi, str.fseek.txt  ; 0x560d0969e00b ; "fseek.txt"
+│           0x560d0969d17b      e8d0feffff     call sym.imp.fopen      ; file*fopen(const char *filename, const char *mode)
+│           0x560d0969d180      488945f8       mov qword [var_8h], rax
+│           0x560d0969d184      488b45f8       mov rax, qword [var_8h]
+│           0x560d0969d188      4889c1         mov rcx, rax
+│           0x560d0969d18b      ba51000000     mov edx, 0x51           ; 'Q' ; 81
+│           0x560d0969d190      be01000000     mov esi, 1
+│           0x560d0969d195      488d3d7c0e00.  lea rdi, str.This_is_a_simple_file__feel_free_to_visit_artik.blue_to_get_fresh_reversing_stuff ; 0x560d0969e018 ; "This is a simple file, feel free to visit artik.blue to get fresh reversing stuff"
+│           0x560d0969d19c      e8bffeffff     call sym.imp.fwrite     ; size_t fwrite(const void *ptr, size_t size, size_t nitems, FILE *stream)
+│           0x560d0969d1a1      488b45f8       mov rax, qword [var_8h]
+│           0x560d0969d1a5      ba00000000     mov edx, 0
+│           0x560d0969d1aa      be07000000     mov esi, 7
+│           0x560d0969d1af      4889c7         mov rdi, rax
+│           0x560d0969d1b2      e889feffff     call sym.imp.fseek      ; int fseek(FILE *stream, long offset, int whence)
+│           0x560d0969d1b7      488b45f8       mov rax, qword [var_8h]
+│           0x560d0969d1bb      4889c1         mov rcx, rax
+│           0x560d0969d1be      ba17000000     mov edx, 0x17           ; 23
+│           0x560d0969d1c3      be01000000     mov esi, 1
+│           0x560d0969d1c8      488d3d9b0e00.  lea rdi, str.C_Programming_Language ; 0x560d0969e06a ; " C Programming Language"
+│           0x560d0969d1cf      e88cfeffff     call sym.imp.fwrite     ; size_t fwrite(const void *ptr, size_t size, size_t nitems, FILE *stream)
+│           0x560d0969d1d4      488b45f8       mov rax, qword [var_8h]
+│           0x560d0969d1d8      4889c7         mov rdi, rax
+│           0x560d0969d1db      e850feffff     call sym.imp.fclose     ; int fclose(FILE *stream)
+│           0x560d0969d1e0      b800000000     mov eax, 0
+│           0x560d0969d1e5      c9             leave
+└           0x560d0969d1e6      c3             ret
+[0x560d0969d165]&gt; 
+</code></pre></div></div>
+
+<p>We see the same as before, except this time a new call comes in (seek). fseek receives 0x7 and the var that contains the FILE pointer, no surprises.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x560d0969d1a1      488b45f8       mov rax, qword [var_8h]
+│           0x560d0969d1a5      ba00000000     mov edx, 0
+│           0x560d0969d1aa      be07000000     mov esi, 7
+│           0x560d0969d1af      4889c7         mov rdi, rax
+│           0x560d0969d1b2      e889feffff     call sym.imp.fseek      ; int fseek(FILE *stream, long offset, int whence)
+│           0x560d0969d1b7      488b45f8       mov rax, qword [var_8h]
+</code></pre></div></div>
+<p>After fseek is called, no value is being taken, the system will now that it has to write starting at pos 7. Also note that no string sizes were declared on the C program, the good compiler calculates the size and inserts the parameter there for us (This is a simple file, feel free to visit artik.blue to get fresh reversing stuff = 81 characters 0x51 = dec 81).</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x560d0969d1b7      488b45f8       mov rax, qword [var_8h]
+│           0x560d0969d1bb      4889c1         mov rcx, rax
+│           0x560d0969d1be      ba17000000     mov edx, 0x17           ; 23
+│           0x560d0969d1c3      be01000000     mov esi, 1
+│           0x560d0969d1c8      488d3d9b0e00.  lea rdi, str.C_Programming_Language ; 0x560d0969e06a ; " C Programming Language"
+│           0x560d0969d1cf      e88cfeffff     call sym.imp.fwrite     ; size_t fwrite(const void *ptr, size_t size, size_t nitems, FILE *stream)
+│           0x560d0969d1d4      488b45f8       mov rax, qword [var_8h]
+</code></pre></div></div>
+<p>So we already know how this works, nothing new here.</p>
+
+<h4 id="read-the-whole-file-line-by-line">Read the whole file line by line</h4>
+
+<p>What if we just want to read the full file, line by line till the end. We keep reading lines using fgets until we reach EOF. Let’s see:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="kt">void</span> <span class="nf">main</span><span class="p">(){</span>
+<span class="kt">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">500</span><span class="p">];</span>
+<span class="kt">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">lineno</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">if</span> <span class="p">((</span><span class="n">fp</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="s">"myinputfile.txt"</span><span class="p">,</span><span class="s">"r"</span><span class="p">))</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Could not open myinputfile.txt</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">while</span> <span class="p">(</span> <span class="o">!</span><span class="n">feof</span><span class="p">(</span><span class="n">fp</span><span class="p">))</span>
+<span class="p">{</span>
+        <span class="c1">// read in the line and make sure it was successful</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">fgets</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="n">fp</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span>
+        <span class="p">{</span>
+                <span class="n">printf</span><span class="p">(</span><span class="s">"%d: %s"</span><span class="p">,</span><span class="n">lineno</span><span class="o">++</span><span class="p">,</span><span class="n">buffer</span><span class="p">);</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>This function should look familiar to us:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55651c3ee195]&gt; pdf
+            ; DATA XREF from entry0 @ 0x55651c3ee0cd
+┌ 209: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_20ch @ rbp-0x20c
+│           ; var int64_t var_208h @ rbp-0x208
+│           ; var int64_t var_200h @ rbp-0x200
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x55651c3ee195      55             push rbp
+│           0x55651c3ee196      4889e5         mov rbp, rsp
+│           0x55651c3ee199      4881ec100200.  sub rsp, 0x210
+│           0x55651c3ee1a0      64488b042528.  mov rax, qword fs:[0x28]
+│           0x55651c3ee1a9      488945f8       mov qword [var_8h], rax
+│           0x55651c3ee1ad      31c0           xor eax, eax
+│           0x55651c3ee1af      c785f4fdffff.  mov dword [var_20ch], 0
+│           0x55651c3ee1b9      488d35480e00.  lea rsi, [0x55651c3ef008] ; "r"
+│           0x55651c3ee1c0      488d3d430e00.  lea rdi, str.myinputfile.txt ; 0x55651c3ef00a ; "myinputfile.txt"
+│           0x55651c3ee1c7      e8b4feffff     call sym.imp.fopen      ; file*fopen(const char *filename, const char *mode)
+│           0x55651c3ee1cc      488985f8fdff.  mov qword [var_208h], rax
+│           0x55651c3ee1d3      4883bdf8fdff.  cmp qword [var_208h], 0
+│       ┌─&lt; 0x55651c3ee1db      755f           jne 0x55651c3ee23c
+│       │   0x55651c3ee1dd      488d3d3c0e00.  lea rdi, str.Could_not_open_myinputfile.txt ; 0x55651c3ef020 ; "Could not open myinputfile.txt"
+│       │   0x55651c3ee1e4      e847feffff     call sym.imp.puts       ; int puts(const char *s)
+│       │   0x55651c3ee1e9      bf01000000     mov edi, 1
+│       │   0x55651c3ee1ee      e89dfeffff     call sym.imp.exit       ; void exit(int status)
+│      ┌──&gt; 0x55651c3ee1f3      488b95f8fdff.  mov rdx, qword [var_208h]
+│      ╎│   0x55651c3ee1fa      488d8500feff.  lea rax, [var_200h]
+│      ╎│   0x55651c3ee201      bef4010000     mov esi, 0x1f4          ; 500
+│      ╎│   0x55651c3ee206      4889c7         mov rdi, rax
+│      ╎│   0x55651c3ee209      e852feffff     call sym.imp.fgets      ; char *fgets(char *s, int size, FILE *stream)
+│      ╎│   0x55651c3ee20e      4885c0         test rax, rax
+│     ┌───&lt; 0x55651c3ee211      7429           je 0x55651c3ee23c
+│     │╎│   0x55651c3ee213      8b85f4fdffff   mov eax, dword [var_20ch]
+│     │╎│   0x55651c3ee219      8d5001         lea edx, [rax + 1]
+│     │╎│   0x55651c3ee21c      8995f4fdffff   mov dword [var_20ch], edx
+│     │╎│   0x55651c3ee222      488d9500feff.  lea rdx, [var_200h]
+│     │╎│   0x55651c3ee229      89c6           mov esi, eax
+│     │╎│   0x55651c3ee22b      488d3d0d0e00.  lea rdi, str.d:__s      ; 0x55651c3ef03f ; "%d: %s"
+│     │╎│   0x55651c3ee232      b800000000     mov eax, 0
+│     │╎│   0x55651c3ee237      e814feffff     call sym.imp.printf     ; int printf(const char *format)
+│     └─└─&gt; 0x55651c3ee23c      488b85f8fdff.  mov rax, qword [var_208h]
+│      ╎    0x55651c3ee243      4889c7         mov rdi, rax
+│      ╎    0x55651c3ee246      e825feffff     call sym.imp.feof       ; int feof(FILE *stream)
+│      ╎    0x55651c3ee24b      85c0           test eax, eax
+│      └──&lt; 0x55651c3ee24d      74a4           je 0x55651c3ee1f3
+│           0x55651c3ee24f      90             nop
+│           0x55651c3ee250      488b45f8       mov rax, qword [var_8h]
+│           0x55651c3ee254      644833042528.  xor rax, qword fs:[0x28]
+│       ┌─&lt; 0x55651c3ee25d      7405           je 0x55651c3ee264
+│       │   0x55651c3ee25f      e8dcfdffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x55651c3ee264      c9             leave
+└           0x55651c3ee265      c3             ret
+[0x55651c3ee195]&gt; 
+</code></pre></div></div>
+<p>As this may look a bit scary, we can use the r2dec decompiler! :) as we learned in the previous post:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdint.h&gt;
+</span> 
+<span class="kt">int32_t</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int64_t</span> <span class="n">var_20ch</span><span class="p">;</span>
+    <span class="kt">int64_t</span> <span class="n">var_208h</span><span class="p">;</span>
+    <span class="kt">int64_t</span> <span class="n">var_200h</span><span class="p">;</span>
+    <span class="kt">int64_t</span> <span class="n">var_8h</span><span class="p">;</span>
+    <span class="n">rax</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">fs</span><span class="o">:</span><span class="mh">0x28</span><span class="p">);</span>
+    <span class="n">var_8h</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">fs</span><span class="o">:</span><span class="mh">0x28</span><span class="p">);</span>
+    <span class="n">eax</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">var_20ch</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">rax</span> <span class="o">=</span> <span class="n">fopen</span> <span class="p">(</span><span class="s">"myinputfile.txt"</span><span class="p">,</span> <span class="mh">0x55651c3ef008</span><span class="p">);</span>
+    <span class="n">var_208h</span> <span class="o">=</span> <span class="n">rax</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">var_208h</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">goto</span> <span class="n">label_0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">puts</span> <span class="p">(</span><span class="s">"Could not open myinputfile.txt"</span><span class="p">);</span>
+    <span class="n">exit</span> <span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="k">do</span> <span class="p">{</span>
+        <span class="n">rax</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">var_200h</span><span class="p">;</span>
+        <span class="n">rax</span> <span class="o">=</span> <span class="n">fgets</span> <span class="p">(</span><span class="n">rax</span><span class="p">,</span> <span class="mh">0x1f4</span><span class="p">,</span> <span class="n">var_208h</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">rax</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">eax</span> <span class="o">=</span> <span class="n">var_20ch</span><span class="p">;</span>
+            <span class="n">edx</span> <span class="o">=</span> <span class="n">rax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="n">var_20ch</span> <span class="o">=</span> <span class="n">edx</span><span class="p">;</span>
+            <span class="n">rdx</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">var_200h</span><span class="p">;</span>
+            <span class="n">esi</span> <span class="o">=</span> <span class="n">eax</span><span class="p">;</span>
+            <span class="n">eax</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="n">printf</span> <span class="p">(</span><span class="s">"%d: %s"</span><span class="p">);</span>
+        <span class="p">}</span>
+<span class="nl">label_0:</span>
+        <span class="n">rax</span> <span class="o">=</span> <span class="n">var_208h</span><span class="p">;</span>
+        <span class="n">eax</span> <span class="o">=</span> <span class="n">feof</span> <span class="p">(</span><span class="n">var_208h</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">eax</span> <span class="o">==</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="n">rax</span> <span class="o">=</span> <span class="n">var_8h</span><span class="p">;</span>
+    <span class="n">rax</span> <span class="o">^=</span> <span class="o">*</span><span class="p">(</span><span class="n">fs</span><span class="o">:</span><span class="mh">0x28</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">eax</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">stack_chk_fail</span> <span class="p">();</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">rax</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>So the key thing happens when comparing eax with 0 after calling feof.</p>
+
+<p>that comparision happens here:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│      ╎    0x55651c3ee246      e825feffff     call sym.imp.feof       ; int feof(FILE *stream)
+│      ╎    0x55651c3ee24b      85c0           test eax, eax
+│      └──&lt; 0x55651c3ee24d      74a4           je 0x55651c3ee1f3
+</code></pre></div></div>
+<p>In this case, feof will receive the FILE struct and will inspect the current position of the internal pointer, then it will determine if its the end of the file or not, easy!</p>
+
+<p>As the rest of the program should be familiar to you I can proudly say that this post is over! See you on the next post of the course.</p>
+
+
+    </div>
+
+    <div class="post__share">
+  <ul class="share__list list-reset">
+    <li class="share__item">
+      <a class="share__link share__facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/reversing-radare-8"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Facebook" rel="nofollow"><i class="ion ion-logo-facebook"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__twitter" href="https://twitter.com/intent/tweet?text=Reverse%20engineering%2032%20and%2064%20bits%20binaries%20with%20Radare2%20-%209%20(files;%20read,%20write,%20seek%20and%20some%20heaps%20:O)&url=http://localhost:4000/reversing-radare-8"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Twitter" rel="nofollow"><i class="ion ion-logo-twitter"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url=http://localhost:4000/reversing-radare-8&title=Reverse%20engineering%2032%20and%2064%20bits%20binaries%20with%20Radare2%20-%209%20(files;%20read,%20write,%20seek%20and%20some%20heaps%20:O)&summary=&source=Artik%20Blue"
+      onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn" rel="nofollow"><i class="ion ion-logo-linkedin"></i></a>
+    </li>
+  </ul>
+</div>
+
+
+    <div class="post__navigation">
+  
+  <a class="post__prev" href="/reversing-radare-8-i">
+    <div class="prev__image">
+      <img class="lazy" data-src="/images//radare2/radare2_8i.png" alt="Reverse engineering 32 and 64 bits binaries with Radare2 - 9 (files; read, write, seek and some heaps :O)">
+    </div>
+    <div class="prev__box">
+      <span class="post__nav post__nav__prev">Older post</span>
+      <h2 class="post__nav__title">Reverse engineering 32 and 64 bits binaries with Radare2 - 8 (start doing crackmes now!)</h2>
+    </div>
+  </a>
+  
+
+  
+  <a class="post__next" href="/reversing-radare-9">
+    <div class="next__box">
+      <span class="post__nav post__nav__next">Newer post</span>
+      <h2 class="post__nav__title">Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (pointers and dynamic memory)</h2>
+    </div>
+    <div class="next__image">
+      <img class="lazy" data-src="/images//radare2/radare2_9.png" alt="Reverse engineering 32 and 64 bits binaries with Radare2 - 9 (files; read, write, seek and some heaps :O)">
+    </div>
+  </a>
+  
+</div>
+
+     <!-- begin comments -->
+<div id="disqus_thread" class="post__comments">
+  <div id="disqus_empty"></div>
+</div>
+
+<script>
+  function load_disqus() {
+    var disqus_shortname = 'artikblue',
+      is_disqus_empty = document.getElementById('disqus_empty'),
+      disqus_target = document.getElementById('disqus_thread'),
+      disqus_embed = document.createElement('script'),
+      disqus_hook = (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]);
+
+    if (disqus_target && is_disqus_empty) {
+      disqus_embed.type = 'text/javascript';
+      disqus_embed.async = true;
+      disqus_embed.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      disqus_hook.appendChild(disqus_embed);
+      is_disqus_empty.remove();
+    }
+  }
+
+  window.addEventListener('scroll', function (e) {
+    var currentScroll = document.scrollingElement.scrollTop;
+    var disqus_target = document.getElementById('disqus_thread');
+
+    if (disqus_target && (currentScroll > disqus_target.getBoundingClientRect().top - 150)) {
+      load_disqus('disqus_shortname');
+    }
+  }, false);
+
+</script>
+<noscript>Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+</noscript>
+<!-- end comments --> 
+
+  </article>
+</div>
+<!-- end post -->
+      </div>
+      <!-- end wrapper-page -->
+    </main>
+    <!-- end content -->
+    <div class="top" title="Top"><i class="ion ion-ios-arrow-round-up"></i></div>
+    <!-- begin footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12 col-m-12">
+        <div class="footer__inner">
+
+          <div class="footer__head">
+            <div class="row">
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-recent">
+    <div class="widget__head">
+      <h3 class="widget__title">Recent Posts</h3>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-22">
+        <img class="lazy" data-src="/images//radare2/radare2_22.png" alt="Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-20T00:01:35+02:00">Jun 20, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-22">Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack</a></h4>
+      </div>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-21">
+        <img class="lazy" data-src="/images//radare2/radare2_21.png" alt="Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-15T00:01:35+02:00">Jun 15, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-21">Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains</a></h4>
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-gallery">
+    <div class="widget__head">
+      <h3 class="widget__title">Gallery</h3>
+    </div>
+    
+    <div class="gallery-box gallery-footer">
+      <div class="gallery">
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/landscape1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sasha1.jpeg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/castle1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/scotland1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sanfran1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/newyork1.jpg" alt="Minimalism">
+        </div>
+        
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-subscribe">
+    <div class="widget__head">
+      <h3 class="widget__title"></h3>
+    </div>
+    <div class="subscribe__inner">
+      <div class="subscribe__group">
+        <div class="subscribe__description"></div>
+      </div>
+      <!-- <form class="subscribe-form validate"
+           action="#" method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form" target="_blank" novalidate>
+           <label class="screen-reader-text" for="mce-EMAIL">Email address</label>
+           <input class="subscribe-email required email" id="mce-EMAIL" type="text" name="EMAIL"
+           placeholder="Your email address">
+           <button class="button subscribe-button" id="membedded-subscribe" type="submit" name="subscribe"></button>
+           </form> -->
+    </div>
+  </div>
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        
+  <div class="social">
+    <ul class="social__list list-reset">
+      
+      <li class="social__item">
+        <a class="social__link" href="https://twitter.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-twitter"></i></a>
+      </li>
+      
+      <li class="social__item">
+        <a class="social__link" href="https://github.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-github"></i></a>
+      </li>
+      
+    </ul>
+  </div>
+
+        <div class="copyright">2022 &copy; <a href="/">Artik Blue</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- end footer -->
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="/js/scripts.js"></script>
+</body>
+
+</html>

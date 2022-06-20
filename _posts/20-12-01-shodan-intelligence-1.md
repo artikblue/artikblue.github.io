@@ -1,11 +1,9 @@
 ---
 layout: post
 title:  "Generating contextual geographic intelligence with shodan"
-tags: [shodan, python, analysis]
-featured_image_thumbnail: assets/images/shodan.png
-featured_image: assets/images/shodan.png
-featured: true
-hidden: true
+tags: shodan python analysis
+image: '/images//shodan.png'
+date:   2020-12-01 15:01:35 -0700
 ---
 
 ### About shodan

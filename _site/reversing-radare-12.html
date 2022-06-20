@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Reverse engineering 32 and 64 bits binaries with Radare2 - 13 (defines, unions and bitmaps)</title>
+  <meta name='description' content='All things cyber'>
+
+  <link rel="canonical" href="http://localhost:4000/reversing-radare-12">
+  <link rel="alternate" type="application/rss+xml" title="Artik Blue" href="/feed.xml">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Ionicons -->
+  <link href="https://unpkg.com/ionicons@4.2.2/dist/css/ionicons.min.css" rel="stylesheet">
+
+  <style>
+  
+      /*!------------------------------------------------------------------
+[MAIN STYLESHEET]
+-------------------------------------------------------------------*/.list-reset{list-style-type:none;margin:0;padding:0}.clearfix::after,.clearfix ::before{content:"";display:table;clear:both}.screen-reader-text{clip:rect(1px, 1px, 1px, 1px);height:1px;overflow:hidden;position:absolute !important;width:1px;word-wrap:normal !important}/*! normalize.css v8.0.0 | MIT License | github.com/necolas/normalize.css */html{line-height:1.15;-webkit-text-size-adjust:100%}body{margin:0}h1{font-size:2em;margin:0.67em 0}hr{box-sizing:content-box;height:0;overflow:visible}pre{font-family:monospace, monospace;font-size:1em}a{background-color:transparent}abbr[title]{border-bottom:none;text-decoration:underline;text-decoration:underline dotted}b,strong{font-weight:bolder}code,kbd,samp{font-family:monospace, monospace;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-0.25em}sup{top:-0.5em}img{border-style:none}button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;line-height:1.15;margin:0}button,input{overflow:visible}button,select{text-transform:none}button,[type="button"],[type="reset"],[type="submit"]{-webkit-appearance:button}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner{border-style:none;padding:0}button:-moz-focusring,[type="button"]:-moz-focusring,[type="reset"]:-moz-focusring,[type="submit"]:-moz-focusring{outline:1px dotted ButtonText}fieldset{padding:0.35em 0.75em 0.625em}legend{box-sizing:border-box;color:inherit;display:table;max-width:100%;padding:0;white-space:normal}progress{vertical-align:baseline}textarea{overflow:auto}[type="checkbox"],[type="radio"]{box-sizing:border-box;padding:0}[type="number"]::-webkit-inner-spin-button,[type="number"]::-webkit-outer-spin-button{height:auto}[type="search"]{-webkit-appearance:textfield;outline-offset:-2px}[type="search"]::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}details{display:block}summary{display:list-item}template{display:none}[hidden]{display:none}body,h1,h2,h3,h4,h5,h6,p,blockquote,pre,dl,dd,ol,ul,fieldset,legend,figure,hr{margin:0;padding:0}li>ul,li>ol{margin-bottom:0}table{border-collapse:collapse;border-spacing:0}h1,h2,h3,h4,h5,h6,ul,ol,dl,blockquote,p,address,hr,table,fieldset,figure,pre{margin-bottom:30px}ul,ol,dd{margin-left:15px}ul li,ol li{margin-bottom:10px}.highlight{background:#161d25}.highlighter-rouge .highlight{background:#eef}.highlight .c{color:#998;font-style:italic}.highlight .err{color:#a61717;background-color:#e3d2d2}.highlight .k{font-weight:bold}.highlight .o{font-weight:bold}.highlight .cm{color:#998;font-style:italic}.highlight .cp{color:#999;font-weight:bold}.highlight .c1{color:#998;font-style:italic}.highlight .cs{color:#999;font-weight:bold;font-style:italic}.highlight .gd{color:#000;background-color:#fdd}.highlight .gd .x{color:#000;background-color:#faa}.highlight .ge{font-style:italic}.highlight .gr{color:#a00}.highlight .gh{color:#999}.highlight .gi{color:#000;background-color:#dfd}.highlight .gi .x{color:#000;background-color:#afa}.highlight .go{color:#888}.highlight .gp{color:#555}.highlight .gs{font-weight:bold}.highlight .gu{color:#aaa}.highlight .gt{color:#a00}.highlight .kc{font-weight:bold}.highlight .kd{font-weight:bold}.highlight .kp{font-weight:bold}.highlight .kr{font-weight:bold}.highlight .kt{color:#458;font-weight:bold}.highlight .m{color:#099}.highlight .s{color:#d14}.highlight .na{color:teal}.highlight .nb{color:#0086B3}.highlight .nc{color:#458;font-weight:bold}.highlight .no{color:teal}.highlight .ni{color:purple}.highlight .ne{color:#900;font-weight:bold}.highlight .nf{color:#900;font-weight:bold}.highlight .nn{color:#555}.highlight .nt{color:navy}.highlight .nv{color:teal}.highlight .ow{font-weight:bold}.highlight .w{color:#bbb}.highlight .mf{color:#099}.highlight .mh{color:#099}.highlight .mi{color:#099}.highlight .mo{color:#099}.highlight .sb{color:#d14}.highlight .sc{color:#d14}.highlight .sd{color:#d14}.highlight .s2{color:#d14}.highlight .se{color:#d14}.highlight .sh{color:#d14}.highlight .si{color:#d14}.highlight .sx{color:#d14}.highlight .sr{color:#009926}.highlight .s1{color:#d14}.highlight .ss{color:#990073}.highlight .bp{color:#999}.highlight .vc{color:teal}.highlight .vg{color:teal}.highlight .vi{color:teal}.highlight .il{color:#099}.container{max-width:1270px;padding-left:15px;padding-right:15px;margin:0 auto}@media only screen and (max-width: 1300px){.container{max-width:1100px}}@media only screen and (max-width: 1130px){.container{max-width:1000px}}@media only screen and (max-width: 1024px){.container{max-width:740px}}@media only screen and (max-width: 768px){.container{max-width:540px}}@media only screen and (max-width: 576px){.container{max-width:380px}}.row{display:flex;flex-wrap:wrap;flex:0 1 auto;flex-direction:row;box-sizing:border-box;margin-left:-15px;margin-right:-15px}.col{padding-left:15px;padding-right:15px}[class^="col-"]{flex:auto}.col-0{width:0%}.col-1{width:8.3333333333%}.col-2{width:16.6666666667%}.col-3{width:25%}.col-4{width:33.3333333333%}.col-5{width:41.6666666667%}.col-6{width:50%}.col-7{width:58.3333333333%}.col-8{width:66.6666666667%}.col-9{width:75%}.col-10{width:83.3333333333%}.col-11{width:91.6666666667%}.col-12{width:100%}.push-0{margin-left:0%}.push-1{margin-left:8.3333333333%}.push-2{margin-left:16.6666666667%}.push-3{margin-left:25%}.push-4{margin-left:33.3333333333%}.push-5{margin-left:41.6666666667%}.push-6{margin-left:50%}.push-7{margin-left:58.3333333333%}.push-8{margin-left:66.6666666667%}.push-9{margin-left:75%}.push-10{margin-left:83.3333333333%}.push-11{margin-left:91.6666666667%}.push-12{margin-left:100%}.pull-0{margin-right:0%}.pull-1{margin-right:8.3333333333%}.pull-2{margin-right:16.6666666667%}.pull-3{margin-right:25%}.pull-4{margin-right:33.3333333333%}.pull-5{margin-right:41.6666666667%}.pull-6{margin-right:50%}.pull-7{margin-right:58.3333333333%}.pull-8{margin-right:66.6666666667%}.pull-9{margin-right:75%}.pull-10{margin-right:83.3333333333%}.pull-11{margin-right:91.6666666667%}.pull-12{margin-right:100%}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}img[data-action="zoom"]{cursor:pointer;cursor:-webkit-zoom-in;cursor:-moz-zoom-in}.zoom-img,.zoom-img-wrap{position:relative;z-index:666;-webkit-transition:all 300ms;-o-transition:all 300ms;transition:all 300ms}img.zoom-img{cursor:pointer;cursor:-webkit-zoom-out;cursor:-moz-zoom-out}.zoom-overlay{z-index:420;background:#161d25;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;opacity:0;-webkit-transition:opacity 300ms;-o-transition:opacity 300ms;transition:opacity 300ms}.zoom-overlay-open .zoom-overlay{opacity:1}.zoom-overlay-open,.zoom-overlay-transitioning{cursor:default}.animate{animation:animateElement cubic-bezier(0.3, 0.45, 0.45, 0.95) 0.75s;animation-duration:0.5s;animation-iteration-count:1;transition:transform .15s}@keyframes animateElement{0%{opacity:0;transform:translate(0px, 50px)}100%{opacity:1;transform:translate(0px, 0px)}}*,*::after,*::before{box-sizing:border-box}body{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-size:18px;line-height:34px;border:10px solid #131212;color:#fff;background-color:#131212;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}body.dark .footer__head{background:#131212}@media only screen and (max-width: 768px){body.dark .footer__head{padding:40px}}@media only screen and (max-width: 576px){body.dark .footer__head{padding:30px}}body.dark .subscribe-form .subscribe-email{background:#161d25}@media only screen and (max-width: 576px){body{font-size:16px;line-height:29px;border-width:5px}}*::selection{color:#fff;background-color:rgba(0,112,255,0.8)}h1,h2,h3,h4,h5,h6{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-weight:700;line-height:1.3;letter-spacing:-1px}h1{font-size:36px}h2{font-size:28px}h3{font-size:24px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px}blockquote{position:relative;margin-top:30px;padding:25px 25px 15px 60px;font-size:30px;line-height:45px;font-weight:600;font-style:normal}blockquote::before{content:'\201C';position:absolute;top:0.35em;left:0.05em;font-size:3.5em;color:#0070ff}blockquote p{margin-bottom:10px}blockquote cite{display:inline-block;margin-top:7px;font-size:15px;font-style:normal;color:#ccc}blockquote cite:before{content:'\2014' '\00a0'}@media only screen and (max-width: 1024px){blockquote{font-size:24px;line-height:37px}}@media only screen and (max-width: 576px){blockquote{padding:38px 0 15px 35px;font-size:21px;line-height:31px}}pre{overflow:auto;padding:15px;margin-bottom:0;font-size:14px;white-space:pre-wrap;word-wrap:break-word;word-break:break-all}img,.zoom-img-wrap{max-width:100%;height:auto;vertical-align:middle}img+em,.zoom-img-wrap+em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}img+em a,.zoom-img-wrap+em a{border-bottom:1px solid #fff}img+em a:hover,.zoom-img-wrap+em a:hover{color:#fff;border-color:#0070ff}a{text-decoration:none;color:#fff;transition:all 0.35s}a:hover{color:#fff}hr{display:block;height:1px;width:100px;margin:50px 0;border:0;background:#000}.wrapper-page{margin-bottom:70px}@media only screen and (max-width: 768px){.wrapper-page{margin-bottom:60px}}@media only screen and (max-width: 576px){.wrapper-page{margin-bottom:40px}}.button{display:inline-block;height:45px;padding:0 20px;font-size:15px;font-weight:700;border:none;outline:none;color:#fff;background:#0070ff;transition:all 0.35s;cursor:pointer}.button:hover{color:#fff;background:#0065e6}.lazy{opacity:0;transition:0.3s}.lazy.loaded{opacity:1}.top{position:fixed;bottom:40px;right:-100px;z-index:1;width:28px;height:40px;font-size:28px;line-height:40px;text-align:center;border-radius:6px;background-color:#161d25;color:#fff;cursor:pointer;transition:all .25s ease;box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.top:hover{color:#fff;background-color:#0070ff}.top.is-active{right:40px}@media only screen and (max-width: 768px){.top{bottom:25px}.top.is-active{right:30px}}.header{height:auto;border-bottom:1px solid #131212;background:#161d25;transition:all 0.35s}.header .header__overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:15;background-color:rgba(17,17,17,0.7);cursor:pointer;opacity:0;visibility:hidden;transition:all 0.5s ease}@media only screen and (max-width: 1024px){.header .header__overlay.is-visible{opacity:1;visibility:visible}}.header__inner{position:relative;display:flex;align-items:center;min-height:80px}.logo__link{font-size:20px;line-height:26px;font-weight:700}.logo__link:hover{color:#0070ff}.logo__image{max-height:50px}.main-nav{margin-left:80px}@media only screen and (max-width: 1024px){.main-nav{position:fixed;top:0;left:inherit;right:-300px;bottom:0;transform:none;z-index:100;width:300px;height:100vh;padding:40px 30px 30px;border:10px solid #131212;transition:right 0.5s cubic-bezier(0.7, 0.4, 0, 1);background:#161d25}.main-nav.is-open{right:0}.main-nav .nav__list{width:100%}.main-nav .nav__list .nav__item{display:block;margin:0 10px}.main-nav .nav__list .nav__item:last-child{margin-right:10px}.main-nav .nav__list .nav__item .nav__link{display:block;padding:10px 0;font-size:16px;line-height:26px;font-weight:500}}@media only screen and (max-width: 576px){.main-nav{padding:20px 30px;border-width:5px}}.main-nav__box{display:flex;align-items:center}.main-nav__box .nav__icon-close{display:none;font-size:24px;text-align:right}.main-nav__box .nav__icon-close .ion-md-close{transition:all 0.35s;cursor:pointer}.main-nav__box .nav__icon-close .ion-md-close:hover{color:#0070ff}.main-nav__box .nav__title{display:none}@media only screen and (max-width: 1024px){.main-nav__box{display:block}.main-nav__box .nav__icon-close{display:block}.main-nav__box .nav__title{display:block;margin:0 10px 15px;padding-bottom:15px;font-size:24px;font-weight:700;color:#fff;border-bottom:1px solid #131212}}.nav__list .nav__item{display:inline-block;margin:0 20px}.nav__list .nav__item:last-child{margin-right:40px}.nav__list .nav__item .nav__link{font-size:15px;line-height:24px;font-weight:500}.nav__list .nav__item .nav__link:hover{color:#0070ff}.nav-buttons{display:flex;align-items:center;margin-left:auto;font-size:21px;color:#fff;cursor:pointer}.nav-buttons .nav__icon{transition:all 0.35s}.nav-buttons .nav__icon:hover{color:#0070ff}.nav-buttons .nav__icon:first-child{margin-right:15px}.nav-buttons .nav__icon-menu{display:none}@media only screen and (max-width: 1024px){.nav-buttons{margin-left:auto}.nav-buttons .nav__icon-menu{display:block}}.search{position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;transform:scale(0.95);overflow:auto;opacity:0;background:#131212;transition:all .25s ease}.search.is-visible{transform:scale(1);z-index:100;opacity:1;transition:all .25s ease}.search__box{width:50%;margin:0 auto;padding-top:140px}@media only screen and (max-width: 1024px){.search__box{width:80%;padding-top:100px}}.search__group{position:relative;margin-bottom:50px}.search__group .search__close{position:absolute;right:20px;top:17px;font-size:27px;line-height:40px;cursor:pointer;transition:all .2s}.search__group .search__close:hover{color:#0070ff}.search__group .search__text{width:100%;padding:20px;font-size:21px;line-height:31px;border:2px solid transparent;border-radius:4px;color:#fff;background:#161d25;outline:none;transition:all .2s}.search__group .search__text:focus{border-color:#0070ff}.search__group .search__text::placeholder{font-weight:500;color:#fff}.search__group .search__text::-ms-clear{display:none}.search-results-list .no-results{width:100%;font-size:21px;font-weight:600;text-align:center;color:#fff}.pagination{margin-top:40px}@media only screen and (max-width: 768px){.pagination{margin-top:30px}}@media only screen and (max-width: 576px){.pagination{margin-top:20px}}.pagination__inner{display:flex;justify-content:center;align-items:center}.pagination__list{display:flex;font-weight:600;height:40px;padding:0 20px;font-size:14px;line-height:40px;border-radius:3px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);color:#fff;background-color:#161d25}.pagination__count{display:inline-block;padding:0 15px;margin:0 15px;font-size:13px;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1);color:#ccc}.pagination__next i,.pagination__prev i{font-size:13px}.pagination__next:hover,.pagination__prev:hover{color:#0070ff}.pagination__next.disabled,.pagination__prev.disabled{opacity:0.2;cursor:not-allowed;color:inherit}.pagination__next i{margin-left:4px}.pagination__prev i{margin-right:4px}.footer{padding-top:70px;background:#161d25}.footer .row .col{flex-grow:1}.footer .footer__inner{padding:60px 0;margin:0 60px 0;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.footer .footer__head{margin:0 -60px;padding:60px;background:#161d25;box-shadow:0 10px 40px rgba(0,0,0,0.07)}.footer .footer__content{padding:60px 0}@media only screen and (max-width: 1024px){.footer .row .col:last-child>.widget{margin-bottom:0}}@media only screen and (max-width: 768px){.footer{padding-top:60px}.footer .footer__inner{padding:0;margin:0;background-image:none}.footer .footer__head{margin:0;padding:0;box-shadow:none}}@media only screen and (max-width: 576px){.footer{padding-top:50px}}@media only screen and (max-width: 1024px){.widget{margin-bottom:30px}}@media only screen and (max-width: 576px){.widget{margin-bottom:40px}}.widget__head{margin-bottom:20px}.widget__head .widget__title{margin:0;font-size:24px;color:#fff}.widget-gallery{padding:0 35px}@media only screen and (max-width: 1024px){.widget-gallery{padding:0}}.recent-posts{position:relative;display:flex;margin-bottom:15px}.recent-posts:last-child{margin-bottom:0}.recent-posts__header{margin-right:15px}.recent-posts__image{position:relative;display:block;margin-right:15px;min-width:80px;height:80px;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:#131212}.recent-posts__image img{position:absolute;top:0;width:100%;height:100%;object-fit:cover}.recent-posts__date{margin-bottom:5px;font-size:13px;line-height:16px;color:#ccc}.recent-posts__title{margin-bottom:0;font-size:17px;line-height:22px;font-weight:700}.recent-posts__title a{color:#fff}.recent-posts__title a:hover{color:#fff}.widget-subscribe .subscribe__inner{display:flex;flex-direction:column;justify-content:space-between}.widget-subscribe .subscribe__group{margin-bottom:20px}.widget-subscribe .subscribe__group .subscribe__title{margin-bottom:15px;color:#fff}.widget-subscribe .subscribe__group .subscribe__description{font-size:15px;line-height:22px;color:#ccc}.widget-subscribe .subscribe-form{position:relative;height:60px}.widget-subscribe .subscribe-form .subscribe-email{width:100%;height:100%;padding:20px;font-size:14px;line-height:19px;font-weight:500;color:rgba(255,255,255,0.8);border:2px solid #131212;background:transparent;transition:border-color .2s ease-in-out;outline:0}.widget-subscribe .subscribe-form .subscribe-email::placeholder{color:rgba(255,255,255,0.8)}.widget-subscribe .subscribe-form .subscribe-email:focus{color:rgba(255,255,255,0.8);border-color:#0070ff}.widget-subscribe .subscribe-form .subscribe-button{position:absolute;top:10px;right:10px;height:40px;padding:0 15px;font-size:14px}@media only screen and (max-width: 1130px){.widget-subscribe .subscribe-form .subscribe-email{font-size:13px}.widget-subscribe .subscribe-form .subscribe-button{font-size:14px}}.copyright{padding:0 0 30px;margin-top:10px;font-size:13px;font-weight:500;text-align:center;color:#ccc}.copyright a:hover{color:#0070ff}@media only screen and (max-width: 768px){.copyright{text-align:left}}.gallery-box{margin:40px 0}.gallery-box.gallery-footer{margin:0}.gallery-box em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}.gallery-box em a{border-bottom:1px solid #fff}.gallery-box em a:hover{color:#fff;border-color:#0070ff}.gallery{display:grid;grid-template-columns:repeat(3, auto);justify-content:center;align-content:center;grid-gap:10px}.gallery .gallery__image{background:#131212}.gallery .gallery__image img{display:block;width:100%;height:auto;object-fit:cover}.social{margin:60px 0 0;text-align:center}.social .social__list{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}.social .social__item{display:inline-block;margin:0 2px}.social .social__link{position:relative;z-index:1;padding:0 10px;font-size:21px;line-height:1}.social .social__link:hover{color:#fff}.social .social__link:hover::after{transform:translate3d(-50%, -50%, 0) scale(1)}.social .social__link::after{content:'';display:block;position:absolute;z-index:-1;top:50%;left:50%;transform:translate3d(-50%, -50%, 0) scale(0);width:100%;height:0;padding-bottom:100%;border-radius:50%;background:#0070ff;transition:all .25s}@media only screen and (max-width: 768px){.social{margin:50px 0 0;text-align:left}.social .social__list{justify-content:start}}.hero{padding:60px 0 70px;margin-bottom:70px;background:#161d25}.hero.hero--post .article__meta{margin-bottom:13px;font-size:14px;font-weight:500}.hero.hero--post .article__meta .article__date::before{content:none}.hero.hero--post .article__author-link{font-size:14px;line-height:20px;font-weight:500;color:#ccc}.hero.hero--post .article__author-link span{color:#ccc}.hero.hero--post .article__author-link:hover{color:#fff}.hero.hero--page .hero__title{margin-bottom:0}@media only screen and (max-width: 768px){.hero{padding:60px 0 60px;margin-bottom:60px}}@media only screen and (max-width: 576px){.hero{padding:40px 0 40px;margin-bottom:40px}}.hero__inner{display:flex;align-items:center}@media only screen and (max-width: 768px){.hero__inner{flex-direction:column}}.hero__left,.hero__right{width:50%}@media only screen and (max-width: 768px){.hero__left,.hero__right{width:100%}}.hero__left .hero__title,.hero__left .hero__job{font-size:50px;font-weight:700;letter-spacing:-2px;color:#fff}@media only screen and (max-width: 1130px){.hero__left .hero__title,.hero__left .hero__job{font-size:40px;line-height:1.2}}@media only screen and (max-width: 1024px){.hero__left .hero__title,.hero__left .hero__job{font-size:33px}}@media only screen and (max-width: 576px){.hero__left .hero__title,.hero__left .hero__job{font-size:27px}}.hero__left .hero__title{margin-right:20px;margin-bottom:10px}@media only screen and (max-width: 768px){.hero__left .hero__title{margin-right:0}}.hero__left .hero__job{margin-bottom:20px}.hero__left .hero__name{position:relative;font-weight:400}.hero__left .hero__name::after{content:"";position:absolute;left:0;bottom:0px;width:100%;height:38%;background-color:rgba(0,112,255,0.1)}.hero__left .hero__description{max-width:550px;margin:0;font-size:21px;font-weight:500;color:#ccc}@media only screen and (max-width: 1024px){.hero__left .hero__description{font-size:16px;line-height:26px}}.hero__left .hero__button{margin-top:20px;padding-right:12px;display:inline-block;font-size:16px;line-height:16px;font-weight:700;color:#fff;outline:none;cursor:pointer;transition:all 0.35s}.hero__left .hero__button:hover{color:#fff;background:#0065e6}.hero__left .hero__button .button-arrow{display:inline-block;margin-right:10px;width:30px;height:30px;line-height:30px;text-align:center;color:#fff;background:#0070ff}.hero__right{position:relative}.hero__right::after{content:"";position:absolute;top:50%;transform:translateY(-50%);display:block;width:100%;height:50%;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.hero__right .hero__image{position:relative;z-index:10;width:370px;height:470px;margin:0 auto}.hero__right .hero__image::before{content:"";display:block;position:absolute;top:0;z-index:1;width:100%;height:100%;background:#131212}.hero__right .hero__image img{position:absolute;top:0;z-index:1;height:100%;width:100%;object-fit:cover;box-shadow:10px 10px 0 #0070ff;background:#131212}@media only screen and (max-width: 1130px){.hero__right .hero__image{width:270px;height:370px}}@media only screen and (max-width: 1024px){.hero__right .hero__image{width:230px;height:330px}}@media only screen and (max-width: 768px){.hero__right{order:-1}.hero__right .hero__image{width:100%;height:330px;margin-bottom:40px}}@media only screen and (max-width: 576px){.hero__right .hero__image{height:270px;margin-bottom:30px}.hero__right .hero__image img{box-shadow:none}}.contact-head{margin-bottom:30px}.form-box{max-width:750px;margin:0 auto}.form__group{margin-bottom:20px}.form__group:last-child{margin-bottom:0}.form__input{width:100%;padding:20px;font-size:14px;font-weight:500;border:1px solid #131212;outline:none;transition:250ms;resize:vertical;color:rgba(255,255,255,0.8);background:#161d25}.form__input::placeholder{color:rgba(255,255,255,0.8)}.form__input:focus{border:1px solid #0070ff}.article{margin-bottom:30px;border-radius:3px;overflow:hidden;transition:transform .2s}.article:hover{transform:translateY(-3px)}.article__inner{box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.image-wrap{padding:15px 15px 0 15px;background:#161d25}.article__image{position:relative;display:block;height:0;padding-bottom:56.25%;background:#131212;overflow:hidden}.article__image img{position:absolute;width:100%;height:100%;object-fit:cover}.article__content{padding:25px;background:#161d25}.article__title{margin-bottom:10px;font-size:22px;line-height:32px}.article__title a:hover{color:#fff}.article__excerpt{font-size:15px;line-height:24px;font-weight:500;margin-bottom:20px;color:#ccc}.article__meta{display:flex;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:500;line-height:20px}.article__meta .article__author-link{color:#ccc}.article__meta .article__author-link:hover{color:#fff}.article__meta .article-tags__box{display:flex}.article__meta .article-tags__box::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}.article__meta .article-tags__box .article__tag{color:#ccc}.article__meta .article-tags__box .article__tag:hover{color:#fff}.article__meta .article-tags__box .article__tag::after{content:",";display:inline-block;margin:0 2px}.article__meta .article-tags__box .article__tag:last-child::after{content:none}.article__meta .article__date{color:#ccc}.article__meta .article__date::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}img[src$="centerme"]{display:block;margin:0 auto}.post,.page{max-width:850px;margin:0 auto;color:#fff}.post__content a,.page__content a{text-decoration:underline}.image-box{margin:40px 0}.post__share{margin:50px 0}.post__share .share__list{display:flex;justify-content:center;align-items:center;width:100%}.post__share .share__item{margin:0 2px;text-align:center}.post__share .share__link{display:block;padding:2px 12px;font-size:18px;color:#161d25}.post__share .share__link.share__facebook,.post__share .share__link.share__twitter,.post__share .share__link.share__linkedin,.post__share .share__link.share__pinterest{border:1px solid #131212;background:#161d25}.post__share .share__link.share__facebook:hover,.post__share .share__link.share__twitter:hover,.post__share .share__link.share__linkedin:hover,.post__share .share__link.share__pinterest:hover{color:#fff}.post__share .share__link.share__facebook{color:#3b5998}.post__share .share__link.share__facebook:hover{background:#3b5998}.post__share .share__link.share__twitter{color:#55acee}.post__share .share__link.share__twitter:hover{background:#55acee}.post__share .share__link.share__linkedin{color:#0077b5}.post__share .share__link.share__linkedin:hover{background:#0077b5}.post__share .share__link.share__pinterest{color:#bd081c}.post__share .share__link.share__pinterest:hover{background:#bd081c}@media only screen and (max-width: 576px){.post__share{margin:40px 0}}.post__navigation{display:flex;justify-content:space-between;margin-bottom:20px}.post__navigation .post__prev,.post__navigation .post__next{display:flex;width:48%;padding:25px;margin-bottom:30px;background:#161d25;box-shadow:0px 0px 20px rgba(0,0,0,0.05);transition:transform .2s}.post__navigation .post__prev:hover,.post__navigation .post__next:hover{transform:translateY(-3px)}.post__navigation .post__prev .prev__image,.post__navigation .post__prev .next__image,.post__navigation .post__next .prev__image,.post__navigation .post__next .next__image{position:relative;display:block;width:100px;min-width:100px;height:100px;background-color:#131212}.post__navigation .post__prev .prev__image img,.post__navigation .post__prev .next__image img,.post__navigation .post__next .prev__image img,.post__navigation .post__next .next__image img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.post__navigation .post__prev .prev__image,.post__navigation .post__next .prev__image{margin-right:15px}.post__navigation .post__prev .next__image,.post__navigation .post__next .next__image{margin-left:15px}.post__navigation .post__prev .post__nav,.post__navigation .post__next .post__nav{display:inline-block;margin-bottom:5px;font-size:13px;line-height:1;font-weight:500;color:#ccc}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{margin-bottom:0;font-size:18px;line-height:24px}.post__navigation .post__prev .post__nav__title a:hover,.post__navigation .post__next .post__nav__title a:hover{color:#fff}.post__navigation .post__next{text-align:right;margin-left:auto;justify-content:flex-end}@media only screen and (max-width: 768px){.post__navigation{flex-wrap:wrap}.post__navigation .post__prev,.post__navigation .post__next{width:100%}.post__navigation .post__prev{margin-bottom:30px}.post__navigation .next__box{margin-left:auto}}@media only screen and (max-width: 576px){.post__navigation{margin-bottom:10px}.post__navigation .post__prev,.post__navigation .post__next{padding:20px}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{font-size:15px;line-height:20px}}.post__comments{padding:40px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);background:#161d25}@media only screen and (max-width: 576px){.post__comments{padding:30px}}.error{margin-bottom:30px;text-align:center}.error .error__title{margin-bottom:0;font-size:100px}.error .error__text{margin-bottom:20px;font-size:21px;color:#ccc}.error .error__button{line-height:45px}.tag{padding:70px 0;margin-bottom:70px;text-align:center;background:#161d25}.tag .tag__meta{font-size:16px;color:#ccc}.tag .tag__title{margin:0;font-size:50px}@media only screen and (max-width: 768px){.tag{padding:60px 0;margin-bottom:60px}}@media only screen and (max-width: 576px){.tag{padding:40px 0;margin-bottom:40px}}
+
+  </style>
+</head>
+
+<body class="dark">
+
+  
+
+    <!-- begin header -->
+<header class="header">
+  <div class="container">
+    <div class="row">
+      <div class="header__inner col col-12">
+
+        <div class="logo">
+          <a class="logo__link" href="/">
+          
+            Artik Blue
+          
+          </a>
+        </div>
+
+        <nav class="main-nav">
+          <div class="main-nav__box">
+            <div class="nav__icon-close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <div class="nav__title">Menu</div>
+            <ul class="nav__list list-reset">
+              <li class="nav__item">
+                <a href="/" class="nav__link">Home</a>
+              </li>
+              
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/about/" class="nav__link">About</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/reversing" class="nav__link">Reversing</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+            </ul>
+          </div>
+        </nav>
+
+        <div class="nav-buttons">
+          <i class="nav__icon nav__icon-menu ion ion-md-menu"></i>
+          <i class="nav__icon nav__icon-search ion ion-md-search"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="header__overlay"></div>
+</header>
+<!-- end header -->
+
+<!-- begin search -->
+<div class="search">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="search__box">
+          <div class="search__group">
+            <div class="search__close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <label for="js-search-input" class="screen-reader-text">Search for Blog</label>
+            <input type="text" id="js-search-input" class="search__text" autocomplete="off" placeholder="Type to search...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="container__inner">
+          <div class="row search-results-list" id="js-results-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- end search -->
+    <!-- begin content -->
+    <main class="content" aria-label="Content">
+      <!-- begin wrapper-page -->
+      <div class="wrapper-page">
+        <!-- begin hero -->
+
+<section class="hero hero--post">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="hero__inner">
+          <div class="hero__left">
+            
+
+            <div class="article__meta">
+              <span class="article__date"><time datetime="2020-05-14T00:01:35+02:00">14 May 2020</time></span>
+              
+              <div class="article-tags__box">
+                
+                  <a href="/tag/reversing" class="article__tag">reversing</a>
+                
+                  <a href="/tag/c" class="article__tag">c</a>
+                
+                  <a href="/tag/radare" class="article__tag">radare</a>
+                
+              </div>
+              
+            </div>
+
+            <h1 class="hero__title">Reverse engineering 32 and 64 bits binaries with Radare2 - 13 (defines, unions and bitmaps)</h1>
+            <a href="/about/" class="article__author-link"><span>By</span> Artik Blue</a>
+
+            
+          </div>
+
+          <div class="hero__right">
+
+            
+            <div class="hero__image">
+              <img class="lazy" data-src="/images//radare2/radare2_13.png" alt="Reverse engineering 32 and 64 bits binaries with Radare2 - 13 (defines, unions and bitmaps)">
+            </div>
+
+            
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- end hero -->
+
+<!-- begin post -->
+<div class="container">
+  <article class="post animate">
+
+    <div class="post__content">
+      <p>Today we are gonna get a bit low level. We’ll review important stuff like unions bitmaps and defines, that are commonly used in progams that run inside small systems.</p>
+
+<h4 id="unions">Unions</h4>
+
+<p>In the C languages, unions are special data structures that allow us to store different data types in the same memory location. We can define a union with many members, but only one member can contain a value at any given time. Unions provide an efficient way of using the same memory location for multiple-purpose. These structures are commonly seen in systems where little space is available for the program, think about embedded systems for example.</p>
+
+<p>We’ll start by reviewing this example:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    
+<span class="k">union</span> <span class="p">{</span>
+   <span class="kt">char</span> <span class="n">ichar</span><span class="p">;</span> <span class="cm">/* 1 byte */</span>
+   <span class="kt">int</span> <span class="n">num</span><span class="p">;</span> <span class="cm">/* 4 bytes */</span>
+<span class="p">}</span> <span class="n">sample</span><span class="p">;</span>
+
+   <span class="kt">int</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">;</span>
+    
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Size of 'sample' union = %d </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">sample</span><span class="p">));</span>
+    <span class="n">sample</span><span class="p">.</span><span class="n">num</span> <span class="o">=</span> <span class="mi">25</span><span class="p">;</span>
+    <span class="n">sample</span><span class="p">.</span><span class="n">ichar</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span> <span class="n">sample</span><span class="p">.</span><span class="n">num</span><span class="p">);</span>
+    
+
+   <span class="n">getchar</span><span class="p">();</span>
+   <span class="n">getchar</span><span class="p">();</span>
+   <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>If we compile and run this program what we will see is the following:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ./union1
+Size of 'sample' union = 4 
+50
+</code></pre></div></div>
+<p>As you see, the union took the largest variable, the int in this case, for defining the size as 4 bytes can hold either an int or a char.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x7fb4c26cb090]&gt; s main
+[0x55b90da1b145]&gt; pdf
+            ; DATA XREF from entry0 @ 0x55b90da1b07d
+┌ 80: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_4h @ rbp-0x4
+│           0x55b90da1b145      55             push rbp
+│           0x55b90da1b146      4889e5         mov rbp, rsp
+│           0x55b90da1b149      4883ec10       sub rsp, 0x10
+│           0x55b90da1b14d      be04000000     mov esi, 4
+│           0x55b90da1b152      488d3dab0e00.  lea rdi, str.Size_of__sample__union____d ; 0x55b90da1c004 ; "Size of 'sample' union = %d \n"
+│           0x55b90da1b159      b800000000     mov eax, 0
+│           0x55b90da1b15e      e8cdfeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55b90da1b163      c745fc190000.  mov dword [var_4h], 0x19 ; 25
+│           0x55b90da1b16a      c645fc32       mov byte [var_4h], 0x32 ; '2' ; 50
+│           0x55b90da1b16e      8b45fc         mov eax, dword [var_4h]
+│           0x55b90da1b171      89c6           mov esi, eax
+│           0x55b90da1b173      488d3da80e00.  lea rdi, [0x55b90da1c022] ; "%d"
+│           0x55b90da1b17a      b800000000     mov eax, 0
+│           0x55b90da1b17f      e8acfeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55b90da1b184      e8b7feffff     call sym.imp.getchar    ; int getchar(void)
+│           0x55b90da1b189      e8b2feffff     call sym.imp.getchar    ; int getchar(void)
+│           0x55b90da1b18e      b800000000     mov eax, 0
+│           0x55b90da1b193      c9             leave
+└           0x55b90da1b194      c3             ret
+[0x55b90da1b145]&gt; 
+</code></pre></div></div>
+<p>This concept is very easy to understand when disasm’ing the code. At first, 0x19 = 25dec is  loaded in var_4h, then 0x32 = 50dec is loaded in the exact same place</p>
+
+<p>So for the first load:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55b90da1b163      c745fc190000.  mov dword [var_4h], 0x19 ; 25
+│           ;-- rip:
+│           0x55b90da1b16a b    c645fc32       mov byte [var_4h], 0x32 ; '2' ; 50
+
+[0x55b90da1b16a]&gt; afvd
+var var_4h = 0x7ffd1dd3133c = (qword)0x0da1b1a000000019
+[0x55b90da1b16a]&gt; 
+</code></pre></div></div>
+<p>Then for the second load</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dc
+[0x55b90da1b16e]&gt; afvd
+var var_4h = 0x7ffd1dd3133c = (qword)0x0da1b1a000000032
+</code></pre></div></div>
+<p>The same space gets updated with the new value, plain and simple.</p>
+
+<p>Let’s proceed with a final example on this:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    
+<span class="k">union</span> <span class="p">{</span>
+   <span class="kt">char</span> <span class="n">ichar</span><span class="p">;</span> <span class="cm">/* 1 byte */</span>
+   <span class="kt">int</span> <span class="n">num</span><span class="p">;</span> <span class="cm">/* 4 bytes */</span>
+   <span class="kt">char</span> <span class="n">arr</span><span class="p">[</span><span class="mi">20</span><span class="p">];</span>
+<span class="p">}</span> <span class="n">sample</span><span class="p">;</span>
+
+   <span class="kt">int</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">;</span>
+    
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Size of 'sample' union = %d </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">sample</span><span class="p">));</span>
+    <span class="n">sample</span><span class="p">.</span><span class="n">num</span> <span class="o">=</span> <span class="mi">25</span><span class="p">;</span>
+    <span class="n">sample</span><span class="p">.</span><span class="n">ichar</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"value= %d </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">sample</span><span class="p">.</span><span class="n">num</span><span class="p">);</span>
+    <span class="n">strcpy</span><span class="p">(</span><span class="n">sample</span><span class="p">.</span><span class="n">arr</span><span class="p">,</span><span class="s">"hello world"</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"value= %s </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">sample</span><span class="p">.</span><span class="n">arr</span><span class="p">);</span>
+    <span class="n">sample</span><span class="p">.</span><span class="n">num</span> <span class="o">=</span> <span class="mi">65</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"value= %s </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">sample</span><span class="p">.</span><span class="n">arr</span><span class="p">);</span>
+
+
+   <span class="n">getchar</span><span class="p">();</span>
+   <span class="n">getchar</span><span class="p">();</span>
+   <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>In this example, a char array has been added, so what will be the size now? Exactly, 20 bytes, but as we have space for an array here (arr = base addr) and also referenes to char and int’s… I guess you already realized that weird stuff can happen here, let’s see:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55e376e55155]&gt; pdf
+            ; DATA XREF from entry0 @ 0x55e376e5508d
+┌ 194: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_20h @ rbp-0x20
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x55e376e55155      55             push rbp
+│           0x55e376e55156      4889e5         mov rbp, rsp
+│           0x55e376e55159      4883ec20       sub rsp, 0x20
+│           0x55e376e5515d      64488b042528.  mov rax, qword fs:[0x28]
+│           0x55e376e55166      488945f8       mov qword [var_8h], rax
+│           0x55e376e5516a      31c0           xor eax, eax
+│           0x55e376e5516c      be14000000     mov esi, 0x14           ; 20
+│           0x55e376e55171      488d3d8c0e00.  lea rdi, str.Size_of__sample__union____d ; 0x55e376e56004 ; "Size of 'sample' union = %d \n"
+│           0x55e376e55178      b800000000     mov eax, 0
+│           0x55e376e5517d      e8befeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55e376e55182      c745e0190000.  mov dword [var_20h], 0x19 ; 25
+│           0x55e376e55189      c645e032       mov byte [var_20h], 0x32 ; '2' ; 50
+│           0x55e376e5518d      8b45e0         mov eax, dword [var_20h]
+│           0x55e376e55190      89c6           mov esi, eax
+│           0x55e376e55192      488d3d890e00.  lea rdi, str.value___d  ; 0x55e376e56022 ; "value= %d \n"
+│           0x55e376e55199      b800000000     mov eax, 0
+│           0x55e376e5519e      e89dfeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55e376e551a3      488d45e0       lea rax, [var_20h]
+│           0x55e376e551a7      48ba68656c6c.  movabs rdx, 0x6f77206f6c6c6568 ; 'hello wo'
+│           0x55e376e551b1      488910         mov qword [rax], rdx
+│           0x55e376e551b4      c74008726c64.  mov dword [rax + 8], 0x646c72 ; 'rld'
+│                                                                      ; [0x646c72:4]=-1
+│           0x55e376e551bb      488d45e0       lea rax, [var_20h]
+│           0x55e376e551bf      4889c6         mov rsi, rax
+│           0x55e376e551c2      488d3d650e00.  lea rdi, str.value___s  ; 0x55e376e5602e ; "value= %s \n"
+│           0x55e376e551c9      b800000000     mov eax, 0
+│           0x55e376e551ce      e86dfeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55e376e551d3      c745e0410000.  mov dword [var_20h], 0x41 ; 'A' ; 65
+│           0x55e376e551da      488d45e0       lea rax, [var_20h]
+│           0x55e376e551de      4889c6         mov rsi, rax
+│           0x55e376e551e1      488d3d460e00.  lea rdi, str.value___s  ; 0x55e376e5602e ; "value= %s \n"
+│           0x55e376e551e8      b800000000     mov eax, 0
+│           0x55e376e551ed      e84efeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55e376e551f2      e859feffff     call sym.imp.getchar    ; int getchar(void)
+│           0x55e376e551f7      e854feffff     call sym.imp.getchar    ; int getchar(void)
+│           0x55e376e551fc      b800000000     mov eax, 0
+│           0x55e376e55201      488b4df8       mov rcx, qword [var_8h]
+│           0x55e376e55205      6448330c2528.  xor rcx, qword fs:[0x28]
+│       ┌─&lt; 0x55e376e5520e      7405           je 0x55e376e55215
+│       │   0x55e376e55210      e81bfeffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x55e376e55215      c9             leave
+└           0x55e376e55216      c3             ret
+[0x55e376e55155]&gt; 
+</code></pre></div></div>
+<p>So at this point of the program:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           ;-- rip:
+│           0x55e376e551a7 b    48ba68656c6c.  movabs rdx, 0x6f77206f6c6c6568 ; 'hello wo'
+│           0x55e376e551b1      488910         mov qword [rax], rdx
+│           0x55e376e551b4      c74008726c64.  mov dword [rax + 8], 0x646c72 ; 'rld'
+
+var var_20h = 0x7fffe11a8270 = (qword)0x000055e300000032
+</code></pre></div></div>
+<p>The union will hold the value of 0x32 at this point, then movabs and mov will be used to store the string “Hello world” inside the union, let’s see:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│                                                                      ; [0x646c72:4]=-1
+│           ;-- rip:
+│           0x55e376e551bb b    488d45e0       lea rax, [var_20h]
+│           0x55e376e551bf      4889c6         mov rsi, rax
+
+
+var var_20h = 0x7fffe11a8270 = (qword)0x6f77206f6c6c6568
+[0x55e376e551bb]&gt; pxw @ 0x7fffe11a8270
+0x7fffe11a8270  0x6c6c6568 0x6f77206f 0x00646c72 0x000055e3  hello world..U..
+0x7fffe11a8280  0xe11a8370 0x00007fff 0xd33c3600 0x910f1334  p........6&lt;.4...
+</code></pre></div></div>
+<p>If we just want to print the string pointed by that mem addr we can just use ps for that</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x7fffe11a8280]&gt; ps @ 0x7fffe11a8270
+hello world
+[0x7fffe11a8280]&gt; 
+</code></pre></div></div>
+<p>But then we have this thing over here:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55e376e551d3      c745e0410000.  mov dword [var_20h], 0x41 ; 'A' ; 65
+│           0x55e376e551da      488d45e0       lea rax, [var_20h]
+│           0x55e376e551de      4889c6         mov rsi, rax
+</code></pre></div></div>
+<p>0x000000041, gets moved to the base addr of the array, what do you think it will happen? One can guess that the first letter of the array ‘H’ will turn to ‘A’ and the string will look like ‘Aello World’, but a full mov has been used instead of a mov byte… let’s see:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55e376e551da]&gt; pxw @ 0x7fffe11a8270
+0x7fffe11a8270  0x00000041 0x6f77206f 0x00646c72 0x000055e3  A...o world..U..
+
+[0x55e376e551da]&gt; ps @ 0x7fffe11a8270
+A
+</code></pre></div></div>
+<p>So mov 0x41 has placed this exact value at the base addr of the array: 0x00000041, as you see 0x41 contains 0x00, the NULL terminator that indicates the END of a string…so the program understands that the string ends with the A, the rest of the characters are just garbage and don’t come into play anymore… eventhough they are still in memory!</p>
+
+<p>Getting this concept well is key when doing reversing and exploiting, as for example, sending a null character can break our shellcode and make our exploit unusable.</p>
+
+<p>How would you solve that to make the full string valid again? (patch the program!) Take it as an exercise.</p>
+
+<h4 id="bitfields">Bitfields</h4>
+
+<p>Bit fields are a bit similar to unions hehe. Jokes aside, bit fields are easy to understand. With bitfields we can define structs of variables of a specific size of N bits, making thus the needed space much less. For example, a typical struct of two ints will have a size of 8 bytes, maybe those ints serve as true/false flags, so only 1 and 0 are needed for that why do we need to keep space for numbers as large as 0xFFFFFFF? btw only one bit is needed, bitfields come very handy here.</p>
+
+<p>Let’s start by looking at this example:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+</span>
+<span class="cm">/* define simple structure */</span>
+<span class="k">struct</span> <span class="p">{</span>
+   <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">widthValidated</span><span class="p">;</span>
+   <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">heightValidated</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">status1</span><span class="p">;</span>
+
+<span class="cm">/* define a structure with bit fields */</span>
+<span class="k">struct</span> <span class="p">{</span>
+   <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">widthValidated</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>
+   <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">heightValidated</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">status2</span><span class="p">;</span>
+ 
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span> <span class="p">)</span> <span class="p">{</span>
+   <span class="n">printf</span><span class="p">(</span> <span class="s">"Memory size occupied by status1 : %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">status1</span><span class="p">));</span>
+   <span class="n">printf</span><span class="p">(</span> <span class="s">"Memory size occupied by status2 : %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">status2</span><span class="p">));</span>
+   <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ./bitfield1 
+Memory size occupied by status1 : 8
+Memory size occupied by status2 : 4
+</code></pre></div></div>
+<p>As you can see, the second struct is half the space of the first. Now that you get the idea, let’s reverse the following one:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+</span>
+<span class="k">struct</span> <span class="p">{</span>
+   <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">age</span> <span class="o">:</span> <span class="mi">3</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">Age</span><span class="p">;</span>
+<span class="cp">#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+</span>
+<span class="k">struct</span> <span class="p">{</span>
+   <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">age</span> <span class="o">:</span> <span class="mi">3</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">Age</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span> <span class="p">)</span> <span class="p">{</span>
+
+   <span class="n">Age</span><span class="p">.</span><span class="n">age</span> <span class="o">=</span> <span class="mi">4</span><span class="p">;</span>
+   <span class="n">printf</span><span class="p">(</span> <span class="s">"Sizeof( Age ) : %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Age</span><span class="p">)</span> <span class="p">);</span>
+   <span class="n">printf</span><span class="p">(</span> <span class="s">"Age.age : %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">Age</span><span class="p">.</span><span class="n">age</span> <span class="p">);</span>
+
+   <span class="n">Age</span><span class="p">.</span><span class="n">age</span> <span class="o">=</span> <span class="mi">7</span><span class="p">;</span>
+   <span class="n">printf</span><span class="p">(</span> <span class="s">"Age.age : %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">Age</span><span class="p">.</span><span class="n">age</span> <span class="p">);</span>
+
+   <span class="n">Age</span><span class="p">.</span><span class="n">age</span> <span class="o">=</span> <span class="mi">8</span><span class="p">;</span>
+   <span class="n">printf</span><span class="p">(</span> <span class="s">"Age.age : %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">Age</span><span class="p">.</span><span class="n">age</span> <span class="p">);</span>
+
+   <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>The disasm will look like:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x564052630135]&gt; pdf
+            ; DATA XREF from entry0 @ 0x56405263006d
+┌ 180: int main (int argc, char **argv, char **envp);
+│           0x564052630135      55             push rbp
+│           0x564052630136      4889e5         mov rbp, rsp
+│           0x564052630139      0fb605d42e00.  movzx eax, byte [0x564052633014] ; [0x564052633014:1]=0
+│           0x564052630140      83e0f8         and eax, 0xfffffff8     ; 4294967288
+│           0x564052630143      83c804         or eax, 4
+│           0x564052630146      8805c82e0000   mov byte [0x564052633014], al ; [0x564052633014:1]=0
+│           0x56405263014c      be04000000     mov esi, 4
+│           0x564052630151      488d3dac0e00.  lea rdi, str.Sizeof__Age___:__d ; 0x564052631004 ; "Sizeof( Age ) : %d\n"
+│           0x564052630158      b800000000     mov eax, 0
+│           0x56405263015d      e8cefeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x564052630162      0fb605ab2e00.  movzx eax, byte [0x564052633014] ; [0x564052633014:1]=0
+│           0x564052630169      83e007         and eax, 7
+│           0x56405263016c      0fb6c0         movzx eax, al
+│           0x56405263016f      89c6           mov esi, eax
+│           0x564052630171      488d3da00e00.  lea rdi, str.Age.age_:__d ; 0x564052631018 ; "Age.age : %d\n"
+│           0x564052630178      b800000000     mov eax, 0
+│           0x56405263017d      e8aefeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x564052630182      0fb6058b2e00.  movzx eax, byte [0x564052633014] ; [0x564052633014:1]=0
+│           0x564052630189      83c807         or eax, 7
+│           0x56405263018c      8805822e0000   mov byte [0x564052633014], al ; [0x564052633014:1]=0
+│           0x564052630192      0fb6057b2e00.  movzx eax, byte [0x564052633014] ; [0x564052633014:1]=0
+│           0x564052630199      83e007         and eax, 7
+│           0x56405263019c      0fb6c0         movzx eax, al
+│           0x56405263019f      89c6           mov esi, eax
+│           0x5640526301a1      488d3d700e00.  lea rdi, str.Age.age_:__d ; 0x564052631018 ; "Age.age : %d\n"
+│           0x5640526301a8      b800000000     mov eax, 0
+│           0x5640526301ad      e87efeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x5640526301b2      0fb6055b2e00.  movzx eax, byte [0x564052633014] ; [0x564052633014:1]=0
+│           0x5640526301b9      83e0f8         and eax, 0xfffffff8     ; 4294967288
+│           0x5640526301bc      8805522e0000   mov byte [0x564052633014], al ; [0x564052633014:1]=0
+│           0x5640526301c2      0fb6054b2e00.  movzx eax, byte [0x564052633014] ; [0x564052633014:1]=0
+│           0x5640526301c9      83e007         and eax, 7
+│           0x5640526301cc      0fb6c0         movzx eax, al
+│           0x5640526301cf      89c6           mov esi, eax
+│           0x5640526301d1      488d3d400e00.  lea rdi, str.Age.age_:__d ; 0x564052631018 ; "Age.age : %d\n"
+│           0x5640526301d8      b800000000     mov eax, 0
+│           0x5640526301dd      e84efeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x5640526301e2      b800000000     mov eax, 0
+│           0x5640526301e7      5d             pop rbp
+└           0x5640526301e8      c3             ret
+</code></pre></div></div>
+<p>Let’s look now at the first chink of code, where 4 is loaded into the age variable. We can see the program first zeroing eax then doing an and with 0xfffffff8, why is that? 0xfffffff8 = 0b11111111111111111111111111111000 (remember that we are using 3 bits only…?) if we do AND 0b0000000…. all zeros with that we will automatically get rid of every useless bit. Then an OR with 4 will leave us with a 4 in eax as or takes the greater value.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x564052630139      0fb605d42e00.  movzx eax, byte [0x564052633014] ; [0x564052633014:1]=0
+│           0x564052630140 b    83e0f8         and eax, 0xfffffff8     ; 4294967288
+│           0x564052630143      83c804         or eax, 4
+
+[0x564052630146]&gt; dr
+rax = 0x00000004
+</code></pre></div></div>
+<p>Then the variable will be updated with a 4, later on, when we are loading a 7, we do another or:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x564052630182 b    0fb6058b2e00.  movzx eax, byte [0x564052633014] ; [0x564052633014:1]=4
+│           0x564052630189      83c807         or eax, 7
+│           0x56405263018c      8805822e0000   mov byte [0x564052633014], al ; [0x564052633014:1]=4
+
+[0x564052630182]&gt; ds
+[0x564052630189]&gt; dr eax
+0x00000004
+[0x564052630189]&gt; ds
+[0x56405263018c]&gt; dr eax
+0x00000007
+</code></pre></div></div>
+<p>As 4 or 7 returns 7 (it returns the higher number), the value is updated to 7. This is a very interesting compiler trick, as everything here is calculated, instead of moved, so the operation runs faster here and less space is needed.</p>
+
+<p>But what happens at the end of this program, we we try to load 8dec insidde the bitmap?</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5640526301b2      0fb6055b2e00.  movzx eax, byte [0x564052633014] ; [0x564052633014:1]=4
+│           0x5640526301b9      83e0f8         and eax, 0xfffffff8     ; 4294967288
+│           0x5640526301bc      8805522e0000   mov byte [0x564052633014], al ; [0x564052633014:1]=4
+│           0x5640526301c2      0fb6054b2e00.  movzx eax, byte [0x564052633014] ; [0x564052633014:1]=4
+│           0x5640526301c9      83e007         and eax, 7
+│           0x5640526301cc      0fb6c0         movzx eax, al
+│           0x5640526301cf      89c6           mov esi, eax
+│           0x5640526301d1      488d3d400e00.  lea rdi, str.Age.age_:__d ; 0x564052631018 ; "Age.age : %d\n"
+│           0x5640526301d8      b800000000     mov eax, 0
+</code></pre></div></div>
+<p>If you compute that yourself, age here will be updated to zero instead of 8, why is that? 8dec = 1000bin and we are only playing with 3 bits here so those 3 bits will be extracted from 8 = 000bin that is 0 and thus the compiler will understand that what do we want to do here is to load a 0 inside age, nothing more. Note that entering an 8 or a 2323 or whatever in our code won’t matter at the end, as the machine will eventually translate everything to binary and compute from there.</p>
+
+<h4 id="defines">Defines</h4>
+
+<p>We are about to reach the end of this first part of the course. In C, the #define directive allows the definition of macros within your source code. These macro definitions allow constant values to be declared for use throughout your code.</p>
+
+<p>Macro definitions are not variables and cannot be changed by your program code like variables.</p>
+
+<p>This stack overflow answer is very clear on the topic: https://stackoverflow.com/questions/4024318/why-do-most-c-developers-use-define-instead-of-const</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+</span> 
+<span class="cp">#define SUM(x,y) x+y
+#define MAX 10
+</span> 
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+   <span class="kt">int</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">;</span>
+ 
+   <span class="n">printf</span><span class="p">(</span><span class="s">"VAL 1 = "</span><span class="p">);</span>
+   <span class="n">scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">n1</span><span class="p">);</span>
+ 
+   <span class="n">printf</span><span class="p">(</span><span class="s">"VAL 2 = "</span><span class="p">);</span>
+   <span class="n">scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">n2</span><span class="p">);</span>
+ 
+   <span class="n">printf</span><span class="p">(</span><span class="s">"SUM = %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">SUM</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span><span class="n">n2</span><span class="p">));</span>
+   
+   <span class="k">if</span><span class="p">(</span><span class="n">SUM</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span><span class="n">n2</span><span class="p">)</span><span class="o">&gt;</span><span class="n">MAX</span><span class="p">){</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"&gt; MAX</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>      
+   <span class="p">}</span>
+   <span class="n">getchar</span><span class="p">();</span>
+   <span class="n">getchar</span><span class="p">();</span>
+   <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Let’s peek inside</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55817740f175]&gt; pdf
+            ; DATA XREF from entry0 @ 0x55817740f0ad
+┌ 194: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_10h @ rbp-0x10
+│           ; var int64_t var_ch @ rbp-0xc
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x55817740f175      55             push rbp
+│           0x55817740f176      4889e5         mov rbp, rsp
+│           0x55817740f179      4883ec10       sub rsp, 0x10
+│           0x55817740f17d      64488b042528.  mov rax, qword fs:[0x28]
+│           0x55817740f186      488945f8       mov qword [var_8h], rax
+│           0x55817740f18a      31c0           xor eax, eax
+│           0x55817740f18c      488d3d710e00.  lea rdi, str.VAL_1      ; 0x558177410004 ; "VAL 1 = "
+│           0x55817740f193      b800000000     mov eax, 0
+│           0x55817740f198      e8b3feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55817740f19d      488d45f0       lea rax, [var_10h]
+│           0x55817740f1a1      4889c6         mov rsi, rax
+│           0x55817740f1a4      488d3d620e00.  lea rdi, [0x55817741000d] ; "%d"
+│           0x55817740f1ab      b800000000     mov eax, 0
+│           0x55817740f1b0      e8bbfeffff     call sym.imp.__isoc99_scanf ; int scanf(const char *format)
+│           0x55817740f1b5      488d3d540e00.  lea rdi, str.VAL_2      ; 0x558177410010 ; "VAL 2 = "
+│           0x55817740f1bc      b800000000     mov eax, 0
+│           0x55817740f1c1      e88afeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55817740f1c6      488d45f4       lea rax, [var_ch]
+│           0x55817740f1ca      4889c6         mov rsi, rax
+│           0x55817740f1cd      488d3d390e00.  lea rdi, [0x55817741000d] ; "%d"
+│           0x55817740f1d4      b800000000     mov eax, 0
+│           0x55817740f1d9      e892feffff     call sym.imp.__isoc99_scanf ; int scanf(const char *format)
+│           0x55817740f1de      8b55f0         mov edx, dword [var_10h]
+│           0x55817740f1e1      8b45f4         mov eax, dword [var_ch]
+│           0x55817740f1e4      01d0           add eax, edx
+│           0x55817740f1e6      89c6           mov esi, eax
+│           0x55817740f1e8      488d3d2a0e00.  lea rdi, str.SUM____d   ; 0x558177410019 ; "SUM = %d\n"
+│           0x55817740f1ef      b800000000     mov eax, 0
+│           0x55817740f1f4      e857feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55817740f1f9      8b55f0         mov edx, dword [var_10h]
+│           0x55817740f1fc      8b45f4         mov eax, dword [var_ch]
+│           0x55817740f1ff      01d0           add eax, edx
+│           0x55817740f201      83f80a         cmp eax, 0xa            ; 10
+│       ┌─&lt; 0x55817740f204      7e0c           jle 0x55817740f212
+│       │   0x55817740f206      488d3d160e00.  lea rdi, str.MAX        ; 0x558177410023 ; "&gt; MAX"
+│       │   0x55817740f20d      e81efeffff     call sym.imp.puts       ; int puts(const char *s)
+│       └─&gt; 0x55817740f212      e849feffff     call sym.imp.getchar    ; int getchar(void)
+│           0x55817740f217      e844feffff     call sym.imp.getchar    ; int getchar(void)
+│           0x55817740f21c      b800000000     mov eax, 0
+│           0x55817740f221      488b4df8       mov rcx, qword [var_8h]
+│           0x55817740f225      6448330c2528.  xor rcx, qword fs:[0x28]
+│       ┌─&lt; 0x55817740f22e      7405           je 0x55817740f235
+│       │   0x55817740f230      e80bfeffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x55817740f235      c9             leave
+└           0x55817740f236      c3             ret
+[0x55817740f175]&gt; 
+</code></pre></div></div>
+<p>There is no actual need to debug the code. As you can see, defines are just guidelines for the compiler, the compiler will insert the equiv of that operation wherever it is called, at the end the add will be done the same way there, no function will be called, just an asm add:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55817740f1de      8b55f0         mov edx, dword [var_10h]
+│           0x55817740f1e1      8b45f4         mov eax, dword [var_ch]
+│           0x55817740f1e4      01d0           add eax, edx
+│           0x55817740f1e6      89c6           mov esi, eax
+│           0x55817740f1e8      488d3d2a0e00.  lea rdi, str.SUM____d   ; 0x558177410019 ; "SUM = %d\n"
+</code></pre></div></div>
+<p>Same thing with the constant, a 0xA will be inserted wherever MAX is referenced</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55817740f1ff      01d0           add eax, edx
+│           0x55817740f201      83f80a         cmp eax, 0xa            ; 10
+│       ┌─&lt; 0x55817740f204      7e0c           jle 0x55817740f212
+</code></pre></div></div>
+<p>Another way to work with compiler macros is to include code from other files but, I won’t go deep into that because no special stuff is seen in the disasm…Try it yourself.</p>
+
+<p>And we are done with the very basic course. From here, I will introduce some crackmes to you as exam/practise and then we’ll jump into the next part of the course, I’ll move to more advanced concepts, such as pipes, processes(forks), threads and sockets clearly separating Windows and Unix code, as some stuff like sockets works slightly different in those different operating systems. We’ll also go through some nice stuff in r2 that is still left to be shown like the powerful ESIL.</p>
+
+    </div>
+
+    <div class="post__share">
+  <ul class="share__list list-reset">
+    <li class="share__item">
+      <a class="share__link share__facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/reversing-radare-12"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Facebook" rel="nofollow"><i class="ion ion-logo-facebook"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__twitter" href="https://twitter.com/intent/tweet?text=Reverse%20engineering%2032%20and%2064%20bits%20binaries%20with%20Radare2%20-%2013%20(defines,%20unions%20and%20bitmaps)&url=http://localhost:4000/reversing-radare-12"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Twitter" rel="nofollow"><i class="ion ion-logo-twitter"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url=http://localhost:4000/reversing-radare-12&title=Reverse%20engineering%2032%20and%2064%20bits%20binaries%20with%20Radare2%20-%2013%20(defines,%20unions%20and%20bitmaps)&summary=&source=Artik%20Blue"
+      onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn" rel="nofollow"><i class="ion ion-logo-linkedin"></i></a>
+    </li>
+  </ul>
+</div>
+
+
+    <div class="post__navigation">
+  
+  <a class="post__prev" href="/reversing-radare-11">
+    <div class="prev__image">
+      <img class="lazy" data-src="/images//radare2/radare2_12.png" alt="Reverse engineering 32 and 64 bits binaries with Radare2 - 13 (defines, unions and bitmaps)">
+    </div>
+    <div class="prev__box">
+      <span class="post__nav post__nav__prev">Older post</span>
+      <h2 class="post__nav__title">Reverse engineering 32 and 64 bits binaries with Radare2 - 12 (linked lists, enums, bitwise operations and r2pipe)</h2>
+    </div>
+  </a>
+  
+
+  
+  <a class="post__next" href="/reversing-radare-13">
+    <div class="next__box">
+      <span class="post__nav post__nav__next">Newer post</span>
+      <h2 class="post__nav__title">Reverse engineering x64 binaries with Radare2 - 14 - I (linux systems programming; theory, syscalls, files and ESIL)</h2>
+    </div>
+    <div class="next__image">
+      <img class="lazy" data-src="/images//radare2/radare2_13.png" alt="Reverse engineering 32 and 64 bits binaries with Radare2 - 13 (defines, unions and bitmaps)">
+    </div>
+  </a>
+  
+</div>
+
+     <!-- begin comments -->
+<div id="disqus_thread" class="post__comments">
+  <div id="disqus_empty"></div>
+</div>
+
+<script>
+  function load_disqus() {
+    var disqus_shortname = 'artikblue',
+      is_disqus_empty = document.getElementById('disqus_empty'),
+      disqus_target = document.getElementById('disqus_thread'),
+      disqus_embed = document.createElement('script'),
+      disqus_hook = (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]);
+
+    if (disqus_target && is_disqus_empty) {
+      disqus_embed.type = 'text/javascript';
+      disqus_embed.async = true;
+      disqus_embed.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      disqus_hook.appendChild(disqus_embed);
+      is_disqus_empty.remove();
+    }
+  }
+
+  window.addEventListener('scroll', function (e) {
+    var currentScroll = document.scrollingElement.scrollTop;
+    var disqus_target = document.getElementById('disqus_thread');
+
+    if (disqus_target && (currentScroll > disqus_target.getBoundingClientRect().top - 150)) {
+      load_disqus('disqus_shortname');
+    }
+  }, false);
+
+</script>
+<noscript>Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+</noscript>
+<!-- end comments --> 
+
+  </article>
+</div>
+<!-- end post -->
+      </div>
+      <!-- end wrapper-page -->
+    </main>
+    <!-- end content -->
+    <div class="top" title="Top"><i class="ion ion-ios-arrow-round-up"></i></div>
+    <!-- begin footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12 col-m-12">
+        <div class="footer__inner">
+
+          <div class="footer__head">
+            <div class="row">
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-recent">
+    <div class="widget__head">
+      <h3 class="widget__title">Recent Posts</h3>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-22">
+        <img class="lazy" data-src="/images//radare2/radare2_22.png" alt="Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-20T00:01:35+02:00">Jun 20, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-22">Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack</a></h4>
+      </div>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-21">
+        <img class="lazy" data-src="/images//radare2/radare2_21.png" alt="Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-15T00:01:35+02:00">Jun 15, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-21">Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains</a></h4>
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-gallery">
+    <div class="widget__head">
+      <h3 class="widget__title">Gallery</h3>
+    </div>
+    
+    <div class="gallery-box gallery-footer">
+      <div class="gallery">
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/landscape1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sasha1.jpeg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/castle1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/scotland1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sanfran1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/newyork1.jpg" alt="Minimalism">
+        </div>
+        
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-subscribe">
+    <div class="widget__head">
+      <h3 class="widget__title"></h3>
+    </div>
+    <div class="subscribe__inner">
+      <div class="subscribe__group">
+        <div class="subscribe__description"></div>
+      </div>
+      <!-- <form class="subscribe-form validate"
+           action="#" method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form" target="_blank" novalidate>
+           <label class="screen-reader-text" for="mce-EMAIL">Email address</label>
+           <input class="subscribe-email required email" id="mce-EMAIL" type="text" name="EMAIL"
+           placeholder="Your email address">
+           <button class="button subscribe-button" id="membedded-subscribe" type="submit" name="subscribe"></button>
+           </form> -->
+    </div>
+  </div>
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        
+  <div class="social">
+    <ul class="social__list list-reset">
+      
+      <li class="social__item">
+        <a class="social__link" href="https://twitter.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-twitter"></i></a>
+      </li>
+      
+      <li class="social__item">
+        <a class="social__link" href="https://github.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-github"></i></a>
+      </li>
+      
+    </ul>
+  </div>
+
+        <div class="copyright">2022 &copy; <a href="/">Artik Blue</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- end footer -->
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="/js/scripts.js"></script>
+</body>
+
+</html>

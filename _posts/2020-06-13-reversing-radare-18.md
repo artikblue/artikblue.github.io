@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering x64 binaries with Radare2 - 18 (Bind and reverse shells)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_18.png
-featured_image: assets/images/radare2/radare2_18.png
+title:  Reverse engineering x64 binaries with Radare2 - 18 (Bind and reverse shells)
+tags: reversing c radare
+image: '/images//radare2/radare2_18.png'
+date: 2020-06-13 15:01:35 -0700
 ---
 
 #### "Shells" 

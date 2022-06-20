@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 7 (struct arrays, r2pm and patching)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_8.png
-featured_image: assets/images/radare2/radare2_8.png
+title:  Reverse engineering 32 and 64 bits binaries with Radare2 - 7 (struct arrays, r2pm and patching)
+tags: reversing c radare
+image: '/images//radare2/radare2_8.png'
+date: 2020-05-04 15:01:35 -0700
 ---
 So today we are going to work with a more complete example related to structs, the goal is to correctly understand how the program works interally and explore a couple of r2 feats more.
 ```

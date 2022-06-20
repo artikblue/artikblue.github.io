@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Writting linux32 shellcode from scratch - 1"
-tags: [shellcode, asm, linux]
-featured_image_thumbnail: assets/images/shellcode/shellcode1.png
-featured_image: assets/images/shellcode/shellcode1.png
+title:  Writting linux32 shellcode from scratch - 1
+tags: shellcode asm linux
+image: '/images//shellcode/shellcode1.png'
+date:   2020-01-14 15:01:35 -0700
 ---
 
 Here we go!

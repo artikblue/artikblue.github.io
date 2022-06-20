@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (pointers and dynamic memory)</title>
+  <meta name='description' content='All things cyber'>
+
+  <link rel="canonical" href="http://localhost:4000/reversing-radare-9">
+  <link rel="alternate" type="application/rss+xml" title="Artik Blue" href="/feed.xml">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Ionicons -->
+  <link href="https://unpkg.com/ionicons@4.2.2/dist/css/ionicons.min.css" rel="stylesheet">
+
+  <style>
+  
+      /*!------------------------------------------------------------------
+[MAIN STYLESHEET]
+-------------------------------------------------------------------*/.list-reset{list-style-type:none;margin:0;padding:0}.clearfix::after,.clearfix ::before{content:"";display:table;clear:both}.screen-reader-text{clip:rect(1px, 1px, 1px, 1px);height:1px;overflow:hidden;position:absolute !important;width:1px;word-wrap:normal !important}/*! normalize.css v8.0.0 | MIT License | github.com/necolas/normalize.css */html{line-height:1.15;-webkit-text-size-adjust:100%}body{margin:0}h1{font-size:2em;margin:0.67em 0}hr{box-sizing:content-box;height:0;overflow:visible}pre{font-family:monospace, monospace;font-size:1em}a{background-color:transparent}abbr[title]{border-bottom:none;text-decoration:underline;text-decoration:underline dotted}b,strong{font-weight:bolder}code,kbd,samp{font-family:monospace, monospace;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-0.25em}sup{top:-0.5em}img{border-style:none}button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;line-height:1.15;margin:0}button,input{overflow:visible}button,select{text-transform:none}button,[type="button"],[type="reset"],[type="submit"]{-webkit-appearance:button}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner{border-style:none;padding:0}button:-moz-focusring,[type="button"]:-moz-focusring,[type="reset"]:-moz-focusring,[type="submit"]:-moz-focusring{outline:1px dotted ButtonText}fieldset{padding:0.35em 0.75em 0.625em}legend{box-sizing:border-box;color:inherit;display:table;max-width:100%;padding:0;white-space:normal}progress{vertical-align:baseline}textarea{overflow:auto}[type="checkbox"],[type="radio"]{box-sizing:border-box;padding:0}[type="number"]::-webkit-inner-spin-button,[type="number"]::-webkit-outer-spin-button{height:auto}[type="search"]{-webkit-appearance:textfield;outline-offset:-2px}[type="search"]::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}details{display:block}summary{display:list-item}template{display:none}[hidden]{display:none}body,h1,h2,h3,h4,h5,h6,p,blockquote,pre,dl,dd,ol,ul,fieldset,legend,figure,hr{margin:0;padding:0}li>ul,li>ol{margin-bottom:0}table{border-collapse:collapse;border-spacing:0}h1,h2,h3,h4,h5,h6,ul,ol,dl,blockquote,p,address,hr,table,fieldset,figure,pre{margin-bottom:30px}ul,ol,dd{margin-left:15px}ul li,ol li{margin-bottom:10px}.highlight{background:#161d25}.highlighter-rouge .highlight{background:#eef}.highlight .c{color:#998;font-style:italic}.highlight .err{color:#a61717;background-color:#e3d2d2}.highlight .k{font-weight:bold}.highlight .o{font-weight:bold}.highlight .cm{color:#998;font-style:italic}.highlight .cp{color:#999;font-weight:bold}.highlight .c1{color:#998;font-style:italic}.highlight .cs{color:#999;font-weight:bold;font-style:italic}.highlight .gd{color:#000;background-color:#fdd}.highlight .gd .x{color:#000;background-color:#faa}.highlight .ge{font-style:italic}.highlight .gr{color:#a00}.highlight .gh{color:#999}.highlight .gi{color:#000;background-color:#dfd}.highlight .gi .x{color:#000;background-color:#afa}.highlight .go{color:#888}.highlight .gp{color:#555}.highlight .gs{font-weight:bold}.highlight .gu{color:#aaa}.highlight .gt{color:#a00}.highlight .kc{font-weight:bold}.highlight .kd{font-weight:bold}.highlight .kp{font-weight:bold}.highlight .kr{font-weight:bold}.highlight .kt{color:#458;font-weight:bold}.highlight .m{color:#099}.highlight .s{color:#d14}.highlight .na{color:teal}.highlight .nb{color:#0086B3}.highlight .nc{color:#458;font-weight:bold}.highlight .no{color:teal}.highlight .ni{color:purple}.highlight .ne{color:#900;font-weight:bold}.highlight .nf{color:#900;font-weight:bold}.highlight .nn{color:#555}.highlight .nt{color:navy}.highlight .nv{color:teal}.highlight .ow{font-weight:bold}.highlight .w{color:#bbb}.highlight .mf{color:#099}.highlight .mh{color:#099}.highlight .mi{color:#099}.highlight .mo{color:#099}.highlight .sb{color:#d14}.highlight .sc{color:#d14}.highlight .sd{color:#d14}.highlight .s2{color:#d14}.highlight .se{color:#d14}.highlight .sh{color:#d14}.highlight .si{color:#d14}.highlight .sx{color:#d14}.highlight .sr{color:#009926}.highlight .s1{color:#d14}.highlight .ss{color:#990073}.highlight .bp{color:#999}.highlight .vc{color:teal}.highlight .vg{color:teal}.highlight .vi{color:teal}.highlight .il{color:#099}.container{max-width:1270px;padding-left:15px;padding-right:15px;margin:0 auto}@media only screen and (max-width: 1300px){.container{max-width:1100px}}@media only screen and (max-width: 1130px){.container{max-width:1000px}}@media only screen and (max-width: 1024px){.container{max-width:740px}}@media only screen and (max-width: 768px){.container{max-width:540px}}@media only screen and (max-width: 576px){.container{max-width:380px}}.row{display:flex;flex-wrap:wrap;flex:0 1 auto;flex-direction:row;box-sizing:border-box;margin-left:-15px;margin-right:-15px}.col{padding-left:15px;padding-right:15px}[class^="col-"]{flex:auto}.col-0{width:0%}.col-1{width:8.3333333333%}.col-2{width:16.6666666667%}.col-3{width:25%}.col-4{width:33.3333333333%}.col-5{width:41.6666666667%}.col-6{width:50%}.col-7{width:58.3333333333%}.col-8{width:66.6666666667%}.col-9{width:75%}.col-10{width:83.3333333333%}.col-11{width:91.6666666667%}.col-12{width:100%}.push-0{margin-left:0%}.push-1{margin-left:8.3333333333%}.push-2{margin-left:16.6666666667%}.push-3{margin-left:25%}.push-4{margin-left:33.3333333333%}.push-5{margin-left:41.6666666667%}.push-6{margin-left:50%}.push-7{margin-left:58.3333333333%}.push-8{margin-left:66.6666666667%}.push-9{margin-left:75%}.push-10{margin-left:83.3333333333%}.push-11{margin-left:91.6666666667%}.push-12{margin-left:100%}.pull-0{margin-right:0%}.pull-1{margin-right:8.3333333333%}.pull-2{margin-right:16.6666666667%}.pull-3{margin-right:25%}.pull-4{margin-right:33.3333333333%}.pull-5{margin-right:41.6666666667%}.pull-6{margin-right:50%}.pull-7{margin-right:58.3333333333%}.pull-8{margin-right:66.6666666667%}.pull-9{margin-right:75%}.pull-10{margin-right:83.3333333333%}.pull-11{margin-right:91.6666666667%}.pull-12{margin-right:100%}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}img[data-action="zoom"]{cursor:pointer;cursor:-webkit-zoom-in;cursor:-moz-zoom-in}.zoom-img,.zoom-img-wrap{position:relative;z-index:666;-webkit-transition:all 300ms;-o-transition:all 300ms;transition:all 300ms}img.zoom-img{cursor:pointer;cursor:-webkit-zoom-out;cursor:-moz-zoom-out}.zoom-overlay{z-index:420;background:#161d25;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;opacity:0;-webkit-transition:opacity 300ms;-o-transition:opacity 300ms;transition:opacity 300ms}.zoom-overlay-open .zoom-overlay{opacity:1}.zoom-overlay-open,.zoom-overlay-transitioning{cursor:default}.animate{animation:animateElement cubic-bezier(0.3, 0.45, 0.45, 0.95) 0.75s;animation-duration:0.5s;animation-iteration-count:1;transition:transform .15s}@keyframes animateElement{0%{opacity:0;transform:translate(0px, 50px)}100%{opacity:1;transform:translate(0px, 0px)}}*,*::after,*::before{box-sizing:border-box}body{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-size:18px;line-height:34px;border:10px solid #131212;color:#fff;background-color:#131212;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}body.dark .footer__head{background:#131212}@media only screen and (max-width: 768px){body.dark .footer__head{padding:40px}}@media only screen and (max-width: 576px){body.dark .footer__head{padding:30px}}body.dark .subscribe-form .subscribe-email{background:#161d25}@media only screen and (max-width: 576px){body{font-size:16px;line-height:29px;border-width:5px}}*::selection{color:#fff;background-color:rgba(0,112,255,0.8)}h1,h2,h3,h4,h5,h6{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-weight:700;line-height:1.3;letter-spacing:-1px}h1{font-size:36px}h2{font-size:28px}h3{font-size:24px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px}blockquote{position:relative;margin-top:30px;padding:25px 25px 15px 60px;font-size:30px;line-height:45px;font-weight:600;font-style:normal}blockquote::before{content:'\201C';position:absolute;top:0.35em;left:0.05em;font-size:3.5em;color:#0070ff}blockquote p{margin-bottom:10px}blockquote cite{display:inline-block;margin-top:7px;font-size:15px;font-style:normal;color:#ccc}blockquote cite:before{content:'\2014' '\00a0'}@media only screen and (max-width: 1024px){blockquote{font-size:24px;line-height:37px}}@media only screen and (max-width: 576px){blockquote{padding:38px 0 15px 35px;font-size:21px;line-height:31px}}pre{overflow:auto;padding:15px;margin-bottom:0;font-size:14px;white-space:pre-wrap;word-wrap:break-word;word-break:break-all}img,.zoom-img-wrap{max-width:100%;height:auto;vertical-align:middle}img+em,.zoom-img-wrap+em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}img+em a,.zoom-img-wrap+em a{border-bottom:1px solid #fff}img+em a:hover,.zoom-img-wrap+em a:hover{color:#fff;border-color:#0070ff}a{text-decoration:none;color:#fff;transition:all 0.35s}a:hover{color:#fff}hr{display:block;height:1px;width:100px;margin:50px 0;border:0;background:#000}.wrapper-page{margin-bottom:70px}@media only screen and (max-width: 768px){.wrapper-page{margin-bottom:60px}}@media only screen and (max-width: 576px){.wrapper-page{margin-bottom:40px}}.button{display:inline-block;height:45px;padding:0 20px;font-size:15px;font-weight:700;border:none;outline:none;color:#fff;background:#0070ff;transition:all 0.35s;cursor:pointer}.button:hover{color:#fff;background:#0065e6}.lazy{opacity:0;transition:0.3s}.lazy.loaded{opacity:1}.top{position:fixed;bottom:40px;right:-100px;z-index:1;width:28px;height:40px;font-size:28px;line-height:40px;text-align:center;border-radius:6px;background-color:#161d25;color:#fff;cursor:pointer;transition:all .25s ease;box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.top:hover{color:#fff;background-color:#0070ff}.top.is-active{right:40px}@media only screen and (max-width: 768px){.top{bottom:25px}.top.is-active{right:30px}}.header{height:auto;border-bottom:1px solid #131212;background:#161d25;transition:all 0.35s}.header .header__overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:15;background-color:rgba(17,17,17,0.7);cursor:pointer;opacity:0;visibility:hidden;transition:all 0.5s ease}@media only screen and (max-width: 1024px){.header .header__overlay.is-visible{opacity:1;visibility:visible}}.header__inner{position:relative;display:flex;align-items:center;min-height:80px}.logo__link{font-size:20px;line-height:26px;font-weight:700}.logo__link:hover{color:#0070ff}.logo__image{max-height:50px}.main-nav{margin-left:80px}@media only screen and (max-width: 1024px){.main-nav{position:fixed;top:0;left:inherit;right:-300px;bottom:0;transform:none;z-index:100;width:300px;height:100vh;padding:40px 30px 30px;border:10px solid #131212;transition:right 0.5s cubic-bezier(0.7, 0.4, 0, 1);background:#161d25}.main-nav.is-open{right:0}.main-nav .nav__list{width:100%}.main-nav .nav__list .nav__item{display:block;margin:0 10px}.main-nav .nav__list .nav__item:last-child{margin-right:10px}.main-nav .nav__list .nav__item .nav__link{display:block;padding:10px 0;font-size:16px;line-height:26px;font-weight:500}}@media only screen and (max-width: 576px){.main-nav{padding:20px 30px;border-width:5px}}.main-nav__box{display:flex;align-items:center}.main-nav__box .nav__icon-close{display:none;font-size:24px;text-align:right}.main-nav__box .nav__icon-close .ion-md-close{transition:all 0.35s;cursor:pointer}.main-nav__box .nav__icon-close .ion-md-close:hover{color:#0070ff}.main-nav__box .nav__title{display:none}@media only screen and (max-width: 1024px){.main-nav__box{display:block}.main-nav__box .nav__icon-close{display:block}.main-nav__box .nav__title{display:block;margin:0 10px 15px;padding-bottom:15px;font-size:24px;font-weight:700;color:#fff;border-bottom:1px solid #131212}}.nav__list .nav__item{display:inline-block;margin:0 20px}.nav__list .nav__item:last-child{margin-right:40px}.nav__list .nav__item .nav__link{font-size:15px;line-height:24px;font-weight:500}.nav__list .nav__item .nav__link:hover{color:#0070ff}.nav-buttons{display:flex;align-items:center;margin-left:auto;font-size:21px;color:#fff;cursor:pointer}.nav-buttons .nav__icon{transition:all 0.35s}.nav-buttons .nav__icon:hover{color:#0070ff}.nav-buttons .nav__icon:first-child{margin-right:15px}.nav-buttons .nav__icon-menu{display:none}@media only screen and (max-width: 1024px){.nav-buttons{margin-left:auto}.nav-buttons .nav__icon-menu{display:block}}.search{position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;transform:scale(0.95);overflow:auto;opacity:0;background:#131212;transition:all .25s ease}.search.is-visible{transform:scale(1);z-index:100;opacity:1;transition:all .25s ease}.search__box{width:50%;margin:0 auto;padding-top:140px}@media only screen and (max-width: 1024px){.search__box{width:80%;padding-top:100px}}.search__group{position:relative;margin-bottom:50px}.search__group .search__close{position:absolute;right:20px;top:17px;font-size:27px;line-height:40px;cursor:pointer;transition:all .2s}.search__group .search__close:hover{color:#0070ff}.search__group .search__text{width:100%;padding:20px;font-size:21px;line-height:31px;border:2px solid transparent;border-radius:4px;color:#fff;background:#161d25;outline:none;transition:all .2s}.search__group .search__text:focus{border-color:#0070ff}.search__group .search__text::placeholder{font-weight:500;color:#fff}.search__group .search__text::-ms-clear{display:none}.search-results-list .no-results{width:100%;font-size:21px;font-weight:600;text-align:center;color:#fff}.pagination{margin-top:40px}@media only screen and (max-width: 768px){.pagination{margin-top:30px}}@media only screen and (max-width: 576px){.pagination{margin-top:20px}}.pagination__inner{display:flex;justify-content:center;align-items:center}.pagination__list{display:flex;font-weight:600;height:40px;padding:0 20px;font-size:14px;line-height:40px;border-radius:3px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);color:#fff;background-color:#161d25}.pagination__count{display:inline-block;padding:0 15px;margin:0 15px;font-size:13px;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1);color:#ccc}.pagination__next i,.pagination__prev i{font-size:13px}.pagination__next:hover,.pagination__prev:hover{color:#0070ff}.pagination__next.disabled,.pagination__prev.disabled{opacity:0.2;cursor:not-allowed;color:inherit}.pagination__next i{margin-left:4px}.pagination__prev i{margin-right:4px}.footer{padding-top:70px;background:#161d25}.footer .row .col{flex-grow:1}.footer .footer__inner{padding:60px 0;margin:0 60px 0;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.footer .footer__head{margin:0 -60px;padding:60px;background:#161d25;box-shadow:0 10px 40px rgba(0,0,0,0.07)}.footer .footer__content{padding:60px 0}@media only screen and (max-width: 1024px){.footer .row .col:last-child>.widget{margin-bottom:0}}@media only screen and (max-width: 768px){.footer{padding-top:60px}.footer .footer__inner{padding:0;margin:0;background-image:none}.footer .footer__head{margin:0;padding:0;box-shadow:none}}@media only screen and (max-width: 576px){.footer{padding-top:50px}}@media only screen and (max-width: 1024px){.widget{margin-bottom:30px}}@media only screen and (max-width: 576px){.widget{margin-bottom:40px}}.widget__head{margin-bottom:20px}.widget__head .widget__title{margin:0;font-size:24px;color:#fff}.widget-gallery{padding:0 35px}@media only screen and (max-width: 1024px){.widget-gallery{padding:0}}.recent-posts{position:relative;display:flex;margin-bottom:15px}.recent-posts:last-child{margin-bottom:0}.recent-posts__header{margin-right:15px}.recent-posts__image{position:relative;display:block;margin-right:15px;min-width:80px;height:80px;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:#131212}.recent-posts__image img{position:absolute;top:0;width:100%;height:100%;object-fit:cover}.recent-posts__date{margin-bottom:5px;font-size:13px;line-height:16px;color:#ccc}.recent-posts__title{margin-bottom:0;font-size:17px;line-height:22px;font-weight:700}.recent-posts__title a{color:#fff}.recent-posts__title a:hover{color:#fff}.widget-subscribe .subscribe__inner{display:flex;flex-direction:column;justify-content:space-between}.widget-subscribe .subscribe__group{margin-bottom:20px}.widget-subscribe .subscribe__group .subscribe__title{margin-bottom:15px;color:#fff}.widget-subscribe .subscribe__group .subscribe__description{font-size:15px;line-height:22px;color:#ccc}.widget-subscribe .subscribe-form{position:relative;height:60px}.widget-subscribe .subscribe-form .subscribe-email{width:100%;height:100%;padding:20px;font-size:14px;line-height:19px;font-weight:500;color:rgba(255,255,255,0.8);border:2px solid #131212;background:transparent;transition:border-color .2s ease-in-out;outline:0}.widget-subscribe .subscribe-form .subscribe-email::placeholder{color:rgba(255,255,255,0.8)}.widget-subscribe .subscribe-form .subscribe-email:focus{color:rgba(255,255,255,0.8);border-color:#0070ff}.widget-subscribe .subscribe-form .subscribe-button{position:absolute;top:10px;right:10px;height:40px;padding:0 15px;font-size:14px}@media only screen and (max-width: 1130px){.widget-subscribe .subscribe-form .subscribe-email{font-size:13px}.widget-subscribe .subscribe-form .subscribe-button{font-size:14px}}.copyright{padding:0 0 30px;margin-top:10px;font-size:13px;font-weight:500;text-align:center;color:#ccc}.copyright a:hover{color:#0070ff}@media only screen and (max-width: 768px){.copyright{text-align:left}}.gallery-box{margin:40px 0}.gallery-box.gallery-footer{margin:0}.gallery-box em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}.gallery-box em a{border-bottom:1px solid #fff}.gallery-box em a:hover{color:#fff;border-color:#0070ff}.gallery{display:grid;grid-template-columns:repeat(3, auto);justify-content:center;align-content:center;grid-gap:10px}.gallery .gallery__image{background:#131212}.gallery .gallery__image img{display:block;width:100%;height:auto;object-fit:cover}.social{margin:60px 0 0;text-align:center}.social .social__list{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}.social .social__item{display:inline-block;margin:0 2px}.social .social__link{position:relative;z-index:1;padding:0 10px;font-size:21px;line-height:1}.social .social__link:hover{color:#fff}.social .social__link:hover::after{transform:translate3d(-50%, -50%, 0) scale(1)}.social .social__link::after{content:'';display:block;position:absolute;z-index:-1;top:50%;left:50%;transform:translate3d(-50%, -50%, 0) scale(0);width:100%;height:0;padding-bottom:100%;border-radius:50%;background:#0070ff;transition:all .25s}@media only screen and (max-width: 768px){.social{margin:50px 0 0;text-align:left}.social .social__list{justify-content:start}}.hero{padding:60px 0 70px;margin-bottom:70px;background:#161d25}.hero.hero--post .article__meta{margin-bottom:13px;font-size:14px;font-weight:500}.hero.hero--post .article__meta .article__date::before{content:none}.hero.hero--post .article__author-link{font-size:14px;line-height:20px;font-weight:500;color:#ccc}.hero.hero--post .article__author-link span{color:#ccc}.hero.hero--post .article__author-link:hover{color:#fff}.hero.hero--page .hero__title{margin-bottom:0}@media only screen and (max-width: 768px){.hero{padding:60px 0 60px;margin-bottom:60px}}@media only screen and (max-width: 576px){.hero{padding:40px 0 40px;margin-bottom:40px}}.hero__inner{display:flex;align-items:center}@media only screen and (max-width: 768px){.hero__inner{flex-direction:column}}.hero__left,.hero__right{width:50%}@media only screen and (max-width: 768px){.hero__left,.hero__right{width:100%}}.hero__left .hero__title,.hero__left .hero__job{font-size:50px;font-weight:700;letter-spacing:-2px;color:#fff}@media only screen and (max-width: 1130px){.hero__left .hero__title,.hero__left .hero__job{font-size:40px;line-height:1.2}}@media only screen and (max-width: 1024px){.hero__left .hero__title,.hero__left .hero__job{font-size:33px}}@media only screen and (max-width: 576px){.hero__left .hero__title,.hero__left .hero__job{font-size:27px}}.hero__left .hero__title{margin-right:20px;margin-bottom:10px}@media only screen and (max-width: 768px){.hero__left .hero__title{margin-right:0}}.hero__left .hero__job{margin-bottom:20px}.hero__left .hero__name{position:relative;font-weight:400}.hero__left .hero__name::after{content:"";position:absolute;left:0;bottom:0px;width:100%;height:38%;background-color:rgba(0,112,255,0.1)}.hero__left .hero__description{max-width:550px;margin:0;font-size:21px;font-weight:500;color:#ccc}@media only screen and (max-width: 1024px){.hero__left .hero__description{font-size:16px;line-height:26px}}.hero__left .hero__button{margin-top:20px;padding-right:12px;display:inline-block;font-size:16px;line-height:16px;font-weight:700;color:#fff;outline:none;cursor:pointer;transition:all 0.35s}.hero__left .hero__button:hover{color:#fff;background:#0065e6}.hero__left .hero__button .button-arrow{display:inline-block;margin-right:10px;width:30px;height:30px;line-height:30px;text-align:center;color:#fff;background:#0070ff}.hero__right{position:relative}.hero__right::after{content:"";position:absolute;top:50%;transform:translateY(-50%);display:block;width:100%;height:50%;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.hero__right .hero__image{position:relative;z-index:10;width:370px;height:470px;margin:0 auto}.hero__right .hero__image::before{content:"";display:block;position:absolute;top:0;z-index:1;width:100%;height:100%;background:#131212}.hero__right .hero__image img{position:absolute;top:0;z-index:1;height:100%;width:100%;object-fit:cover;box-shadow:10px 10px 0 #0070ff;background:#131212}@media only screen and (max-width: 1130px){.hero__right .hero__image{width:270px;height:370px}}@media only screen and (max-width: 1024px){.hero__right .hero__image{width:230px;height:330px}}@media only screen and (max-width: 768px){.hero__right{order:-1}.hero__right .hero__image{width:100%;height:330px;margin-bottom:40px}}@media only screen and (max-width: 576px){.hero__right .hero__image{height:270px;margin-bottom:30px}.hero__right .hero__image img{box-shadow:none}}.contact-head{margin-bottom:30px}.form-box{max-width:750px;margin:0 auto}.form__group{margin-bottom:20px}.form__group:last-child{margin-bottom:0}.form__input{width:100%;padding:20px;font-size:14px;font-weight:500;border:1px solid #131212;outline:none;transition:250ms;resize:vertical;color:rgba(255,255,255,0.8);background:#161d25}.form__input::placeholder{color:rgba(255,255,255,0.8)}.form__input:focus{border:1px solid #0070ff}.article{margin-bottom:30px;border-radius:3px;overflow:hidden;transition:transform .2s}.article:hover{transform:translateY(-3px)}.article__inner{box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.image-wrap{padding:15px 15px 0 15px;background:#161d25}.article__image{position:relative;display:block;height:0;padding-bottom:56.25%;background:#131212;overflow:hidden}.article__image img{position:absolute;width:100%;height:100%;object-fit:cover}.article__content{padding:25px;background:#161d25}.article__title{margin-bottom:10px;font-size:22px;line-height:32px}.article__title a:hover{color:#fff}.article__excerpt{font-size:15px;line-height:24px;font-weight:500;margin-bottom:20px;color:#ccc}.article__meta{display:flex;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:500;line-height:20px}.article__meta .article__author-link{color:#ccc}.article__meta .article__author-link:hover{color:#fff}.article__meta .article-tags__box{display:flex}.article__meta .article-tags__box::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}.article__meta .article-tags__box .article__tag{color:#ccc}.article__meta .article-tags__box .article__tag:hover{color:#fff}.article__meta .article-tags__box .article__tag::after{content:",";display:inline-block;margin:0 2px}.article__meta .article-tags__box .article__tag:last-child::after{content:none}.article__meta .article__date{color:#ccc}.article__meta .article__date::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}img[src$="centerme"]{display:block;margin:0 auto}.post,.page{max-width:850px;margin:0 auto;color:#fff}.post__content a,.page__content a{text-decoration:underline}.image-box{margin:40px 0}.post__share{margin:50px 0}.post__share .share__list{display:flex;justify-content:center;align-items:center;width:100%}.post__share .share__item{margin:0 2px;text-align:center}.post__share .share__link{display:block;padding:2px 12px;font-size:18px;color:#161d25}.post__share .share__link.share__facebook,.post__share .share__link.share__twitter,.post__share .share__link.share__linkedin,.post__share .share__link.share__pinterest{border:1px solid #131212;background:#161d25}.post__share .share__link.share__facebook:hover,.post__share .share__link.share__twitter:hover,.post__share .share__link.share__linkedin:hover,.post__share .share__link.share__pinterest:hover{color:#fff}.post__share .share__link.share__facebook{color:#3b5998}.post__share .share__link.share__facebook:hover{background:#3b5998}.post__share .share__link.share__twitter{color:#55acee}.post__share .share__link.share__twitter:hover{background:#55acee}.post__share .share__link.share__linkedin{color:#0077b5}.post__share .share__link.share__linkedin:hover{background:#0077b5}.post__share .share__link.share__pinterest{color:#bd081c}.post__share .share__link.share__pinterest:hover{background:#bd081c}@media only screen and (max-width: 576px){.post__share{margin:40px 0}}.post__navigation{display:flex;justify-content:space-between;margin-bottom:20px}.post__navigation .post__prev,.post__navigation .post__next{display:flex;width:48%;padding:25px;margin-bottom:30px;background:#161d25;box-shadow:0px 0px 20px rgba(0,0,0,0.05);transition:transform .2s}.post__navigation .post__prev:hover,.post__navigation .post__next:hover{transform:translateY(-3px)}.post__navigation .post__prev .prev__image,.post__navigation .post__prev .next__image,.post__navigation .post__next .prev__image,.post__navigation .post__next .next__image{position:relative;display:block;width:100px;min-width:100px;height:100px;background-color:#131212}.post__navigation .post__prev .prev__image img,.post__navigation .post__prev .next__image img,.post__navigation .post__next .prev__image img,.post__navigation .post__next .next__image img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.post__navigation .post__prev .prev__image,.post__navigation .post__next .prev__image{margin-right:15px}.post__navigation .post__prev .next__image,.post__navigation .post__next .next__image{margin-left:15px}.post__navigation .post__prev .post__nav,.post__navigation .post__next .post__nav{display:inline-block;margin-bottom:5px;font-size:13px;line-height:1;font-weight:500;color:#ccc}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{margin-bottom:0;font-size:18px;line-height:24px}.post__navigation .post__prev .post__nav__title a:hover,.post__navigation .post__next .post__nav__title a:hover{color:#fff}.post__navigation .post__next{text-align:right;margin-left:auto;justify-content:flex-end}@media only screen and (max-width: 768px){.post__navigation{flex-wrap:wrap}.post__navigation .post__prev,.post__navigation .post__next{width:100%}.post__navigation .post__prev{margin-bottom:30px}.post__navigation .next__box{margin-left:auto}}@media only screen and (max-width: 576px){.post__navigation{margin-bottom:10px}.post__navigation .post__prev,.post__navigation .post__next{padding:20px}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{font-size:15px;line-height:20px}}.post__comments{padding:40px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);background:#161d25}@media only screen and (max-width: 576px){.post__comments{padding:30px}}.error{margin-bottom:30px;text-align:center}.error .error__title{margin-bottom:0;font-size:100px}.error .error__text{margin-bottom:20px;font-size:21px;color:#ccc}.error .error__button{line-height:45px}.tag{padding:70px 0;margin-bottom:70px;text-align:center;background:#161d25}.tag .tag__meta{font-size:16px;color:#ccc}.tag .tag__title{margin:0;font-size:50px}@media only screen and (max-width: 768px){.tag{padding:60px 0;margin-bottom:60px}}@media only screen and (max-width: 576px){.tag{padding:40px 0;margin-bottom:40px}}
+
+  </style>
+</head>
+
+<body class="dark">
+
+  
+
+    <!-- begin header -->
+<header class="header">
+  <div class="container">
+    <div class="row">
+      <div class="header__inner col col-12">
+
+        <div class="logo">
+          <a class="logo__link" href="/">
+          
+            Artik Blue
+          
+          </a>
+        </div>
+
+        <nav class="main-nav">
+          <div class="main-nav__box">
+            <div class="nav__icon-close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <div class="nav__title">Menu</div>
+            <ul class="nav__list list-reset">
+              <li class="nav__item">
+                <a href="/" class="nav__link">Home</a>
+              </li>
+              
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/about/" class="nav__link">About</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/reversing" class="nav__link">Reversing</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+            </ul>
+          </div>
+        </nav>
+
+        <div class="nav-buttons">
+          <i class="nav__icon nav__icon-menu ion ion-md-menu"></i>
+          <i class="nav__icon nav__icon-search ion ion-md-search"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="header__overlay"></div>
+</header>
+<!-- end header -->
+
+<!-- begin search -->
+<div class="search">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="search__box">
+          <div class="search__group">
+            <div class="search__close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <label for="js-search-input" class="screen-reader-text">Search for Blog</label>
+            <input type="text" id="js-search-input" class="search__text" autocomplete="off" placeholder="Type to search...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="container__inner">
+          <div class="row search-results-list" id="js-results-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- end search -->
+    <!-- begin content -->
+    <main class="content" aria-label="Content">
+      <!-- begin wrapper-page -->
+      <div class="wrapper-page">
+        <!-- begin hero -->
+
+<section class="hero hero--post">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="hero__inner">
+          <div class="hero__left">
+            
+
+            <div class="article__meta">
+              <span class="article__date"><time datetime="2020-05-07T00:01:35+02:00">07 May 2020</time></span>
+              
+              <div class="article-tags__box">
+                
+                  <a href="/tag/reversing" class="article__tag">reversing</a>
+                
+                  <a href="/tag/c" class="article__tag">c</a>
+                
+                  <a href="/tag/radare" class="article__tag">radare</a>
+                
+              </div>
+              
+            </div>
+
+            <h1 class="hero__title">Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (pointers and dynamic memory)</h1>
+            <a href="/about/" class="article__author-link"><span>By</span> Artik Blue</a>
+
+            
+          </div>
+
+          <div class="hero__right">
+
+            
+            <div class="hero__image">
+              <img class="lazy" data-src="/images//radare2/radare2_10.png" alt="Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (pointers and dynamic memory)">
+            </div>
+
+            
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- end hero -->
+
+<!-- begin post -->
+<div class="container">
+  <article class="post animate">
+
+    <div class="post__content">
+      <p>Hello I’m Artik Blue and today you will finally understand C pointers.</p>
+
+<p>Let’s start with this code</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+
+    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+
+    <span class="kt">char</span> <span class="n">c</span> <span class="o">=</span> <span class="sc">'c'</span><span class="p">;</span>
+
+    <span class="kt">char</span><span class="o">*</span> <span class="n">pc</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">c</span><span class="p">;</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Value of i: %d </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">i</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Address of i: %p </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">i</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Value of c: %c </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">c</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Address of c: %p </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">c</span><span class="p">);</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Updating the content of the mem address pointed by pc </span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+
+    <span class="o">*</span><span class="n">pc</span> <span class="o">=</span> <span class="sc">'b'</span><span class="p">;</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Value of c: %c </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">c</span><span class="p">);</span>
+
+<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<p>In C &amp;c is used for indicating the address of the variable c. *p indicates a pointer. We can have multiple pointers to the same memory location so if that memory location is updated that will affect all of the pointers. If you have zero knowledge about pointers, have a quick read at this one: https://www.programiz.com/c-programming/c-pointers and then go on with this post.</p>
+
+<p>So when compiled, the program outputs:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Value of i: 2 
+Address of i: 0x7ffe948d662c 
+Value of c: c 
+Address of c: 0x7ffe948d662b 
+Updating the content of the mem address pointed by pc 
+Value of c: b 
+</code></pre></div></div>
+
+<p>And now  the disasm:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x556609210155]&gt; pdf
+            ; DATA XREF from entry0 @ 0x55660921008d
+┌ 210: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_15h @ rbp-0x15
+│           ; var int64_t var_14h @ rbp-0x14
+│           ; var int64_t var_10h @ rbp-0x10
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x556609210155      55             push rbp
+│           0x556609210156      4889e5         mov rbp, rsp
+│           0x556609210159      4883ec20       sub rsp, 0x20
+│           0x55660921015d      64488b042528.  mov rax, qword fs:[0x28]
+│           0x556609210166      488945f8       mov qword [var_8h], rax
+│           0x55660921016a      31c0           xor eax, eax
+│           0x55660921016c      c745ec020000.  mov dword [var_14h], 2
+│           0x556609210173      c645eb63       mov byte [var_15h], 0x63 ; 'c' ; 99
+│           0x556609210177      488d45eb       lea rax, [var_15h]
+│           0x55660921017b      488945f0       mov qword [var_10h], rax
+│           0x55660921017f      8b45ec         mov eax, dword [var_14h]
+│           0x556609210182      89c6           mov esi, eax
+│           0x556609210184      488d3d7d0e00.  lea rdi, str.Value_of_i:__d ; 0x556609211008 ; "Value of i: %d \n"
+│           0x55660921018b      b800000000     mov eax, 0
+│           0x556609210190      e8bbfeffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x556609210195      488d45ec       lea rax, [var_14h]
+│           0x556609210199      4889c6         mov rsi, rax
+│           0x55660921019c      488d3d760e00.  lea rdi, str.Address_of_i:__p ; 0x556609211019 ; "Address of i: %p \n"
+│           0x5566092101a3      b800000000     mov eax, 0
+│           0x5566092101a8      e8a3feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x5566092101ad      0fb645eb       movzx eax, byte [var_15h]
+│           0x5566092101b1      0fbec0         movsx eax, al
+│           0x5566092101b4      89c6           mov esi, eax
+│           0x5566092101b6      488d3d6f0e00.  lea rdi, str.Value_of_c:__c ; 0x55660921102c ; "Value of c: %c \n"
+│           0x5566092101bd      b800000000     mov eax, 0
+│           0x5566092101c2      e889feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x5566092101c7      488d45eb       lea rax, [var_15h]
+│           0x5566092101cb      4889c6         mov rsi, rax
+│           0x5566092101ce      488d3d680e00.  lea rdi, str.Address_of_c:__p ; 0x55660921103d ; "Address of c: %p \n"
+│           0x5566092101d5      b800000000     mov eax, 0
+│           0x5566092101da      e871feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x5566092101df      488d3d6a0e00.  lea rdi, str.Updating_the_content_of_the_mem_address_pointed_by_pc ; 0x556609211050 ; "Updating the content of the mem address pointed by pc "
+│           0x5566092101e6      e845feffff     call sym.imp.puts       ; int puts(const char *s)
+│           0x5566092101eb      488b45f0       mov rax, qword [var_10h]
+│           0x5566092101ef      c60062         mov byte [rax], 0x62    ; 'b'
+│                                                                      ; [0x62:1]=255 ; 98
+│           0x5566092101f2      0fb645eb       movzx eax, byte [var_15h]
+│           0x5566092101f6      0fbec0         movsx eax, al
+│           0x5566092101f9      89c6           mov esi, eax
+│           0x5566092101fb      488d3d2a0e00.  lea rdi, str.Value_of_c:__c ; 0x55660921102c ; "Value of c: %c \n"
+│           0x556609210202      b800000000     mov eax, 0
+│           0x556609210207      e844feffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55660921020c      b800000000     mov eax, 0
+│           0x556609210211      488b55f8       mov rdx, qword [var_8h]
+│           0x556609210215      644833142528.  xor rdx, qword fs:[0x28]
+│       ┌─&lt; 0x55660921021e      7405           je 0x556609210225
+│       │   0x556609210220      e81bfeffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x556609210225      c9             leave
+└           0x556609210226      c3             ret
+[0x556609210155]&gt; 
+</code></pre></div></div>
+<p>Hey ho! Let’s dissect that. At first the program initializes those variables:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55660921016c      c745ec020000.  mov dword [var_14h], 2
+│           0x556609210173      c645eb63       mov byte [var_15h], 0x63 ; 'c' ; 99
+│           0x556609210177      488d45eb       lea rax, [var_15h]
+│           0x55660921017b      488945f0       mov qword [var_10h], rax
+</code></pre></div></div>
+<p>So the first var is being initialized with 2, then another var is initialized with 0x63 or char C and then the memory address of (lea = load effective address) that var  and not the content is being passed to var_10h. As we are almost sure that those first vars are related the i int and the c char, we can rename it using afvn, so for now the thing will look like:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x556609210155]&gt; afv
+var int64_t char_c @ rbp-0x15
+var int64_t int_i @ rbp-0x14
+var int64_t var_10h @ rbp-0x10
+var int64_t var_8h @ rbp-0x8 = stack cookie
+</code></pre></div></div>
+<p>And as var_10h will hold the ADDRESS of c we can rename it as pointer_c</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x556609210155]&gt; afvn pointer_c var_10h
+[0x556609210155]&gt; afv
+var int64_t char_c @ rbp-0x15
+var int64_t int_i @ rbp-0x14
+var int64_t pointer_c @ rbp-0x10
+var int64_t var_8h @ rbp-0x8
+</code></pre></div></div>
+<p>Let’s inspect the first printf</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55660921017f      8b45ec         mov eax, dword [int_i]
+│           0x556609210182      89c6           mov esi, eax
+│           0x556609210184      488d3d7d0e00.  lea rdi, str.Value_of_i:__d ; 0x556609211008 ; "Value of i: %d \n"
+│           0x55660921018b      b800000000     mov eax, 0
+│           0x556609210190      e8bbfeffff     call sym.imp.printf     ; int printf(const char *format)
+</code></pre></div></div>
+<p>Nothing new here, by “[ref]” we indicate that we want the content of whats pointed by int_i, so the value of the i var, we load it in eax (we don’t use rax cause we have enough space using eax only), then we load base address of the string to print “Value of…” as a parameter as well. The printf function will take those two params and do its magic as we already should know. Just note that on this first case, we are passing the value of the variable, instead of its address. Let’s move on:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x556609210195      488d45ec       lea rax, [int_i]
+│           0x556609210199      4889c6         mov rsi, rax
+│           0x55660921019c      488d3d760e00.  lea rdi, str.Address_of_i:__p ; 0x556609211019 ; "Address of i: %p \n"
+│           0x5566092101a3      b800000000     mov eax, 0
+│           0x5566092101a8      e8a3feffff     call sym.imp.printf     ; int printf(const char *format)
+</code></pre></div></div>
+<p>Just look how on this next block the progam does lea instead of mov. This time, the program loads the ADDRESS of int_i instead of the value located at whats pointed by int_i. So in general terms using &amp;var internally translates to lea reg, “[var]”. This is a key concept in reverse engineering, exploit development and in general terms anything related to low level program analysis, you should have it very clear.
+Let’s proceed</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5566092101ad      0fb645eb       movzx eax, byte [char_c]
+│           0x5566092101b1      0fbec0         movsx eax, al
+│           0x5566092101b4      89c6           mov esi, eax
+│           0x5566092101b6      488d3d6f0e00.  lea rdi, str.Value_of_c:__c ; 0x55660921102c ; "Value of c: %c \n"
+│           0x5566092101bd      b800000000     mov eax, 0
+│           0x5566092101c2      e889feffff     call sym.imp.printf     ; int printf(const char *format)
+</code></pre></div></div>
+<p>Nothing worth commenting here, the VALUE is loaded, movzx is used for mem optimization.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5566092101c7      488d45eb       lea rax, [char_c]
+│           0x5566092101cb      4889c6         mov rsi, rax
+│           0x5566092101ce      488d3d680e00.  lea rdi, str.Address_of_c:__p ; 0x55660921103d ; "Address of c: %p \n"
+│           0x5566092101d5      b800000000     mov eax, 0
+│           0x5566092101da      e871feffff     call sym.imp.printf     ; int printf(const char *format)
+</code></pre></div></div>
+<p>Then, again, the ADDRESS is loaded this time.</p>
+
+<p>But at the end of the program we have this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5566092101eb      488b45f0       mov rax, qword [pointer_c]
+│           0x5566092101ef      c60062         mov byte [rax], 0x62    ; 'b'
+│                                                                      ; [0x62:1]=255 ; 98
+│           0x5566092101f2      0fb645eb       movzx eax, byte [char_c]
+│           0x5566092101f6      0fbec0         movsx eax, al
+│           0x5566092101f9      89c6           mov esi, eax
+│           0x5566092101fb      488d3d2a0e00.  lea rdi, str.Value_of_c:__c ; 0x55660921102c ; "Value of c: %c \n"
+│           0x556609210202      b800000000     mov eax, 0
+│           0x556609210207      e844feffff     call sym.imp.printf     ; int printf(const char *format)
+</code></pre></div></div>
+<p>What happens here? The contents of pointer_c are moved to eax, then the content of what is pointed by eax is updated with ‘b’ and then we forget about pointer_c and we just printf what is pointed by char_c (???) Debuging is quite useful for understanding what is happening here.</p>
+
+<p>So we start like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5566092101eb b    488b45f0       mov rax, qword [pointer_c]
+│           0x5566092101ef      c60062         mov byte [rax], 0x62    ; 'b'
+│                                                                      ; [0x62:1]=255 ; 98
+│           0x5566092101f2      0fb645eb       movzx eax, byte [char_c]
+│           0x5566092101f6      0fbec0         movsx eax, al
+│           0x5566092101f9      89c6           mov esi, eax
+│           0x5566092101fb      488d3d2a0e00.  lea rdi, str.Value_of_c:__c ; 0x55660921102c ; "Value of c: %c \n"
+│           0x556609210202      b800000000     mov eax, 0
+│           0x556609210207      e844feffff     call sym.imp.printf     ; int printf(const char *format)
+[...]
+[0x5566092101eb]&gt; afvd
+var var_8h = 0x7ffd71635228 = (qword)0xa0af6487b4e4ef00
+var int_i = 0x7ffd7163521c = (qword)0x7163521b00000002
+var char_c = 0x7ffd7163521b = (qword)0x63521b0000000263
+var pointer_c = 0x7ffd71635220 = (qword)0x00007ffd7163521b
+</code></pre></div></div>
+<p>As you can see, the content of pointer_c (0x00007ffd7163521b) is the mem address of char_c (0x7ffd7163521b) this is how pointers work, pointers store memory addresses.</p>
+
+<p>So after we do the first mov, rax will look like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5566092101eb]&gt; ds
+[0x5566092101ef]&gt; dr rax
+0x7ffd7163521b
+</code></pre></div></div>
+<p>Now rax holds the CONTENT of pointer_c and the content of pointer_c is the ADDRESS of char c, so doing “[rax]” is the same as doing “[char_c]”. And char_c contains a ‘c’ char:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5566092101ef]&gt; afvd
+var var_8h = 0x7ffd71635228 = (qword)0xa0af6487b4e4ef00
+var int_i = 0x7ffd7163521c = (qword)0x7163521b00000002
+var char_c = 0x7ffd7163521b = (qword)0x63521b0000000263
+var pointer_c = 0x7ffd71635220 = (qword)0x00007ffd7163521b
+
+[0x5566092101ef]&gt; pxw @ 0x7ffd7163521b
+0x7ffd7163521b  0x00000263 0x63521b00 0x007ffd71 0xe4ef0000  c.....Rcq.......
+</code></pre></div></div>
+<p>And after doing the second mov</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5566092101ef]&gt; ds
+[0x5566092101f2]&gt; pxw @ 0x7ffd7163521b
+0x7ffd7163521b  0x00000262 0x63521b00 0x007ffd71 0xe4ef0000  b.....Rcq.......
+</code></pre></div></div>
+<p>Now it contains a ‘b’ char.</p>
+
+<p>Then the program continues, this time it loads char_c but that’s ok cause the address of char_c is the same as “[rax]” or “[pointer_c]”!</p>
+
+<p>And we are done with this first example, let’s move on with something more complex but easy as well :)</p>
+
+<p>Remember the program we did on one of the past tutorials? The one that was related to an array that needed to be filled by a user in a while loop. Let’s inspect this one:</p>
+<pre><code class="language-C">#include &lt;stdio.h&gt;
+ 
+main() {
+  int data[100];      
+  int entered;    
+  int i;           
+  long sum=0;     
+ 
+  do {
+    printf("How many numbers? ");
+    scanf("%d", &amp;entered);
+    if (entered&gt;100)  
+      printf("Limit is 100");
+  } while (entered&gt;100);  
+ 
+  
+  for (i=0; i&lt;entered; i++) {
+    printf("Enter number %d: ", i+1);
+    scanf("%d", &amp;data[i]);
+  }
+ 
+  
+  for (i=0; i&lt;entered; i++) 
+    sum += data[i];
+ 
+  printf("SUM: %ld\n", sum);
+}
+</code></pre>
+<p>We should already know how the program works, no mystery, no pointers used here, just static memory. Let’s see:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55c2a9231155]&gt; pdf
+            ; DATA XREF from entry0 @ 0x55c2a923108d
+┌ 335: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_1b0h @ rbp-0x1b0
+│           ; var int64_t var_1ach @ rbp-0x1ac
+│           ; var int64_t var_1a8h @ rbp-0x1a8
+│           ; var int64_t var_1a0h @ rbp-0x1a0
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x55c2a9231155      55             push rbp
+│           0x55c2a9231156      4889e5         mov rbp, rsp
+│           0x55c2a9231159      4881ecb00100.  sub rsp, 0x1b0
+│           0x55c2a9231160      64488b042528.  mov rax, qword fs:[0x28]
+│           0x55c2a9231169      488945f8       mov qword [var_8h], rax
+│           0x55c2a923116d      31c0           xor eax, eax
+│           0x55c2a923116f      48c78558feff.  mov qword [var_1a8h], 0
+│       ┌─&gt; 0x55c2a923117a      488d3d830e00.  lea rdi, str.How_many_numbers ; 0x55c2a9232004 ; "How many numbers? "
+│       ╎   0x55c2a9231181      b800000000     mov eax, 0
+│       ╎   0x55c2a9231186      e8b5feffff     call sym.imp.printf     ; int printf(const char *format)
+│       ╎   0x55c2a923118b      488d8550feff.  lea rax, [var_1b0h]
+│       ╎   0x55c2a9231192      4889c6         mov rsi, rax
+│       ╎   0x55c2a9231195      488d3d7b0e00.  lea rdi, [0x55c2a9232017] ; "%d"
+│       ╎   0x55c2a923119c      b800000000     mov eax, 0
+│       ╎   0x55c2a92311a1      e8aafeffff     call sym.imp.__isoc99_scanf ; int scanf(const char *format)
+│       ╎   0x55c2a92311a6      8b8550feffff   mov eax, dword [var_1b0h]
+│       ╎   0x55c2a92311ac      83f864         cmp eax, 0x64           ; 100
+│      ┌──&lt; 0x55c2a92311af      7e11           jle 0x55c2a92311c2
+│      │╎   0x55c2a92311b1      488d3d620e00.  lea rdi, str.Limit_is_100 ; 0x55c2a923201a ; "Limit is 100"
+│      │╎   0x55c2a92311b8      b800000000     mov eax, 0
+│      │╎   0x55c2a92311bd      e87efeffff     call sym.imp.printf     ; int printf(const char *format)
+│      └──&gt; 0x55c2a92311c2      8b8550feffff   mov eax, dword [var_1b0h]
+│       ╎   0x55c2a92311c8      83f864         cmp eax, 0x64           ; 100
+│       └─&lt; 0x55c2a92311cb      7fad           jg 0x55c2a923117a
+│           0x55c2a92311cd      c78554feffff.  mov dword [var_1ach], 0
+│       ┌─&lt; 0x55c2a92311d7      eb4e           jmp 0x55c2a9231227
+│      ┌──&gt; 0x55c2a92311d9      8b8554feffff   mov eax, dword [var_1ach]
+│      ╎│   0x55c2a92311df      83c001         add eax, 1
+│      ╎│   0x55c2a92311e2      89c6           mov esi, eax
+│      ╎│   0x55c2a92311e4      488d3d3c0e00.  lea rdi, str.Enter_number__d: ; 0x55c2a9232027 ; "Enter number %d: "
+│      ╎│   0x55c2a92311eb      b800000000     mov eax, 0
+│      ╎│   0x55c2a92311f0      e84bfeffff     call sym.imp.printf     ; int printf(const char *format)
+│      ╎│   0x55c2a92311f5      488d8560feff.  lea rax, [var_1a0h]
+│      ╎│   0x55c2a92311fc      8b9554feffff   mov edx, dword [var_1ach]
+│      ╎│   0x55c2a9231202      4863d2         movsxd rdx, edx
+│      ╎│   0x55c2a9231205      48c1e202       shl rdx, 2
+│      ╎│   0x55c2a9231209      4801d0         add rax, rdx
+│      ╎│   0x55c2a923120c      4889c6         mov rsi, rax
+│      ╎│   0x55c2a923120f      488d3d010e00.  lea rdi, [0x55c2a9232017] ; "%d"
+│      ╎│   0x55c2a9231216      b800000000     mov eax, 0
+│      ╎│   0x55c2a923121b      e830feffff     call sym.imp.__isoc99_scanf ; int scanf(const char *format)
+│      ╎│   0x55c2a9231220      838554feffff.  add dword [var_1ach], 1
+│      ╎│   ; CODE XREF from main @ 0x55c2a92311d7
+│      ╎└─&gt; 0x55c2a9231227      8b8550feffff   mov eax, dword [var_1b0h]
+│      ╎    0x55c2a923122d      398554feffff   cmp dword [var_1ach], eax
+│      └──&lt; 0x55c2a9231233      7ca4           jl 0x55c2a92311d9
+│           0x55c2a9231235      c78554feffff.  mov dword [var_1ach], 0
+│       ┌─&lt; 0x55c2a923123f      eb1f           jmp 0x55c2a9231260
+│      ┌──&gt; 0x55c2a9231241      8b8554feffff   mov eax, dword [var_1ach]
+│      ╎│   0x55c2a9231247      4898           cdqe
+│      ╎│   0x55c2a9231249      8b848560feff.  mov eax, dword [rbp + rax*4 - 0x1a0]
+│      ╎│   0x55c2a9231250      4898           cdqe
+│      ╎│   0x55c2a9231252      48018558feff.  add qword [var_1a8h], rax
+│      ╎│   0x55c2a9231259      838554feffff.  add dword [var_1ach], 1
+│      ╎│   ; CODE XREF from main @ 0x55c2a923123f
+│      ╎└─&gt; 0x55c2a9231260      8b8550feffff   mov eax, dword [var_1b0h]
+│      ╎    0x55c2a9231266      398554feffff   cmp dword [var_1ach], eax
+│      └──&lt; 0x55c2a923126c      7cd3           jl 0x55c2a9231241
+│           0x55c2a923126e      488b8558feff.  mov rax, qword [var_1a8h]
+│           0x55c2a9231275      4889c6         mov rsi, rax
+│           0x55c2a9231278      488d3dba0d00.  lea rdi, str.SUM:__ld   ; 0x55c2a9232039 ; "SUM: %ld\n"
+│           0x55c2a923127f      b800000000     mov eax, 0
+│           0x55c2a9231284      e8b7fdffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x55c2a9231289      b800000000     mov eax, 0
+│           0x55c2a923128e      488b4df8       mov rcx, qword [var_8h]
+│           0x55c2a9231292      6448330c2528.  xor rcx, qword fs:[0x28]
+│       ┌─&lt; 0x55c2a923129b      7405           je 0x55c2a92312a2
+│       │   0x55c2a923129d      e88efdffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x55c2a92312a2      c9             leave
+└           0x55c2a92312a3      c3             ret
+[0x55c2a9231155]&gt; 
+</code></pre></div></div>
+<p>What I want you to note here is the following, at the very beginning of the code you see this = 432:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55c2a9231159      4881ecb00100.  sub rsp, 
+</code></pre></div></div>
+<p>You should have seen instructions like this one in many of the binaries we analyzed during our journey. What this does is basically keep some memory space in the local memory related to the function (using the stack) to hold local variables. 
+(check this https://en.wikibooks.org/wiki/X86_Disassembly/Functions_and_Stack_Frames)</p>
+
+<p>And this time in here it looks like it keeps a bit more than 400 bytes. If you think about it, it makes sense as according to the code, we are declaring an array of 100 ints, assuming 4 bytes per int, those 400 bytes and more make sense. It is very common to see the program keeping a bit more space than the initially needed. Watching this sub rbp at the very beginning of the function will reveal interesting information.</p>
+
+<p>I’m not going to enter into a lot of details on the code, as there is almost nothing new here, you should know how to analyze it very well</p>
+
+<p>What I want to note this time is the following. In this program, we are using a do-while instead of a while, we can see that here:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│       ┌─&gt; 0x55c2a923117a      488d3d830e00.  lea rdi, str.How_many_numbers ; 0x55c2a9232004 ; "How many numbers? "
+│       ╎   0x55c2a9231181      b800000000     mov eax, 0
+│       ╎   0x55c2a9231186      e8b5feffff     call sym.imp.printf     ; int printf(const char *format)
+│       ╎   0x55c2a923118b      488d8550feff.  lea rax, [var_1b0h]
+│       ╎   0x55c2a9231192      4889c6         mov rsi, rax
+│       ╎   0x55c2a9231195      488d3d7b0e00.  lea rdi, [0x55c2a9232017] ; "%d"
+│       ╎   0x55c2a923119c      b800000000     mov eax, 0
+│       ╎   0x55c2a92311a1      e8aafeffff     call sym.imp.__isoc99_scanf ; int scanf(const char *format)
+│       ╎   0x55c2a92311a6      8b8550feffff   mov eax, dword [var_1b0h]
+│       ╎   0x55c2a92311ac      83f864         cmp eax, 0x64           ; 100
+│      ┌──&lt; 0x55c2a92311af      7e11           jle 0x55c2a92311c2
+│      │╎   0x55c2a92311b1      488d3d620e00.  lea rdi, str.Limit_is_100 ; 0x55c2a923201a ; "Limit is 100"
+│      │╎   0x55c2a92311b8      b800000000     mov eax, 0
+│      │╎   0x55c2a92311bd      e87efeffff     call sym.imp.printf     ; int printf(const char *format)
+│      └──&gt; 0x55c2a92311c2      8b8550feffff   mov eax, dword [var_1b0h]
+│       ╎   0x55c2a92311c8      83f864         cmp eax, 0x64           ; 100
+│       └─&lt; 0x55c2a92311cb      7fad           jg 0x55c2a923117a
+
+</code></pre></div></div>
+<p>As you see, the block of code is executed at first, then after that the condition check (cmp 100) is done and the program jumps back to the top of the code or just goes on, but the block of code is executed min once. If we do a while instad of a do while, as we know, the program will jump and do the cmp, then will go to the while block of code or not based on the cmp.</p>
+
+<p>The rest of the program is no mystery, let’s move on and inspect the same program but this time using dynamic memory:</p>
+
+<pre><code class="language-C">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+ 
+main() {
+  int* data;      
+  int valnum;    
+  int i;          
+  long sum=0;     
+
+  do {
+    printf("How many vals you need to add? ");
+    scanf("%d", &amp;valnum);
+    data = (int *) malloc (valnum * sizeof(int));
+    if (data == NULL)  
+      printf("NO SPACE AVAILABLE.");
+  } while (data == NULL); 
+
+
+  for (i=0; i&lt;valnum; i++) {
+    printf("ENTER NUM %d ", i+1);
+    scanf("%d", data+i);
+  }
+ 
+
+  for (i=0; i&lt;valnum; i++) 
+    sum += *(data+i);
+ 
+  printf("SUM: %ld\n", sum);
+  free(data);
+}
+</code></pre>
+<p>This is new! So the program at first, will ask the user how many values it wants to add, then it will do this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>data = (int *) malloc (valnum * sizeof(int));
+</code></pre></div></div>
+<p>We can break that in parts for a better understanding. At first we do valnum * sizeof(int), sizeof(int) will return the size of an int in bytes in our system ex: 4, then it will be multiplied by valnum, the user input (how many values do you want to add), so if the user wants 4 values it will do something like 4*4 = 16 bytes, the space needed for allocating 4 ints, you got it, right? Then, that will be passed to malloc. This function is used for allocating space in memory. void *malloc(size_t size) allocates the requested memory (heap) and returns a pointer to it(stack) (or NULL if the request fails), that is why the result of malloc is stored in a pointer to int!</p>
+
+<p>Then the program does the following:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scanf("%d", data+i);
+</code></pre></div></div>
+<p>Note that normally when using scan we pass in &amp;var, this time we are just passing data+i, being i an integer (1,2.3…), that is why data is a pointer itself, a memory address, so using &amp; won’t make sense here, +i is used here to indicate the next memory address available as data is a pointer to the base addr of that dynamic array.</p>
+
+<p>Then the same logic follows when doing the sum</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sum += *(data+i);
+</code></pre></div></div>
+<p>Let’s now disasm this program and analyze it:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x558471c62175]&gt; pdf
+            ; DATA XREF from entry0 @ 0x558471c620ad
+┌ 322: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_20h @ rbp-0x20
+│           ; var int64_t var_1ch @ rbp-0x1c
+│           ; var int64_t var_18h @ rbp-0x18
+│           ; var int64_t var_10h @ rbp-0x10
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x558471c62175      55             push rbp
+│           0x558471c62176      4889e5         mov rbp, rsp
+│           0x558471c62179      4883ec20       sub rsp, 0x20
+│           0x558471c6217d      64488b042528.  mov rax, qword fs:[0x28]
+│           0x558471c62186      488945f8       mov qword [var_8h], rax
+│           0x558471c6218a      31c0           xor eax, eax
+│           0x558471c6218c      48c745e80000.  mov qword [var_18h], 0
+│       ┌─&gt; 0x558471c62194      488d3d6d0e00.  lea rdi, str.How_many_vals_you_need_to_add ; 0x558471c63008 ; "How many vals you need to add? "
+│       ╎   0x558471c6219b      b800000000     mov eax, 0
+│       ╎   0x558471c621a0      e8abfeffff     call sym.imp.printf     ; int printf(const char *format)
+│       ╎   0x558471c621a5      488d45e0       lea rax, [var_20h]
+│       ╎   0x558471c621a9      4889c6         mov rsi, rax
+│       ╎   0x558471c621ac      488d3d750e00.  lea rdi, [0x558471c63028] ; "%d"
+│       ╎   0x558471c621b3      b800000000     mov eax, 0
+│       ╎   0x558471c621b8      e8b3feffff     call sym.imp.__isoc99_scanf ; int scanf(const char *format)
+│       ╎   0x558471c621bd      8b45e0         mov eax, dword [var_20h]
+│       ╎   0x558471c621c0      4898           cdqe
+│       ╎   0x558471c621c2      48c1e002       shl rax, 2
+│       ╎   0x558471c621c6      4889c7         mov rdi, rax
+│       ╎   0x558471c621c9      e892feffff     call sym.imp.malloc     ;  void *malloc(size_t size)
+│       ╎   0x558471c621ce      488945f0       mov qword [var_10h], rax
+│       ╎   0x558471c621d2      48837df000     cmp qword [var_10h], 0
+│      ┌──&lt; 0x558471c621d7      7511           jne 0x558471c621ea
+│      │╎   0x558471c621d9      488d3d4b0e00.  lea rdi, str.NO_SPACE_AVAILABLE. ; 0x558471c6302b ; "NO SPACE AVAILABLE."
+│      │╎   0x558471c621e0      b800000000     mov eax, 0
+│      │╎   0x558471c621e5      e866feffff     call sym.imp.printf     ; int printf(const char *format)
+│      └──&gt; 0x558471c621ea      48837df000     cmp qword [var_10h], 0
+│       └─&lt; 0x558471c621ef      74a3           je 0x558471c62194
+│           0x558471c621f1      c745e4000000.  mov dword [var_1ch], 0
+│       ┌─&lt; 0x558471c621f8      eb45           jmp 0x558471c6223f
+│      ┌──&gt; 0x558471c621fa      8b45e4         mov eax, dword [var_1ch]
+│      ╎│   0x558471c621fd      83c001         add eax, 1
+│      ╎│   0x558471c62200      89c6           mov esi, eax
+│      ╎│   0x558471c62202      488d3d360e00.  lea rdi, str.ENTER_NUM__d ; 0x558471c6303f ; "ENTER NUM %d "
+│      ╎│   0x558471c62209      b800000000     mov eax, 0
+│      ╎│   0x558471c6220e      e83dfeffff     call sym.imp.printf     ; int printf(const char *format)
+│      ╎│   0x558471c62213      8b45e4         mov eax, dword [var_1ch]
+│      ╎│   0x558471c62216      4898           cdqe
+│      ╎│   0x558471c62218      488d14850000.  lea rdx, [rax*4]
+│      ╎│   0x558471c62220      488b45f0       mov rax, qword [var_10h]
+│      ╎│   0x558471c62224      4801d0         add rax, rdx
+│      ╎│   0x558471c62227      4889c6         mov rsi, rax
+│      ╎│   0x558471c6222a      488d3df70d00.  lea rdi, [0x558471c63028] ; "%d"
+│      ╎│   0x558471c62231      b800000000     mov eax, 0
+│      ╎│   0x558471c62236      e835feffff     call sym.imp.__isoc99_scanf ; int scanf(const char *format)
+│      ╎│   0x558471c6223b      8345e401       add dword [var_1ch], 1
+│      ╎│   ; CODE XREF from main @ 0x558471c621f8
+│      ╎└─&gt; 0x558471c6223f      8b45e0         mov eax, dword [var_20h]
+│      ╎    0x558471c62242      3945e4         cmp dword [var_1ch], eax
+│      └──&lt; 0x558471c62245      7cb3           jl 0x558471c621fa
+│           0x558471c62247      c745e4000000.  mov dword [var_1ch], 0
+│       ┌─&lt; 0x558471c6224e      eb20           jmp 0x558471c62270
+│      ┌──&gt; 0x558471c62250      8b45e4         mov eax, dword [var_1ch]
+│      ╎│   0x558471c62253      4898           cdqe
+│      ╎│   0x558471c62255      488d14850000.  lea rdx, [rax*4]
+│      ╎│   0x558471c6225d      488b45f0       mov rax, qword [var_10h]
+│      ╎│   0x558471c62261      4801d0         add rax, rdx
+│      ╎│   0x558471c62264      8b00           mov eax, dword [rax]
+│      ╎│   0x558471c62266      4898           cdqe
+│      ╎│   0x558471c62268      480145e8       add qword [var_18h], rax
+│      ╎│   0x558471c6226c      8345e401       add dword [var_1ch], 1
+│      ╎│   ; CODE XREF from main @ 0x558471c6224e
+│      ╎└─&gt; 0x558471c62270      8b45e0         mov eax, dword [var_20h]
+│      ╎    0x558471c62273      3945e4         cmp dword [var_1ch], eax
+│      └──&lt; 0x558471c62276      7cd8           jl 0x558471c62250
+│           0x558471c62278      488b45e8       mov rax, qword [var_18h]
+│           0x558471c6227c      4889c6         mov rsi, rax
+│           0x558471c6227f      488d3dc70d00.  lea rdi, str.SUM:__ld   ; 0x558471c6304d ; "SUM: %ld\n"
+│           0x558471c62286      b800000000     mov eax, 0
+│           0x558471c6228b      e8c0fdffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x558471c62290      488b45f0       mov rax, qword [var_10h]
+│           0x558471c62294      4889c7         mov rdi, rax
+│           0x558471c62297      e894fdffff     call sym.imp.free       ; void free(void *ptr)
+│           0x558471c6229c      b800000000     mov eax, 0
+│           0x558471c622a1      488b4df8       mov rcx, qword [var_8h]
+│           0x558471c622a5      6448330c2528.  xor rcx, qword fs:[0x28]
+│       ┌─&lt; 0x558471c622ae      7405           je 0x558471c622b5
+│       │   0x558471c622b0      e88bfdffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x558471c622b5      c9             leave
+└           0x558471c622b6      c3             ret
+[0x558471c62175]&gt; 
+</code></pre></div></div>
+<p>The malloc is first done here:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│       ╎   0x558471c621b8      e8b3feffff     call sym.imp.__isoc99_scanf ; int scanf(const char *format)
+│       ╎   0x558471c621bd      8b45e0         mov eax, dword [var_20h]
+│       ╎   0x558471c621c0      4898           cdqe
+│       ╎   0x558471c621c2      48c1e002       shl rax, 2
+│       ╎   0x558471c621c6      4889c7         mov rdi, rax
+│       ╎   0x558471c621c9      e892feffff     call sym.imp.malloc     ;  void *malloc(size_t size)
+</code></pre></div></div>
+<p>So, we load the user input (var_20h) in eax, and we multiply it with 4 with shl rax, 2. As we see, sizeof is not called here, that is because the compiler already knows the size of an int. So the user input * 4 is passed to malloc. Let’s actually run that.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│       ╎   0x558471c621ce b    488945f0       mov qword [var_10h], rax
+│       ╎   0x558471c621d2      48837df000     cmp qword [var_10h], 0
+│      ┌──&lt; 0x558471c621d7      7511           jne 0x558471c621ea
+│      │╎   0x558471c621d9      488d3d4b0e00.  lea rdi, str.NO_SPACE_AVAILABLE. ; 0x558471c6302b ; "NO SPACE AVAILABLE."
+│      │╎   0x558471c621e0      b800000000     mov eax, 0
+│      │╎   0x558471c621e5      e866feffff     call sym.imp.printf     ; int printf(const char *format)
+
+
+[0x558471c621ce]&gt; dr rax
+0x5584735cfa80
+
+[0x558471c621ce]&gt; dmhg
+
+Heap Layout
+┌────────────────────────────────────┐
+│    Malloc chunk @ 0x5584735cf250   │
+│ size: 0x410 status: allocated      │
+└────────────────────────────────────┘
+    v
+    │
+    │
+┌────────────────────────────────────┐
+│    Malloc chunk @ 0x5584735cf660   │
+│ size: 0x410 status: allocated      │
+└────────────────────────────────────┘
+    v
+    │
+    │
+┌────────────────────────────────────┐
+│    Malloc chunk @ 0x5584735cfa70   │
+│ size: 0x20 status: allocated       │
+└────────────────────────────────────┘
+    v
+    │
+    └──┐
+       │
+   ┌───────────────────────────────┐
+   │  Top chunk @ 0x5584735cfa90   │
+   └───────────────────────────────┘
+
+[0x558471c621ce]&gt; 
+</code></pre></div></div>
+<p>Nice, the function returned a pointer there and some heap space has been created! Then the pointer is saved to var_10h</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│       ╎   0x558471c621ce b    488945f0       mov qword [var_10h], rax
+│       ╎   0x558471c621d2      48837df000     cmp qword [var_10h], 0
+</code></pre></div></div>
+<p>Let’s now watch how the memory manipulation for the user input is done:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│      ╎│   0x558471c62213      8b45e4         mov eax, dword [var_1ch]
+│      ╎│   0x558471c62216      4898           cdqe
+│      ╎│   0x558471c62218      488d14850000.  lea rdx, [rax*4]
+│      ╎│   0x558471c62220      488b45f0       mov rax, qword [var_10h]
+│      ╎│   0x558471c62224      4801d0         add rax, rdx
+│      ╎│   0x558471c62227      4889c6         mov rsi, rax
+│      ╎│   0x558471c6222a      488d3df70d00.  lea rdi, [0x558471c63028] ; "%d"
+│      ╎│   0x558471c62231      b800000000     mov eax, 0
+│      ╎│   0x558471c62236      e835feffff     call sym.imp.__isoc99_scanf ; int scanf(const char *format)
+</code></pre></div></div>
+<p>Assuming that var_1ch is the loop counter, we see how it gets moved to eax and then THE CONTENT of rax*4 is loaded into rdx and added to the base addr of the dyn array, being 4 the size of the int it makes all the sense, the counter will go 4 by 4 up the dynamic array and assign the new values right there! Then the address related to there will be passed to scanf</p>
+
+<p>The next block of code calculates the sum. Based on what we know, this shoul not be a mystery:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│      ┌──&gt; 0x558471c62250      8b45e4         mov eax, dword [var_1ch]
+│      ╎│   0x558471c62253      4898           cdqe
+│      ╎│   0x558471c62255      488d14850000.  lea rdx, [rax*4]
+│      ╎│   0x558471c6225d      488b45f0       mov rax, qword [var_10h]
+│      ╎│   0x558471c62261      4801d0         add rax, rdx
+│      ╎│   0x558471c62264      8b00           mov eax, dword [rax]
+│      ╎│   0x558471c62266      4898           cdqe
+│      ╎│   0x558471c62268      480145e8       add qword [var_18h], rax
+│      ╎│   0x558471c6226c      8345e401       add dword [var_1ch], 1
+</code></pre></div></div>
+<p>Same thing is done but this time var_18h is used for storing the sum.</p>
+
+<p>At the end of the program free is called. I like this answer of stack overflow:  https://stackoverflow.com/questions/14986543/calling-free-in-c</p>
+
+<p>In general terms calling free will tell the program that this area of memory can now be used for writting new memory. If a developer does not use free after malloc, and then uses malloc multiple times again, the program memory will grow and grow and that may cause a lot of performance issues and even security problems.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x558471c62290      488b45f0       mov rax, qword [var_10h]
+│           0x558471c62294      4889c7         mov rdi, rax
+│           0x558471c62297      e894fdffff     call sym.imp.free       ; void free(void *ptr)
+</code></pre></div></div>
+<p>Just note that we pass the base addr of our dyn array to free.</p>
+
+    </div>
+
+    <div class="post__share">
+  <ul class="share__list list-reset">
+    <li class="share__item">
+      <a class="share__link share__facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/reversing-radare-9"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Facebook" rel="nofollow"><i class="ion ion-logo-facebook"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__twitter" href="https://twitter.com/intent/tweet?text=Reverse%20engineering%2032%20and%2064%20bits%20binaries%20with%20Radare2%20-%2010%20(pointers%20and%20dynamic%20memory)&url=http://localhost:4000/reversing-radare-9"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Twitter" rel="nofollow"><i class="ion ion-logo-twitter"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url=http://localhost:4000/reversing-radare-9&title=Reverse%20engineering%2032%20and%2064%20bits%20binaries%20with%20Radare2%20-%2010%20(pointers%20and%20dynamic%20memory)&summary=&source=Artik%20Blue"
+      onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn" rel="nofollow"><i class="ion ion-logo-linkedin"></i></a>
+    </li>
+  </ul>
+</div>
+
+
+    <div class="post__navigation">
+  
+  <a class="post__prev" href="/reversing-radare-8">
+    <div class="prev__image">
+      <img class="lazy" data-src="/images//radare2/radare2_9.png" alt="Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (pointers and dynamic memory)">
+    </div>
+    <div class="prev__box">
+      <span class="post__nav post__nav__prev">Older post</span>
+      <h2 class="post__nav__title">Reverse engineering 32 and 64 bits binaries with Radare2 - 9 (files; read, write, seek and some heaps :O)</h2>
+    </div>
+  </a>
+  
+
+  
+  <a class="post__next" href="/reversing-radare-10">
+    <div class="next__box">
+      <span class="post__nav post__nav__next">Newer post</span>
+      <h2 class="post__nav__title">Reverse engineering 32 and 64 bits binaries with Radare2 - 11 (more pointers and dynamic structs)</h2>
+    </div>
+    <div class="next__image">
+      <img class="lazy" data-src="/images//radare2/radare2_10.png" alt="Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (pointers and dynamic memory)">
+    </div>
+  </a>
+  
+</div>
+
+     <!-- begin comments -->
+<div id="disqus_thread" class="post__comments">
+  <div id="disqus_empty"></div>
+</div>
+
+<script>
+  function load_disqus() {
+    var disqus_shortname = 'artikblue',
+      is_disqus_empty = document.getElementById('disqus_empty'),
+      disqus_target = document.getElementById('disqus_thread'),
+      disqus_embed = document.createElement('script'),
+      disqus_hook = (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]);
+
+    if (disqus_target && is_disqus_empty) {
+      disqus_embed.type = 'text/javascript';
+      disqus_embed.async = true;
+      disqus_embed.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      disqus_hook.appendChild(disqus_embed);
+      is_disqus_empty.remove();
+    }
+  }
+
+  window.addEventListener('scroll', function (e) {
+    var currentScroll = document.scrollingElement.scrollTop;
+    var disqus_target = document.getElementById('disqus_thread');
+
+    if (disqus_target && (currentScroll > disqus_target.getBoundingClientRect().top - 150)) {
+      load_disqus('disqus_shortname');
+    }
+  }, false);
+
+</script>
+<noscript>Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+</noscript>
+<!-- end comments --> 
+
+  </article>
+</div>
+<!-- end post -->
+      </div>
+      <!-- end wrapper-page -->
+    </main>
+    <!-- end content -->
+    <div class="top" title="Top"><i class="ion ion-ios-arrow-round-up"></i></div>
+    <!-- begin footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12 col-m-12">
+        <div class="footer__inner">
+
+          <div class="footer__head">
+            <div class="row">
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-recent">
+    <div class="widget__head">
+      <h3 class="widget__title">Recent Posts</h3>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-22">
+        <img class="lazy" data-src="/images//radare2/radare2_22.png" alt="Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-20T00:01:35+02:00">Jun 20, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-22">Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack</a></h4>
+      </div>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-21">
+        <img class="lazy" data-src="/images//radare2/radare2_21.png" alt="Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-15T00:01:35+02:00">Jun 15, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-21">Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains</a></h4>
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-gallery">
+    <div class="widget__head">
+      <h3 class="widget__title">Gallery</h3>
+    </div>
+    
+    <div class="gallery-box gallery-footer">
+      <div class="gallery">
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/landscape1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sasha1.jpeg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/castle1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/scotland1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sanfran1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/newyork1.jpg" alt="Minimalism">
+        </div>
+        
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-subscribe">
+    <div class="widget__head">
+      <h3 class="widget__title"></h3>
+    </div>
+    <div class="subscribe__inner">
+      <div class="subscribe__group">
+        <div class="subscribe__description"></div>
+      </div>
+      <!-- <form class="subscribe-form validate"
+           action="#" method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form" target="_blank" novalidate>
+           <label class="screen-reader-text" for="mce-EMAIL">Email address</label>
+           <input class="subscribe-email required email" id="mce-EMAIL" type="text" name="EMAIL"
+           placeholder="Your email address">
+           <button class="button subscribe-button" id="membedded-subscribe" type="submit" name="subscribe"></button>
+           </form> -->
+    </div>
+  </div>
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        
+  <div class="social">
+    <ul class="social__list list-reset">
+      
+      <li class="social__item">
+        <a class="social__link" href="https://twitter.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-twitter"></i></a>
+      </li>
+      
+      <li class="social__item">
+        <a class="social__link" href="https://github.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-github"></i></a>
+      </li>
+      
+    </ul>
+  </div>
+
+        <div class="copyright">2022 &copy; <a href="/">Artik Blue</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- end footer -->
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="/js/scripts.js"></script>
+</body>
+
+</html>

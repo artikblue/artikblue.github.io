@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (pointers and dynamic memory)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_10.png
-featured_image: assets/images/radare2/radare2_10.png
+title:  Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (pointers and dynamic memory)
+tags: reversing c radare
+image: '/images//radare2/radare2_10.png'
+date: 2020-05-06 15:01:35 -0700
 ---
 
 Hello I'm Artik Blue and today you will finally understand C pointers.

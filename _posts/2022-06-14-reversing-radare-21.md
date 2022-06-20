@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_21.png
-featured_image: assets/images/radare2/radare2_21.png
+title:  Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains
+tags: reversing c radare
+image: '/images//radare2/radare2_21.png'
+date:  2022-06-14 15:01:35 -0700
 ---
 
 Hello again my dear friends. And congratulations if you got as far as here, it's been more than 20 tutorials so far and we've learnt a bunch of new things. To learn even a bit more today we are going to expand our previous tutorial on exploiting x64 buffer overflows by learning how to bypass the Data Execution Prevention mechanism also known as DEP.

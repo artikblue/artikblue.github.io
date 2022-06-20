@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Embedded systems programming with atmel328 - 4 (temperature&humidity)"
-tags: [arduino, atmel, processing]
-featured_image_thumbnail: assets/images/arduino/pdht.jpg
-featured_image: assets/images/arduino/pdht.jpg
+title:  Embedded systems programming with atmel328 - 4 (temperature&humidity)
+tags: arduino atmel processing
+image: '/images//arduino/pdht.jpg'
+date: 2020-01-11 15:01:35 -0700
 ---
 
 ### About dht22

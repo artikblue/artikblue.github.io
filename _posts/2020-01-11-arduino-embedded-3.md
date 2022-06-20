@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Embedded systems programming with atmel328 - 3 (microservos)"
-tags: [arduino, atmel, processing]
-featured_image_thumbnail: assets/images/arduino/pservo.jpg
-featured_image: assets/images/arduino/pservo.jpg
+title:  Embedded systems programming with atmel328 - 3 (microservos)
+tags: arduino atmel processing
+image: '/images//arduino/pservo.jpg'
+date: 2020-01-11 15:01:35 -0700
 ---
 
 

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Anonymous and the rise of 'hacktivism' as a collective action phenomenon</title>
+  <meta name='description' content='All things cyber'>
+
+  <link rel="canonical" href="http://localhost:4000/hacktivism-0">
+  <link rel="alternate" type="application/rss+xml" title="Artik Blue" href="/feed.xml">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Ionicons -->
+  <link href="https://unpkg.com/ionicons@4.2.2/dist/css/ionicons.min.css" rel="stylesheet">
+
+  <style>
+  
+      /*!------------------------------------------------------------------
+[MAIN STYLESHEET]
+-------------------------------------------------------------------*/.list-reset{list-style-type:none;margin:0;padding:0}.clearfix::after,.clearfix ::before{content:"";display:table;clear:both}.screen-reader-text{clip:rect(1px, 1px, 1px, 1px);height:1px;overflow:hidden;position:absolute !important;width:1px;word-wrap:normal !important}/*! normalize.css v8.0.0 | MIT License | github.com/necolas/normalize.css */html{line-height:1.15;-webkit-text-size-adjust:100%}body{margin:0}h1{font-size:2em;margin:0.67em 0}hr{box-sizing:content-box;height:0;overflow:visible}pre{font-family:monospace, monospace;font-size:1em}a{background-color:transparent}abbr[title]{border-bottom:none;text-decoration:underline;text-decoration:underline dotted}b,strong{font-weight:bolder}code,kbd,samp{font-family:monospace, monospace;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-0.25em}sup{top:-0.5em}img{border-style:none}button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;line-height:1.15;margin:0}button,input{overflow:visible}button,select{text-transform:none}button,[type="button"],[type="reset"],[type="submit"]{-webkit-appearance:button}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner{border-style:none;padding:0}button:-moz-focusring,[type="button"]:-moz-focusring,[type="reset"]:-moz-focusring,[type="submit"]:-moz-focusring{outline:1px dotted ButtonText}fieldset{padding:0.35em 0.75em 0.625em}legend{box-sizing:border-box;color:inherit;display:table;max-width:100%;padding:0;white-space:normal}progress{vertical-align:baseline}textarea{overflow:auto}[type="checkbox"],[type="radio"]{box-sizing:border-box;padding:0}[type="number"]::-webkit-inner-spin-button,[type="number"]::-webkit-outer-spin-button{height:auto}[type="search"]{-webkit-appearance:textfield;outline-offset:-2px}[type="search"]::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}details{display:block}summary{display:list-item}template{display:none}[hidden]{display:none}body,h1,h2,h3,h4,h5,h6,p,blockquote,pre,dl,dd,ol,ul,fieldset,legend,figure,hr{margin:0;padding:0}li>ul,li>ol{margin-bottom:0}table{border-collapse:collapse;border-spacing:0}h1,h2,h3,h4,h5,h6,ul,ol,dl,blockquote,p,address,hr,table,fieldset,figure,pre{margin-bottom:30px}ul,ol,dd{margin-left:15px}ul li,ol li{margin-bottom:10px}.highlight{background:#161d25}.highlighter-rouge .highlight{background:#eef}.highlight .c{color:#998;font-style:italic}.highlight .err{color:#a61717;background-color:#e3d2d2}.highlight .k{font-weight:bold}.highlight .o{font-weight:bold}.highlight .cm{color:#998;font-style:italic}.highlight .cp{color:#999;font-weight:bold}.highlight .c1{color:#998;font-style:italic}.highlight .cs{color:#999;font-weight:bold;font-style:italic}.highlight .gd{color:#000;background-color:#fdd}.highlight .gd .x{color:#000;background-color:#faa}.highlight .ge{font-style:italic}.highlight .gr{color:#a00}.highlight .gh{color:#999}.highlight .gi{color:#000;background-color:#dfd}.highlight .gi .x{color:#000;background-color:#afa}.highlight .go{color:#888}.highlight .gp{color:#555}.highlight .gs{font-weight:bold}.highlight .gu{color:#aaa}.highlight .gt{color:#a00}.highlight .kc{font-weight:bold}.highlight .kd{font-weight:bold}.highlight .kp{font-weight:bold}.highlight .kr{font-weight:bold}.highlight .kt{color:#458;font-weight:bold}.highlight .m{color:#099}.highlight .s{color:#d14}.highlight .na{color:teal}.highlight .nb{color:#0086B3}.highlight .nc{color:#458;font-weight:bold}.highlight .no{color:teal}.highlight .ni{color:purple}.highlight .ne{color:#900;font-weight:bold}.highlight .nf{color:#900;font-weight:bold}.highlight .nn{color:#555}.highlight .nt{color:navy}.highlight .nv{color:teal}.highlight .ow{font-weight:bold}.highlight .w{color:#bbb}.highlight .mf{color:#099}.highlight .mh{color:#099}.highlight .mi{color:#099}.highlight .mo{color:#099}.highlight .sb{color:#d14}.highlight .sc{color:#d14}.highlight .sd{color:#d14}.highlight .s2{color:#d14}.highlight .se{color:#d14}.highlight .sh{color:#d14}.highlight .si{color:#d14}.highlight .sx{color:#d14}.highlight .sr{color:#009926}.highlight .s1{color:#d14}.highlight .ss{color:#990073}.highlight .bp{color:#999}.highlight .vc{color:teal}.highlight .vg{color:teal}.highlight .vi{color:teal}.highlight .il{color:#099}.container{max-width:1270px;padding-left:15px;padding-right:15px;margin:0 auto}@media only screen and (max-width: 1300px){.container{max-width:1100px}}@media only screen and (max-width: 1130px){.container{max-width:1000px}}@media only screen and (max-width: 1024px){.container{max-width:740px}}@media only screen and (max-width: 768px){.container{max-width:540px}}@media only screen and (max-width: 576px){.container{max-width:380px}}.row{display:flex;flex-wrap:wrap;flex:0 1 auto;flex-direction:row;box-sizing:border-box;margin-left:-15px;margin-right:-15px}.col{padding-left:15px;padding-right:15px}[class^="col-"]{flex:auto}.col-0{width:0%}.col-1{width:8.3333333333%}.col-2{width:16.6666666667%}.col-3{width:25%}.col-4{width:33.3333333333%}.col-5{width:41.6666666667%}.col-6{width:50%}.col-7{width:58.3333333333%}.col-8{width:66.6666666667%}.col-9{width:75%}.col-10{width:83.3333333333%}.col-11{width:91.6666666667%}.col-12{width:100%}.push-0{margin-left:0%}.push-1{margin-left:8.3333333333%}.push-2{margin-left:16.6666666667%}.push-3{margin-left:25%}.push-4{margin-left:33.3333333333%}.push-5{margin-left:41.6666666667%}.push-6{margin-left:50%}.push-7{margin-left:58.3333333333%}.push-8{margin-left:66.6666666667%}.push-9{margin-left:75%}.push-10{margin-left:83.3333333333%}.push-11{margin-left:91.6666666667%}.push-12{margin-left:100%}.pull-0{margin-right:0%}.pull-1{margin-right:8.3333333333%}.pull-2{margin-right:16.6666666667%}.pull-3{margin-right:25%}.pull-4{margin-right:33.3333333333%}.pull-5{margin-right:41.6666666667%}.pull-6{margin-right:50%}.pull-7{margin-right:58.3333333333%}.pull-8{margin-right:66.6666666667%}.pull-9{margin-right:75%}.pull-10{margin-right:83.3333333333%}.pull-11{margin-right:91.6666666667%}.pull-12{margin-right:100%}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}img[data-action="zoom"]{cursor:pointer;cursor:-webkit-zoom-in;cursor:-moz-zoom-in}.zoom-img,.zoom-img-wrap{position:relative;z-index:666;-webkit-transition:all 300ms;-o-transition:all 300ms;transition:all 300ms}img.zoom-img{cursor:pointer;cursor:-webkit-zoom-out;cursor:-moz-zoom-out}.zoom-overlay{z-index:420;background:#161d25;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;opacity:0;-webkit-transition:opacity 300ms;-o-transition:opacity 300ms;transition:opacity 300ms}.zoom-overlay-open .zoom-overlay{opacity:1}.zoom-overlay-open,.zoom-overlay-transitioning{cursor:default}.animate{animation:animateElement cubic-bezier(0.3, 0.45, 0.45, 0.95) 0.75s;animation-duration:0.5s;animation-iteration-count:1;transition:transform .15s}@keyframes animateElement{0%{opacity:0;transform:translate(0px, 50px)}100%{opacity:1;transform:translate(0px, 0px)}}*,*::after,*::before{box-sizing:border-box}body{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-size:18px;line-height:34px;border:10px solid #131212;color:#fff;background-color:#131212;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}body.dark .footer__head{background:#131212}@media only screen and (max-width: 768px){body.dark .footer__head{padding:40px}}@media only screen and (max-width: 576px){body.dark .footer__head{padding:30px}}body.dark .subscribe-form .subscribe-email{background:#161d25}@media only screen and (max-width: 576px){body{font-size:16px;line-height:29px;border-width:5px}}*::selection{color:#fff;background-color:rgba(0,112,255,0.8)}h1,h2,h3,h4,h5,h6{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-weight:700;line-height:1.3;letter-spacing:-1px}h1{font-size:36px}h2{font-size:28px}h3{font-size:24px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px}blockquote{position:relative;margin-top:30px;padding:25px 25px 15px 60px;font-size:30px;line-height:45px;font-weight:600;font-style:normal}blockquote::before{content:'\201C';position:absolute;top:0.35em;left:0.05em;font-size:3.5em;color:#0070ff}blockquote p{margin-bottom:10px}blockquote cite{display:inline-block;margin-top:7px;font-size:15px;font-style:normal;color:#ccc}blockquote cite:before{content:'\2014' '\00a0'}@media only screen and (max-width: 1024px){blockquote{font-size:24px;line-height:37px}}@media only screen and (max-width: 576px){blockquote{padding:38px 0 15px 35px;font-size:21px;line-height:31px}}pre{overflow:auto;padding:15px;margin-bottom:0;font-size:14px;white-space:pre-wrap;word-wrap:break-word;word-break:break-all}img,.zoom-img-wrap{max-width:100%;height:auto;vertical-align:middle}img+em,.zoom-img-wrap+em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}img+em a,.zoom-img-wrap+em a{border-bottom:1px solid #fff}img+em a:hover,.zoom-img-wrap+em a:hover{color:#fff;border-color:#0070ff}a{text-decoration:none;color:#fff;transition:all 0.35s}a:hover{color:#fff}hr{display:block;height:1px;width:100px;margin:50px 0;border:0;background:#000}.wrapper-page{margin-bottom:70px}@media only screen and (max-width: 768px){.wrapper-page{margin-bottom:60px}}@media only screen and (max-width: 576px){.wrapper-page{margin-bottom:40px}}.button{display:inline-block;height:45px;padding:0 20px;font-size:15px;font-weight:700;border:none;outline:none;color:#fff;background:#0070ff;transition:all 0.35s;cursor:pointer}.button:hover{color:#fff;background:#0065e6}.lazy{opacity:0;transition:0.3s}.lazy.loaded{opacity:1}.top{position:fixed;bottom:40px;right:-100px;z-index:1;width:28px;height:40px;font-size:28px;line-height:40px;text-align:center;border-radius:6px;background-color:#161d25;color:#fff;cursor:pointer;transition:all .25s ease;box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.top:hover{color:#fff;background-color:#0070ff}.top.is-active{right:40px}@media only screen and (max-width: 768px){.top{bottom:25px}.top.is-active{right:30px}}.header{height:auto;border-bottom:1px solid #131212;background:#161d25;transition:all 0.35s}.header .header__overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:15;background-color:rgba(17,17,17,0.7);cursor:pointer;opacity:0;visibility:hidden;transition:all 0.5s ease}@media only screen and (max-width: 1024px){.header .header__overlay.is-visible{opacity:1;visibility:visible}}.header__inner{position:relative;display:flex;align-items:center;min-height:80px}.logo__link{font-size:20px;line-height:26px;font-weight:700}.logo__link:hover{color:#0070ff}.logo__image{max-height:50px}.main-nav{margin-left:80px}@media only screen and (max-width: 1024px){.main-nav{position:fixed;top:0;left:inherit;right:-300px;bottom:0;transform:none;z-index:100;width:300px;height:100vh;padding:40px 30px 30px;border:10px solid #131212;transition:right 0.5s cubic-bezier(0.7, 0.4, 0, 1);background:#161d25}.main-nav.is-open{right:0}.main-nav .nav__list{width:100%}.main-nav .nav__list .nav__item{display:block;margin:0 10px}.main-nav .nav__list .nav__item:last-child{margin-right:10px}.main-nav .nav__list .nav__item .nav__link{display:block;padding:10px 0;font-size:16px;line-height:26px;font-weight:500}}@media only screen and (max-width: 576px){.main-nav{padding:20px 30px;border-width:5px}}.main-nav__box{display:flex;align-items:center}.main-nav__box .nav__icon-close{display:none;font-size:24px;text-align:right}.main-nav__box .nav__icon-close .ion-md-close{transition:all 0.35s;cursor:pointer}.main-nav__box .nav__icon-close .ion-md-close:hover{color:#0070ff}.main-nav__box .nav__title{display:none}@media only screen and (max-width: 1024px){.main-nav__box{display:block}.main-nav__box .nav__icon-close{display:block}.main-nav__box .nav__title{display:block;margin:0 10px 15px;padding-bottom:15px;font-size:24px;font-weight:700;color:#fff;border-bottom:1px solid #131212}}.nav__list .nav__item{display:inline-block;margin:0 20px}.nav__list .nav__item:last-child{margin-right:40px}.nav__list .nav__item .nav__link{font-size:15px;line-height:24px;font-weight:500}.nav__list .nav__item .nav__link:hover{color:#0070ff}.nav-buttons{display:flex;align-items:center;margin-left:auto;font-size:21px;color:#fff;cursor:pointer}.nav-buttons .nav__icon{transition:all 0.35s}.nav-buttons .nav__icon:hover{color:#0070ff}.nav-buttons .nav__icon:first-child{margin-right:15px}.nav-buttons .nav__icon-menu{display:none}@media only screen and (max-width: 1024px){.nav-buttons{margin-left:auto}.nav-buttons .nav__icon-menu{display:block}}.search{position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;transform:scale(0.95);overflow:auto;opacity:0;background:#131212;transition:all .25s ease}.search.is-visible{transform:scale(1);z-index:100;opacity:1;transition:all .25s ease}.search__box{width:50%;margin:0 auto;padding-top:140px}@media only screen and (max-width: 1024px){.search__box{width:80%;padding-top:100px}}.search__group{position:relative;margin-bottom:50px}.search__group .search__close{position:absolute;right:20px;top:17px;font-size:27px;line-height:40px;cursor:pointer;transition:all .2s}.search__group .search__close:hover{color:#0070ff}.search__group .search__text{width:100%;padding:20px;font-size:21px;line-height:31px;border:2px solid transparent;border-radius:4px;color:#fff;background:#161d25;outline:none;transition:all .2s}.search__group .search__text:focus{border-color:#0070ff}.search__group .search__text::placeholder{font-weight:500;color:#fff}.search__group .search__text::-ms-clear{display:none}.search-results-list .no-results{width:100%;font-size:21px;font-weight:600;text-align:center;color:#fff}.pagination{margin-top:40px}@media only screen and (max-width: 768px){.pagination{margin-top:30px}}@media only screen and (max-width: 576px){.pagination{margin-top:20px}}.pagination__inner{display:flex;justify-content:center;align-items:center}.pagination__list{display:flex;font-weight:600;height:40px;padding:0 20px;font-size:14px;line-height:40px;border-radius:3px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);color:#fff;background-color:#161d25}.pagination__count{display:inline-block;padding:0 15px;margin:0 15px;font-size:13px;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1);color:#ccc}.pagination__next i,.pagination__prev i{font-size:13px}.pagination__next:hover,.pagination__prev:hover{color:#0070ff}.pagination__next.disabled,.pagination__prev.disabled{opacity:0.2;cursor:not-allowed;color:inherit}.pagination__next i{margin-left:4px}.pagination__prev i{margin-right:4px}.footer{padding-top:70px;background:#161d25}.footer .row .col{flex-grow:1}.footer .footer__inner{padding:60px 0;margin:0 60px 0;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.footer .footer__head{margin:0 -60px;padding:60px;background:#161d25;box-shadow:0 10px 40px rgba(0,0,0,0.07)}.footer .footer__content{padding:60px 0}@media only screen and (max-width: 1024px){.footer .row .col:last-child>.widget{margin-bottom:0}}@media only screen and (max-width: 768px){.footer{padding-top:60px}.footer .footer__inner{padding:0;margin:0;background-image:none}.footer .footer__head{margin:0;padding:0;box-shadow:none}}@media only screen and (max-width: 576px){.footer{padding-top:50px}}@media only screen and (max-width: 1024px){.widget{margin-bottom:30px}}@media only screen and (max-width: 576px){.widget{margin-bottom:40px}}.widget__head{margin-bottom:20px}.widget__head .widget__title{margin:0;font-size:24px;color:#fff}.widget-gallery{padding:0 35px}@media only screen and (max-width: 1024px){.widget-gallery{padding:0}}.recent-posts{position:relative;display:flex;margin-bottom:15px}.recent-posts:last-child{margin-bottom:0}.recent-posts__header{margin-right:15px}.recent-posts__image{position:relative;display:block;margin-right:15px;min-width:80px;height:80px;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:#131212}.recent-posts__image img{position:absolute;top:0;width:100%;height:100%;object-fit:cover}.recent-posts__date{margin-bottom:5px;font-size:13px;line-height:16px;color:#ccc}.recent-posts__title{margin-bottom:0;font-size:17px;line-height:22px;font-weight:700}.recent-posts__title a{color:#fff}.recent-posts__title a:hover{color:#fff}.widget-subscribe .subscribe__inner{display:flex;flex-direction:column;justify-content:space-between}.widget-subscribe .subscribe__group{margin-bottom:20px}.widget-subscribe .subscribe__group .subscribe__title{margin-bottom:15px;color:#fff}.widget-subscribe .subscribe__group .subscribe__description{font-size:15px;line-height:22px;color:#ccc}.widget-subscribe .subscribe-form{position:relative;height:60px}.widget-subscribe .subscribe-form .subscribe-email{width:100%;height:100%;padding:20px;font-size:14px;line-height:19px;font-weight:500;color:rgba(255,255,255,0.8);border:2px solid #131212;background:transparent;transition:border-color .2s ease-in-out;outline:0}.widget-subscribe .subscribe-form .subscribe-email::placeholder{color:rgba(255,255,255,0.8)}.widget-subscribe .subscribe-form .subscribe-email:focus{color:rgba(255,255,255,0.8);border-color:#0070ff}.widget-subscribe .subscribe-form .subscribe-button{position:absolute;top:10px;right:10px;height:40px;padding:0 15px;font-size:14px}@media only screen and (max-width: 1130px){.widget-subscribe .subscribe-form .subscribe-email{font-size:13px}.widget-subscribe .subscribe-form .subscribe-button{font-size:14px}}.copyright{padding:0 0 30px;margin-top:10px;font-size:13px;font-weight:500;text-align:center;color:#ccc}.copyright a:hover{color:#0070ff}@media only screen and (max-width: 768px){.copyright{text-align:left}}.gallery-box{margin:40px 0}.gallery-box.gallery-footer{margin:0}.gallery-box em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}.gallery-box em a{border-bottom:1px solid #fff}.gallery-box em a:hover{color:#fff;border-color:#0070ff}.gallery{display:grid;grid-template-columns:repeat(3, auto);justify-content:center;align-content:center;grid-gap:10px}.gallery .gallery__image{background:#131212}.gallery .gallery__image img{display:block;width:100%;height:auto;object-fit:cover}.social{margin:60px 0 0;text-align:center}.social .social__list{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}.social .social__item{display:inline-block;margin:0 2px}.social .social__link{position:relative;z-index:1;padding:0 10px;font-size:21px;line-height:1}.social .social__link:hover{color:#fff}.social .social__link:hover::after{transform:translate3d(-50%, -50%, 0) scale(1)}.social .social__link::after{content:'';display:block;position:absolute;z-index:-1;top:50%;left:50%;transform:translate3d(-50%, -50%, 0) scale(0);width:100%;height:0;padding-bottom:100%;border-radius:50%;background:#0070ff;transition:all .25s}@media only screen and (max-width: 768px){.social{margin:50px 0 0;text-align:left}.social .social__list{justify-content:start}}.hero{padding:60px 0 70px;margin-bottom:70px;background:#161d25}.hero.hero--post .article__meta{margin-bottom:13px;font-size:14px;font-weight:500}.hero.hero--post .article__meta .article__date::before{content:none}.hero.hero--post .article__author-link{font-size:14px;line-height:20px;font-weight:500;color:#ccc}.hero.hero--post .article__author-link span{color:#ccc}.hero.hero--post .article__author-link:hover{color:#fff}.hero.hero--page .hero__title{margin-bottom:0}@media only screen and (max-width: 768px){.hero{padding:60px 0 60px;margin-bottom:60px}}@media only screen and (max-width: 576px){.hero{padding:40px 0 40px;margin-bottom:40px}}.hero__inner{display:flex;align-items:center}@media only screen and (max-width: 768px){.hero__inner{flex-direction:column}}.hero__left,.hero__right{width:50%}@media only screen and (max-width: 768px){.hero__left,.hero__right{width:100%}}.hero__left .hero__title,.hero__left .hero__job{font-size:50px;font-weight:700;letter-spacing:-2px;color:#fff}@media only screen and (max-width: 1130px){.hero__left .hero__title,.hero__left .hero__job{font-size:40px;line-height:1.2}}@media only screen and (max-width: 1024px){.hero__left .hero__title,.hero__left .hero__job{font-size:33px}}@media only screen and (max-width: 576px){.hero__left .hero__title,.hero__left .hero__job{font-size:27px}}.hero__left .hero__title{margin-right:20px;margin-bottom:10px}@media only screen and (max-width: 768px){.hero__left .hero__title{margin-right:0}}.hero__left .hero__job{margin-bottom:20px}.hero__left .hero__name{position:relative;font-weight:400}.hero__left .hero__name::after{content:"";position:absolute;left:0;bottom:0px;width:100%;height:38%;background-color:rgba(0,112,255,0.1)}.hero__left .hero__description{max-width:550px;margin:0;font-size:21px;font-weight:500;color:#ccc}@media only screen and (max-width: 1024px){.hero__left .hero__description{font-size:16px;line-height:26px}}.hero__left .hero__button{margin-top:20px;padding-right:12px;display:inline-block;font-size:16px;line-height:16px;font-weight:700;color:#fff;outline:none;cursor:pointer;transition:all 0.35s}.hero__left .hero__button:hover{color:#fff;background:#0065e6}.hero__left .hero__button .button-arrow{display:inline-block;margin-right:10px;width:30px;height:30px;line-height:30px;text-align:center;color:#fff;background:#0070ff}.hero__right{position:relative}.hero__right::after{content:"";position:absolute;top:50%;transform:translateY(-50%);display:block;width:100%;height:50%;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.hero__right .hero__image{position:relative;z-index:10;width:370px;height:470px;margin:0 auto}.hero__right .hero__image::before{content:"";display:block;position:absolute;top:0;z-index:1;width:100%;height:100%;background:#131212}.hero__right .hero__image img{position:absolute;top:0;z-index:1;height:100%;width:100%;object-fit:cover;box-shadow:10px 10px 0 #0070ff;background:#131212}@media only screen and (max-width: 1130px){.hero__right .hero__image{width:270px;height:370px}}@media only screen and (max-width: 1024px){.hero__right .hero__image{width:230px;height:330px}}@media only screen and (max-width: 768px){.hero__right{order:-1}.hero__right .hero__image{width:100%;height:330px;margin-bottom:40px}}@media only screen and (max-width: 576px){.hero__right .hero__image{height:270px;margin-bottom:30px}.hero__right .hero__image img{box-shadow:none}}.contact-head{margin-bottom:30px}.form-box{max-width:750px;margin:0 auto}.form__group{margin-bottom:20px}.form__group:last-child{margin-bottom:0}.form__input{width:100%;padding:20px;font-size:14px;font-weight:500;border:1px solid #131212;outline:none;transition:250ms;resize:vertical;color:rgba(255,255,255,0.8);background:#161d25}.form__input::placeholder{color:rgba(255,255,255,0.8)}.form__input:focus{border:1px solid #0070ff}.article{margin-bottom:30px;border-radius:3px;overflow:hidden;transition:transform .2s}.article:hover{transform:translateY(-3px)}.article__inner{box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.image-wrap{padding:15px 15px 0 15px;background:#161d25}.article__image{position:relative;display:block;height:0;padding-bottom:56.25%;background:#131212;overflow:hidden}.article__image img{position:absolute;width:100%;height:100%;object-fit:cover}.article__content{padding:25px;background:#161d25}.article__title{margin-bottom:10px;font-size:22px;line-height:32px}.article__title a:hover{color:#fff}.article__excerpt{font-size:15px;line-height:24px;font-weight:500;margin-bottom:20px;color:#ccc}.article__meta{display:flex;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:500;line-height:20px}.article__meta .article__author-link{color:#ccc}.article__meta .article__author-link:hover{color:#fff}.article__meta .article-tags__box{display:flex}.article__meta .article-tags__box::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}.article__meta .article-tags__box .article__tag{color:#ccc}.article__meta .article-tags__box .article__tag:hover{color:#fff}.article__meta .article-tags__box .article__tag::after{content:",";display:inline-block;margin:0 2px}.article__meta .article-tags__box .article__tag:last-child::after{content:none}.article__meta .article__date{color:#ccc}.article__meta .article__date::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}img[src$="centerme"]{display:block;margin:0 auto}.post,.page{max-width:850px;margin:0 auto;color:#fff}.post__content a,.page__content a{text-decoration:underline}.image-box{margin:40px 0}.post__share{margin:50px 0}.post__share .share__list{display:flex;justify-content:center;align-items:center;width:100%}.post__share .share__item{margin:0 2px;text-align:center}.post__share .share__link{display:block;padding:2px 12px;font-size:18px;color:#161d25}.post__share .share__link.share__facebook,.post__share .share__link.share__twitter,.post__share .share__link.share__linkedin,.post__share .share__link.share__pinterest{border:1px solid #131212;background:#161d25}.post__share .share__link.share__facebook:hover,.post__share .share__link.share__twitter:hover,.post__share .share__link.share__linkedin:hover,.post__share .share__link.share__pinterest:hover{color:#fff}.post__share .share__link.share__facebook{color:#3b5998}.post__share .share__link.share__facebook:hover{background:#3b5998}.post__share .share__link.share__twitter{color:#55acee}.post__share .share__link.share__twitter:hover{background:#55acee}.post__share .share__link.share__linkedin{color:#0077b5}.post__share .share__link.share__linkedin:hover{background:#0077b5}.post__share .share__link.share__pinterest{color:#bd081c}.post__share .share__link.share__pinterest:hover{background:#bd081c}@media only screen and (max-width: 576px){.post__share{margin:40px 0}}.post__navigation{display:flex;justify-content:space-between;margin-bottom:20px}.post__navigation .post__prev,.post__navigation .post__next{display:flex;width:48%;padding:25px;margin-bottom:30px;background:#161d25;box-shadow:0px 0px 20px rgba(0,0,0,0.05);transition:transform .2s}.post__navigation .post__prev:hover,.post__navigation .post__next:hover{transform:translateY(-3px)}.post__navigation .post__prev .prev__image,.post__navigation .post__prev .next__image,.post__navigation .post__next .prev__image,.post__navigation .post__next .next__image{position:relative;display:block;width:100px;min-width:100px;height:100px;background-color:#131212}.post__navigation .post__prev .prev__image img,.post__navigation .post__prev .next__image img,.post__navigation .post__next .prev__image img,.post__navigation .post__next .next__image img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.post__navigation .post__prev .prev__image,.post__navigation .post__next .prev__image{margin-right:15px}.post__navigation .post__prev .next__image,.post__navigation .post__next .next__image{margin-left:15px}.post__navigation .post__prev .post__nav,.post__navigation .post__next .post__nav{display:inline-block;margin-bottom:5px;font-size:13px;line-height:1;font-weight:500;color:#ccc}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{margin-bottom:0;font-size:18px;line-height:24px}.post__navigation .post__prev .post__nav__title a:hover,.post__navigation .post__next .post__nav__title a:hover{color:#fff}.post__navigation .post__next{text-align:right;margin-left:auto;justify-content:flex-end}@media only screen and (max-width: 768px){.post__navigation{flex-wrap:wrap}.post__navigation .post__prev,.post__navigation .post__next{width:100%}.post__navigation .post__prev{margin-bottom:30px}.post__navigation .next__box{margin-left:auto}}@media only screen and (max-width: 576px){.post__navigation{margin-bottom:10px}.post__navigation .post__prev,.post__navigation .post__next{padding:20px}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{font-size:15px;line-height:20px}}.post__comments{padding:40px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);background:#161d25}@media only screen and (max-width: 576px){.post__comments{padding:30px}}.error{margin-bottom:30px;text-align:center}.error .error__title{margin-bottom:0;font-size:100px}.error .error__text{margin-bottom:20px;font-size:21px;color:#ccc}.error .error__button{line-height:45px}.tag{padding:70px 0;margin-bottom:70px;text-align:center;background:#161d25}.tag .tag__meta{font-size:16px;color:#ccc}.tag .tag__title{margin:0;font-size:50px}@media only screen and (max-width: 768px){.tag{padding:60px 0;margin-bottom:60px}}@media only screen and (max-width: 576px){.tag{padding:40px 0;margin-bottom:40px}}
+
+  </style>
+</head>
+
+<body class="dark">
+
+  
+
+    <!-- begin header -->
+<header class="header">
+  <div class="container">
+    <div class="row">
+      <div class="header__inner col col-12">
+
+        <div class="logo">
+          <a class="logo__link" href="/">
+          
+            Artik Blue
+          
+          </a>
+        </div>
+
+        <nav class="main-nav">
+          <div class="main-nav__box">
+            <div class="nav__icon-close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <div class="nav__title">Menu</div>
+            <ul class="nav__list list-reset">
+              <li class="nav__item">
+                <a href="/" class="nav__link">Home</a>
+              </li>
+              
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/about/" class="nav__link">About</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/reversing" class="nav__link">Reversing</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+            </ul>
+          </div>
+        </nav>
+
+        <div class="nav-buttons">
+          <i class="nav__icon nav__icon-menu ion ion-md-menu"></i>
+          <i class="nav__icon nav__icon-search ion ion-md-search"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="header__overlay"></div>
+</header>
+<!-- end header -->
+
+<!-- begin search -->
+<div class="search">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="search__box">
+          <div class="search__group">
+            <div class="search__close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <label for="js-search-input" class="screen-reader-text">Search for Blog</label>
+            <input type="text" id="js-search-input" class="search__text" autocomplete="off" placeholder="Type to search...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="container__inner">
+          <div class="row search-results-list" id="js-results-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- end search -->
+    <!-- begin content -->
+    <main class="content" aria-label="Content">
+      <!-- begin wrapper-page -->
+      <div class="wrapper-page">
+        <!-- begin hero -->
+
+<section class="hero hero--post">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="hero__inner">
+          <div class="hero__left">
+            
+
+            <div class="article__meta">
+              <span class="article__date"><time datetime="2020-06-02T00:01:35+02:00">02 Jun 2020</time></span>
+              
+              <div class="article-tags__box">
+                
+                  <a href="/tag/hacktivism" class="article__tag">hacktivism</a>
+                
+                  <a href="/tag/hacktivists" class="article__tag">hacktivists</a>
+                
+                  <a href="/tag/anonymous" class="article__tag">anonymous</a>
+                
+                  <a href="/tag/communities" class="article__tag">communities</a>
+                
+                  <a href="/tag/analysis" class="article__tag">analysis</a>
+                
+              </div>
+              
+            </div>
+
+            <h1 class="hero__title">Anonymous and the rise of 'hacktivism' as a collective action phenomenon</h1>
+            <a href="/about/" class="article__author-link"><span>By</span> Artik Blue</a>
+
+            
+          </div>
+
+          <div class="hero__right">
+
+            
+            <div class="hero__image">
+              <img class="lazy" data-src="/images//hacktivism/anonymous_0.jpg" alt="Anonymous and the rise of 'hacktivism' as a collective action phenomenon">
+            </div>
+
+            
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- end hero -->
+
+<!-- begin post -->
+<div class="container">
+  <article class="post animate">
+
+    <div class="post__content">
+      <h4 id="abstract">Abstract</h4>
+
+<p>This paper seeks to reflect on the role of groups of individuals with remarkable technical skills and a particular vision of the internet and society often called “activist hackers” or “hacktivists”, especially the collective identified as “Anonymous” in several of the successful collective actions that the world has been experiencing since second half of the XX century to the present day from the perspective of some of the main collective action theories.</p>
+
+<h4 id="the-origins-of-the-hacker-persona-and-the-community">The origins of the “hacker” persona and the community</h4>
+
+<p>Not a single historical period has involved such a great number of changes in the human way of experiencing our life and relationships as the one between the beginning of the 20th century until today. The boom in those so-called “new technologies”, especially the ones related to electronics and telecommunications, has had a deep impact on our societies, and we are still analyzing their consequencies today.</p>
+
+<p>Until the first half of the 20th century, principally due to the high costs associated with workshop materials and equipment, as well as training, the techology field was somehow restrictued to trained individuals who carried out their activities professionally in private workshops managed by themselves or (more commonly) by some capitalist owner or partner. This fact greatly limited the possible exploitation of the creativity that’s inherent to the human being in relation to technology, since those individuals with higher inventive capacity where limited either by the difficulty of access to education or by the high cost of those tools and materials.</p>
+
+<p>Faraday’s discovery of semiconductor materials in 1923 started to change the game as it allowed the development of electronic technologies, which along with the successive improvements in production and distribution technologies that happened throughout the first half of the 20th century largely solved the problem related to the access to materials.</p>
+
+<p>Large educational institutions in the US such as the Stanford university of the MIT played a big rol in this phenomenon, promoting the creation of laboratories and research groups in electronic and telecom. technologies that are still contributing and offering relevant research every now and then. Precisely, many communities of individuals who were passionate about electronic technologies emerged around those centers whose objective was none other than to explore the limits of a set of technologies that was starting to change the world, not for a professional or commercial interest but rather for pure intellectual curiosity [0]. In most of the cases, those individuals, usually students or young professionals strongly influenced by the counter-culture of the decade in the sixties and seventies, started to call themselves “hackers” and focused their activities around their universities, workshops or laboratories, carrying out small technical projects, even fun “sabotages” on campus as “jokes” by violating some kind of technical restrictions on electronic devices or presenting curios technical innovations built at low cost. In any case, the final goal of the “hackers” back then wasn’t about economic benefit but rather to be able to feel free by expressing theirselves in an artistic way through technology, ultimately obtaining reputation and status within their community.</p>
+
+<p>As more advances broke into the tech sector, especially when the first communication networks were implemented, hacker communities proliferated throughout the world, mostly in the United States and Europe on first, starting to be less and less dependent from specific companies and universities they began to organize themselves in informal groups of friends or even registered associations. Thus, the actions carried out by its members evolved with the context, with the massive implementation of automatic telephone systems and the first national communication networks, the radius of their action was expanded making any institution, company or electronic system a potential target of the curiosity and prank of a hacker. Perhaps one of the most relevant and popular hacker on this early stage was the computer engineer John Thomas Drapper, whose great curiosity along with his advanced knowledge of telephony led him to violate the security of the American telephone network in a very creative way. By performing a small modification to a whistle included as gifrt in cereal packages he was able to set up the administrator mode on the network and act limitless inside.  This fact made him become a recognized and admired figure among the rest of the curious minds the “hacker community”, being nicknamed as “Captain Crunch” since then (for the famous cereal brand). His actions did not go unnoticed and in 1972 he was brought to justice accused of telephone fraud, when he was interviewed he stated that he had done no harm to anyone and that what he did was exclusively to satisfy his intellectual curiosity. Due to his actions and the ethics he manifested, “Captain Crunch” is considered as one of the founders of the so-called “hacker culture” or perhaps “hacker ethics”, which would have a strong influence on all kinds of communities created after as well as related “cyber activist” movements througout the 20th century till today.</p>
+
+<p>The ultimate leap from the laboratory to society happened simultaneously in Europe and the united states in the early 80’s. In Europe, perhaps due to cultural influence, the leap was directly made towards politics and activism, with the foundation in 1981 of the “chaos computer club” frequently abbreviated as “CCC” as a group of hackers and journalists dedicated to the study of security in computer and telecommunications systems as well as the study of the relationship between those systems and society itself. That happened within the Berlin newspaper “die tageszeitung”, linked to the German “eco/environmentalist-left”. The CCC is still active and very relevant today as they set up the “Chaos computer conference” every year during winter, they deal with many topics such as counter-surveillance, privacy, computer security and sociology among others.</p>
+
+<p>In the US, the leap was made to years later and this time it was more linked to the popular american culture. With the premiere of the movie “War Games” where a young “hacker” manages to get access to the American system of control of the nuclear arsenal from the comfort of his home thereby generating all sorts of international geopolitical conflicts with the USSR. With “War Games” thousands of people, especially restless young people with access to computers and telephone systems, began to fantasize about the impact of technology on the world and the dangers related to computer (in)security, along with the figure of experts such as the aforementioned “Captain Crunch”, prosecuted for revealing security fflaws in important computer systems, led to the creation of a new figure the “hacker” as a modern romantic hero a figure that is still very present in our collective imaginary.</p>
+
+<p>The growing interest in “hacking” led large numbers of people to embark on a particular adventure, the search for knowledge, formally in high schools and universities, but especially in a more informal or “underground” way through groups of users or networks such as the “bulletin board system” or BBS built on top of the phone network. These last systems offered, for the first t ime in history, enormous facilities for access to information, especially in a new “dark” topic such as cybersecuritty, there was no longer any need for particular contants or a previous network of friends, nor being a member of a particular community or being enrolled on a university, only a personal computer with network access and a few indications easily obtained in computer magazines were necessary.</p>
+
+<p>With BBS, virtual hacker communities appear for the first time, originated entirely inside the network itself by individuals with similar interests, some of those, such as the notorious “Legion of Doom”, became “informal formal” groups structured in a more or less hierarchical way with clear goals. The main objectives pursued by the group were always related to the intellectual curiosity of its members: generating and sharing educational technical material and accessing third party computer systems for fun, violating their security as a challenge, thus demonstrating the technical expertise of the members (of LoD). Almost all of their actions included unauthorized access to third-party computer systems sometimes belonging to large telephone corps, government entities or banks, however , the actions wer elimited solely and exclusively to access, no harm was done on any system and the members who tried to harm or get personal benefit from their actions were kicked out of the “legion”. Although grroups like LoD lacked a formal ideology behind his actions, it can be seen that they were (again) influenced by elements of the american counterculture of the time, such as a desire to break with past generations and the established system this time in the form of technological monopolies, closed knowledge system and such, rejection of war and authoritarism or support for civil rights. [1]</p>
+
+<p>The constant exposure to the network as well as repeated interactions between members of various online hacker communities made ground for a new subculture of its own, influected by the aforementioned countercultural elements and characterized with a “cyberpunk” aesthetic along with a particular tech jargon originated mainly inside internet sites. [2]</p>
+
+<h4 id="the-hacker-manifesto">The hacker manifesto</h4>
+
+<p>The crystallization of this “hacker” subculture came with the foundation of the digital magazine (e-zine) called “phrack” where in 1986 the so-called “hacker manifesto” was published by The Mentor [4]</p>
+
+<p>The manifesto, written by the “hacker” known as “The mentor” shorty after his arrest for computer fraud, collected the keys to a new cultural phenomenon, cultural even ideological framework in which more and more individuals throughout the world felt identified</p>
+
+<p>_This is our world now… the world of the electron and the switch, the
+beauty of the baud.  We make use of a service already existing without paying
+for what could be dirt-cheap if it wasn’t run by profiteering gluttons, and
+you call us criminals.  We explore… and you call us criminals.  We seek
+after knowledge… and you call us criminals.  We exist without skin color,
+without nationality, without religious bias… and you call us criminals.
+You build atomic bombs, you wage wars, you murder, cheat, and lie to us
+and try to make us believe it’s for our own good, yet we’re the criminals.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    Yes, I am a criminal.  My crime is that of curiosity.  My crime is that of judging people by what they say and think, not what they look like. My crime is that of outsmarting you, something that you will never forgive me for.
+
+    I am a hacker, and this is my manifesto.  You may stop this individual, but you can't stop us all... after all, we're all alike._
+</code></pre></div></div>
+
+<p>We can get some insigghts from the manifesto, three key points can be drawn that would set the stones for the development of various hacker organizations from then until now[5]:</p>
+
+<ul>
+  <li>The fight against power structures such as large corporations or an “oppressive state”</li>
+  <li>Tolerance among the members of the community (technical skill as status, not race, color, class etc)</li>
+  <li>The definition of the movement without borders and without specific (solid) power structures</li>
+</ul>
+
+<p>The statement did not go unnoticed among the hacker community, because in the end, it left their main ideas written, phenomenons that were (more than evident) already happening such as a turn towards left and libertarian movements sometimes even related to anarchism.</p>
+
+<p>The new communities and grroups of hackers that emerged later on were  quickly fed on this ideology; in fact, it was quite common to see the manifesto flying around in different forums and sites and perhaps sometimes papers that were a bit related to politics being published as well along with technical ones by hackers. This new ideological framework now prevailing among most communities favored the emergence of a very particula rprofile, still present (and relevant) nowadays: the activist hacker or “hacktivist”. With computer systems present and incresing in many areas hosting information of all kinds, “hacking” techniques applied to cybersecurity could potentially become a powerful instrument at the service of an ideological cause, effective means to a chieve real political actions.</p>
+
+<p>Many hacker groups that emerged from 1986 throughout the world, influenced by this new ideological framework, dedicated much of their activity to cyber activism or “hacker activism”. Many of these new groups focused their activity on publishing digital magazines where they shared material related to hacking techniques, information on restricted software or reverse engineering projects, anti censorship techniques or even anty-system protest manuals and manifests. A very clear example on these groups is found in “international subversive” group and magazine, responsible for the publication of various anty-system related publications, as well as the breach of the security of various dod servers. The group was led by a young hacker called Julian Assange, who a few years later would launch the “WikiLeaks” project. Another clear example was the American group “The cult of the dead cow” or CDC that somehow coined the term “hacktivism” in the late nineties referring to this new type of activism done online. With CDC, hacker communities took another step forward, went from carrying out actions with clear goals defined by the group itself, mainly focused on the network alone  to support ongoing actions “in the physical world” even working outside their borders, working “in network” with other virtual and physical groups. This fact could be seen when CDC decided to provide support to the chinese dissident group known as “the Hong Kong blondes” through attacks on Chinese government servers and the production of specific anti-censorship manuals adapted to the Chinese context or the remote training in information encryption techniques and personal security to those individuals less focused on computer hacking. Later on, the CDC would repeat this same scheme, this time supporting Iranian dissidents. [7] [8]</p>
+
+<h4 id="the-internets-own-culture-from-hackers-to-masses">The internet’s own culture, from hackers to masses</h4>
+
+<p>In the 90s, internet arrives to thousands of homes worldwide and that was a huge revolution since it opened a new wide range of possibilities related to communication and generation of virtual communities for the first time in history to a large number of individuals, who where now no longer required to assume the high cost of acquiring knowledge / skill to connect to the network and enjoy it.</p>
+
+<p>Despite the fact that the “hacker” phenomenon was still ongoing and continued to grow in activity powered by this new set of technologies, now the new communications network was hosting content and communities of all kinds, from user forums related to music or painting, networks for scientific research exchange, news sites and so, any user with a minimum knowledge and interest could now connect and access a wide range of digital content from home or from the university. The internet became especially popular among young people in the mid nineties, as they were used to deal with new technologies from their childhood they began to use the network to communicate with each other (with their close friends and family) as well as to connect with new people from other places with whom shared common interests in forums and chat sites. It should be noted that these young people, who may or may not have a technical background and interesting hacking, accessed the internet to satisfy a “mainly” social need, to connect with knowledge and above all to connect with each other.</p>
+
+<p>As internet grew, several  “multi-content” sites emerged from this trend, focused on the free exchange of all kinds of content and opinion by their users. One of the first was the Japanese “digital board” known as “2chan” or 2CH created by Hiroyuki Nishimura in 1999. The site was similar to a BBS and was very simple to work with, when accessing the site several categories were listed, some quite specific as “political debate” or “anime” and others very generic something we can call “offtopic” where all kinds of content were accepted. By accessing some of those, the visitor could see a list of the latest messages posted there by the rest of the visitors, who could be identified by a specific user or <em>anonymously</em></p>
+
+<h4 id="the-meme-sub-culture">The meme sub-culture</h4>
+
+<p>2CH got big popularity among the Japanese youth, yet was virtually unknown in the west. In 2003 a NYC student and active internet user named Christopher Pool aka “moot” founded the English-speaking “chan” portal 4chan.org or 4chan (still active today) based on 2CHs “electronic bulletin board” system.</p>
+
+<p>Users of this new site did not necessarily belong to hacker groups as this wasn’t the sites main goal, however they inherited many of their cultural traits also shared with “the gamming community” such as the usage of nicks and aliases, their particular sense of humor, love for the internet and the view of internet as a public/common good, respect for the status or specific expressions such as XD, LOL, ROFL</p>
+
+<p>4chan got big success among the youth of western societies, mainly due to its big ease of user and a particular system of content distribution, novet at the time. As with 2ch the site presented a general content structure by categories. In 4chan categories such as /b where the home of the “offtopic”. When publishing and presenting the content, the system allowed to publish text and image/video very easily, publications could be made by a nicknamed user or <em>anonymously</em>  the later being the default option. Users identified anonymously were given the name <em>anonymous</em> by default. 4chan gave a novel revolutionary approach to the concept of internet forums, implementig its policy of anonymity by default since most of users began to prefer using this identification metehod, thus prioritizing the message and not the user itself.</p>
+
+<p>The true novel contribution to online communities presented by the 4chan system though came with its own publication selection system. Since the space on the main pages of each category was limited, 4chan implemented a very particular system for content selection: When a new post(thread) was generated, it would be placed immediately and without many filters on the main page, allowing other users to view it and show their interest in it by interactions, if the post did not arouse any interest it would be relegated to the last pages to die there, however as it generated more and more interactions it would ensure its presence on the main pages, allowing it to have even even more interactions. So the most successful posts spent entire months on their respective main pages, thus facilitating this their viewing by new users who would in turn feedback the circuit. This particular system along with the anonymity offered by the site, basically allowed the community itself to generate representative “ideas”, “concepts” or “memes” that would last over time.</p>
+
+<p>In the early days of this new site (as well as in other sites of similar characteristics), the system was used to share humorous content, as funny content always tends to spark people interest. This type of content turned out to be very popular on the site, on the main pages, especially in the general /b category you could (and even today) see numerous comical/satirical images referring to some cultural or current political / social event, those images are now called memes. [9]</p>
+
+<p>The site itself became very popular, appearing to be endowed with a “life of its own” as most of its users were by default identified by “anonymous”. Precisely the anonymity by default as well as the large number of users coming and going to the platform greatly facilitated new incorporations thus increasing the social capital of the community [9]</p>
+
+<h4 id="the-rise-of-trolling">The rise of “trolling”</h4>
+
+<p>4chan continued to evolve during 2006. The first collective action that arose entirely from this community took place that year. In those years, all kinds of mediatic and public persons began to proliferate on the internet as they used the net to share ideological and cultural content on all political colors, including all kinds of extremism. One of those cases was the Hal Turner’s radio show, which was a radio programused for spreading white-supremacist content in America.</p>
+
+<p>On 4chan those days, in the /b category it was quite common to see some satirical content (memes and such) making fun of all kinds of ideologies, especially those located at the extremes, with the Hal Turner show the 4chan community took a new steap forward. The action began on the /b board with several publications making fun of the radio program, with liks to the program, funny images and so. Those generated great interest (thus then being on the frontpage) and some anonymously identified users began to encourage the rest of the “group” to “intervene” on the program, making anonymous calls with the goal of annoying Hal, causing him to lose the nerve. Thus, some of the most “community engaged” users motivated by those posts began calling the show on a regural basis trying to boycot it with all sorts of jokes. Instead of skipping those calls, Hal got them and argued with the pranksters, thus entering the game even attacking the 4chan community, as you may guess, ths only served to feed back the action, further encouraging the community, thus creating a “snowball effect” adding more and more users to the action. The action got great success and ended up giving rise to a new term used today (it was not the only trolling action identified as that though), “trolling” or set of actions mainly on the internet aimed at boycotting an individual or rganization for prank purposes using all kinds of jokes and tricks.  In the action done on Hal Turner, it was also possible to begin to appreciate some link between the “internet culture” adopted by 4chan users and the “hacker community” that already existed on the internet since its origins, seeing how some of the users of 4chan with a technical background, participants also from communities or hacker forums carried out small cyber-attacks on the site of the radio program with the aim of collapsing their systems, thus taking down the broadcast.</p>
+
+<p>The boycott on Hal Turner’s program had a “positive” effect on the new community that had emerged in 4chan, as it was identified as a successful action by their members, who had “worked” together to take on a target on the network, other users from other communities were able to realize the existence of 4chan and its “effects” and potential on the internet. Another effect was that in some way the adoption of ideological aspects previously originated in the “hacker ideology” by this community was reaffirmed, aspects such as the defense of freedom of expression, the use of the internet as a tool for change / protest or the rejection of totalitarianism became a hallmark of this new community. Those old-new values ​​also made room for starting the creation of a “framework” of collective identity in which members of “chan”, certain anti-system profiles, “trolls”, groups of “hackers” or even activists of various ideologies who could share certain common values ​​like anarcho-capitalists, anarchists or ecologists to give examples. And finally, the last of the interesting effects that can be seen, which would become especially relevant from now on, was that of reducing the cost of participation in the given action, since the “protest” attack could be carried out comfortably from home, without require great technical knowledge or great effort.</p>
+
+<h4 id="chanology-from-the-virtual-world-to-the-physical">“Chanology” from the virtual world to the physical</h4>
+
+<p>During its beginnings and even these days 4chan was frequently used to post and comment on all kinds of content that appeared on the internet. The convergence in the same platform of users with all sorts of technical skills, some of them with let’s say “a great dedication to the community” and a bit of free time, allowed all kinds of content that was difficult to obtain on other sites to be posted on the platform. In 2008, an internal video owned by the Church of Scientology was leaked to the internet, this was quickly detected by 4chan users and the video was referenced on the platform, sparking big interes by “/ b” users, which led to be enhanced on your cover. In the video, the user could see the actor Tom Cruise talking about how his religion had changed his life, now literally having the power to save the world or something like that. As expected in such a situation, it took very little time for 4chan users to fill the site with all kinds of “memes” and humorous content about it, crossing that content the 4chan border and also spreading it through other forums and private chats, in the form of comments. on news sites or through messaging applications between people who had nothing to do with the platform. Due in large part to the “popularity of video” the Church of Scientology denounced platforms such as “Youtube” where the video was hosted for copyright infringement causing the video to be deleted from the internet. This fact enraged the users in “/ b” in 4chan, who at that time began to use the term “Anonymous” derived from the anonymous user by default to endow themselves with a collective identity.</p>
+
+<p>Due to this, one of the users, anonymously identifying themselves as “Anonymous” made a call for action to the rest of the users, this time in a general way (a call to the internet), not only to the 4chan community to boycott the activities of the Church of Scientology on the Internet and in real world using all possible means. A public demonstration on their headquarters was also set up and called on many sites, being one of the first real life events (demonstration) originated entirely on the internet [11].</p>
+
+<h4 id="the-creation-of-anonymous">The creation of Anonymous</h4>
+
+<p>The call to action was presented along with a video, where a synthetic voice threatened the leaders of Scientology saying Anonymous will destroy their computer systems and boycott their operations in retaliation for their “meanness” and their “lack of ethical values”, the video ended with the well-known declaration: <em>“knowledge is free, we are anonymous, we are legion, we do not forget, we do not forgive”</em>, hinting at its ideology as well as declaring that “Anonymous” was not a closed individual or organization but rather a broad and decentralized collective with an interest in fighting censorship and control over the internet. The action on 4chan was called “Project chanology”. A few days after the publication of the first video, online protest actions began, in the form of angry comments, aggressive phone calls, all sorts of pranks including small acts of electronic sabotage by “hackers”. Some of the members who identified with the community published a second video this time encouraging users to participate in a physical protest in front of several of the organization’s physical headquarters in the United States and the UK. This second call to action was successful on 4chan, however many of the participants who showed interest in attending were concerned (perhaps due to the fear of being “the only ones” to attend the event) about the possible consequences they could suffer. On the other side of the story, we had the Church of Scientology, known for its aggressiveness and its great legal infrastructure. Some of the participants of the site presented the idea of ​​attending the events with their faces covered, and it was then that the idea of ​​wearing a mask was to protect their identity was presented. The “Guy Fawkes” mask got popularity in the subversive and popular film “V for Vendetta”. The idea was widely popularized and on January 10, 2008, numerous protests took place across the United States and Europe in the vicinity of Scientology church centers, where protesters wore “Guy Fawkes” masks now also know as “anonymous masks”  and chanted related slogans. with the jargon “hacker” and the 4chan community.</p>
+
+<p>The protests were quite successful overall. And were a good way to consolidate and create new ties between a community that was meeting face to face for the first time. The press, on their side, covered the story, arousing great interest in this new group of activists and “hackers” that emerged on the Internet known as “Anonymous” among society.</p>
+
+<p>At that time, the values ​​and collective identity associated with “Anonymous” had crossed the borders of 4chan to spread through other internet sites and communities, as well as through the new “social networks” (youtube, twitter or Facebook) and had even crossed the digital frontier to set ground for actions in the “physical world”. 4chan ceased to be the HQ of “Anonymous” to become just another social network. After “Project chanology” the collective “Anonymous” that had been in some way validated and now fed with a significant number new of members coming from the “hacker scene” grew up by planning actions in other areas, always related to their ideological basis. Those actions along with actions of “trolling” such as pranks, graffiti or phone calls with “hacktivist” actions such as email leaks or  “defacing” (editing the main page of some websites), also called denial of service attacks which consisted of actions aimed to block internet access to certain computer systems through technical procedures (such as sending large number of site requests, like pressing F5 “refresh” many many times). The actions presented and took by “Anonymous” were then commonly defined as operations or “ops”, adopting some military nomenclature/style as a joke, the group thus sought to identify itself as “the internet army”, due to having emerged on the internet and its fight for the defense of information freedom [12] [13].</p>
+
+<h4 id="the-economic-crisis-the-rise-of-hacktivism-and-ddos-attacks">The economic crisis, the rise of “hacktivism” and DDoS attacks</h4>
+
+<p>The next years represented the beginning of various phenomena in which we are still immersed or those from which we continue to suffer consequences. The collapse of the financial corporation “Leman Brothers” in 2008 helped start a serious financial crisis that affected most of the big world economies in a serious way, which led to unemployment and poverty with the consequent civil unrest all around the world, especially on the west. Global protest movements such as the 15m / 15o / OccupyWallStreet or even the Arab Spring flourished and expanded rapidly, in part, due to the massive use of new social networks and internet technology in general.</p>
+
+<p>The “Anonymous” collective, which was already experiencing great growth in terms of popularity, participants and technical improvement, played a very important role in facilitating technical means and communication systems for real protests, such as facilitating the development of safe un censored communication networks in protests, offering training in event management on social networks or providing training in techniques to avoid censorship in especially Arab countries, as other communities and structured groups of “activist hackers” have done in the past.</p>
+
+<p>The next and last leap forward, in which we are currently inmmersed in relation to the “hacktivist” actions of the Anonymous collective came with the launch of the well-known portal “WikiLeaks” by the well-known “hacker” Julian Assange along with the leak in Thousands of files by Manning’s related to espionage activities by the American government in 2010 (later Snowden in 2013).</p>
+
+<p>After Manning’s massive leaks of secret cables, several of the Western governments, as well as large corporations, began taking retaliatory action against “WikiLeaks.” The states pushed the telecom operators to block access to the portal and entities such as Visa or Paypal canceled their services with “WikiLeaks”, which posed a problem for the portal since these services were used to receive donations. These events angered the  “Anonymous” collective because they interpreted that this time the internet and their rights were the target, the internet was being attacked, the actions perpetrated by large financial platforms and governments represented the antithesis of everything that “Anonymous” identified with. . The recent socio-economic conditions and the status of global protest helped part of the non-technical population not linked to any specific internet forum or to the “hacker” community to show great support on the internet for the “Anonymous” collective, identifying them (anonymous) as some kind of “modern superheroes” who protected the internet and collective freedoms using methods / skills far beyond the reach of the average citizen, part of society began to identify “hacktivism” as a necessary tool for social change in today’s societies[14].</p>
+
+<p>2010 and 2011 were years of great activity among the “Anonymous” collective, the operations “Payback”, “Avenge Assange” and “Bradical” were proposed on online communities through Twitter accounts, 4chan posts and other forums or videos on youtube. Those operations allowed bringing “hacktivism” closer to a large mass of population with little tech knowledge, by launching the so-called “distributed denial of service attacks” against systems and websites.</p>
+
+<p>This type of attack consisted on collapsing a service on the internet such as a website by sending many connection requests by many users at the same time, the same as a public demonstration but online. Before those events, some groups and communities of “hackers” had already launched denial of service attacks, however, these were almost always given by technical users who used some type of more or less advanced technique or software. For to the presented ops, “hackers” associated with “Anonymous” developed and implemented simple tools such as the so-called “LOIC” software that allowed any user without any technical skill to easily take part in denial of service attacks along with other users at the same time. Those attacks were usually proposed in video and online posts and were coordinated through messaging apps, chat channels on IRC systems or through posts on Twitter and Facebook. Along with the messages  very easy to read instructions appeared related to how to download and open those programs. The “cyber protests” in the form of a denial of service attack attracted a large number of users, as the cost of participation was really low compared to the tangible benefit (you could quickly see how the website portals stopped working)so contribution was easily possible.</p>
+
+<p>This fact moved (or rather extended) the protests from the street back to cyber space, turning distributed denial of service attacks into true online protests. The aforementioned operations were highly successful, as the high volume of traffic generated by thousands of “protesters” collapsed the computer systems of sites like Paypal for several hours, several days, and led to the loss of significant amounts of money to these companies.</p>
+
+<p>The actions carried out by “Anonymous” currently have their echo and the collective, or rather individuals who identify with the collective, are still active at present, carried out operations as a protest in favor of freedom of expression and freedoms civilians in places as distant as Catalonia (#opcatalunya from the referendum) or in Lebanon (#oplebanon) or perhaps in the recent events happened in the USA due to the killing of George Floyd.</p>
+
+<h4 id="who-is-anonymous">Who is Anonymous?</h4>
+
+<p>Anonymous is not a group that has a particular HQ in a secret bunker. Anonymous is a phenomena that eventually emerges from the internet. Anonymous is any hacker or internet activist that wants to use the name for sending a message while remaining “protected”. Some of the “members of anonymous” don’t have anything with the concept anymore and live totally different lives, but the concept still goes on.</p>
+
+<p><em>You are anonymous</em></p>
+
+<h4 id="causes-anda-key-concepts-on-the-anonymous-success">Causes anda key concepts on the “Anonymous” success</h4>
+
+<p>The Internet and other networks prior to it are presented as tools that greatly improve and accelerate the generation of communities, communities both located entirely within the network and physically.</p>
+
+<p>By inspecting the actions took by hacker identified individuals documented here, we can easily understand that the american counterculture and pro freedom and civil rights movements as well as some “antifa” movements played a big role on the origins of internet and internet hacker communities, allowing the conception of “internet as a common good” that needs to be protected among many concerned users.</p>
+
+<p>This vision of the internet was gradually transferred as some kind of  “inheritance” to the new communities, both those related to “hacking” and others that had objectives more related to social life. This fact contributed to the creation of a collective identity by unifying users with different profiles and ideological bases in the idea of ​​defending freedom of expression and access to free information on the internet.</p>
+
+<p>New social networks like 4chan, due to a structure that favored the identification of content of interest among anonymous users, enhanced this sense of collective identity and facilitated the mobilization of users from the virtual to the physical world, which in turn favored the creation and maintenance of great social capital among these new communities. Despite the anonymity among users, it could be seen how at least part of the hacker communities had an active presence in these new communities.</p>
+
+<p>With the arrival of massive protests around the world after the 2008 economic crisis, the relationship between various online communities, groups of “hackers” and groups of protesters on the street became evident. Members identified with the newly created “hacktivist” collective “Anonymous” attended the physical demonstrations and non-“hackers” protesters identified with the collective supporting their actions online. Starting in 2010, coinciding with major protests in the main world capitals, members of the “Anonymous” collective pushed for collective denial of service attacks against certain websites. These attacks had a high success rate partly due to the very low cost of participation, the ease of appreciating the results and the ideological reasons associated with the actions themselves, fueled by a global climate of protest.</p>
+
+<p>The actions carried out by the “Anonymous” collective did not go unnoticed and served as a start for many other similar actions that are still appreciated today. [17] [18] [19]</p>
+
+<p>**To be updated.</p>
+
+<ul>
+  <li>[0] https://www.cs.utah.edu/~elb/folklore/afs-paper/node3.html</li>
+  <li>[1] unknown(LoD). (1990). The History of The Legion Of Doom. Obtenido de phrack.org: http://phrack.org/issues/31/5.html</li>
+  <li>[3] Jenny Preece, D. M.-K. (2003). History of online communities . Thousand Oaks: Sage Publications, 1023-1027.</li>
+  <li>[4] TheMentor. (1986). The hacker manifesto . Obtenido de phrack.org: http://phrack.org/issues/7/3.html</li>
+  <li>[5] Lunceford, B. (2009). Building Hacker Collective Identity One Text Phile at a Time: Reading Phrack. Media History Monographs, University of South Alabama, 11:2.</li>
+  <li>[6] Granger, S. (1994). THE HACKER ETHIC. Proceedings of the conference on Ethics in the computer age, 7-9.</li>
+  <li>[7] von Busch, O. a. (2006). The Making of a Hacker Culture.Abstract Hacktivism: The Making of a Hacker Culture. Open Mute.</li>
+  <li>[8] Tom Postmes, S. B. (2002 ). Collective Action in the Age of the Internet: Mass Communication and Online Mobilization. Social Science Computer Review, 20, 290–301.</li>
+  <li>[9] Michael Scott Bernstein, A. M.-H. (2011). 4chan and /b/: An Analysis of Anonymity and Ephemerality in a Large Online Community. Proceedings of the Fifth International AAAI Conference on Weblogs and Social Media.</li>
+  <li>[10] McDonald, K. (2015). From Indymedia to Anonymous: rethinking action and identity in digital cultures. Information, Communication and Society, 968-982 .</li>
+  <li>[11] Tom Postmes, S. B. (2002 ). Collective Action in the Age of the Internet: Mass Communication and Online Mobilization. Social Science Computer Review, 20, 290–301.</li>
+  <li>[12] McArthur, J. (2008 ). Digital Subculture: A Geek Meaning of Style. Journal of Communication Inquiry,, 58–70.</li>
+  <li>[13] Underwood, P. C. (2009). New Directions in Networked Activism and Online Social Movement Mobilization: The Case of Anonymous and Project Chanology. https://etd.ohiolink.edu/.
+[14] (Mejíacitar, 2012)</li>
+  <li>[15] Milan, S. (s.f.). WikiLeaks, Anonymous, and the Exercise of Individuality: Protesting in the Cloud. En S. Milan, Beyond WikiLeaks (págs. 191-208). Springer.</li>
+  <li>[16] Beyer, J. L. (2014). The Emergence of a Freedom of Information Movement: Anonymous, WikiLeaks, the Pirate Party, and Iceland. Journal of Computer-Mediated Communication, Volume 19, 141–154.</li>
+  <li>[17] (AHN, 2003</li>
+  <li>[18] Snow, D. (1988 ). Ideology, Frame Resonance and Participant Mobilization. International social movement research, 197-217.</li>
+  <li>[19] David A. Snow, E. B. (1986). Frame Alignment Processes, Micromobilization, and Movement Participation. American Sociological Review, 464-481.</li>
+</ul>
+
+    </div>
+
+    <div class="post__share">
+  <ul class="share__list list-reset">
+    <li class="share__item">
+      <a class="share__link share__facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/hacktivism-0"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Facebook" rel="nofollow"><i class="ion ion-logo-facebook"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__twitter" href="https://twitter.com/intent/tweet?text=Anonymous%20and%20the%20rise%20of%20'hacktivism'%20as%20a%20collective%20action%20phenomenon&url=http://localhost:4000/hacktivism-0"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Twitter" rel="nofollow"><i class="ion ion-logo-twitter"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url=http://localhost:4000/hacktivism-0&title=Anonymous%20and%20the%20rise%20of%20'hacktivism'%20as%20a%20collective%20action%20phenomenon&summary=&source=Artik%20Blue"
+      onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn" rel="nofollow"><i class="ion ion-logo-linkedin"></i></a>
+    </li>
+  </ul>
+</div>
+
+
+    <div class="post__navigation">
+  
+  <a class="post__prev" href="/opsec-1">
+    <div class="prev__image">
+      <img class="lazy" data-src="/images//opsec/opsec1.jpg" alt="Anonymous and the rise of 'hacktivism' as a collective action phenomenon">
+    </div>
+    <div class="prev__box">
+      <span class="post__nav post__nav__prev">Older post</span>
+      <h2 class="post__nav__title">Operational security techniques in asymmetric conflicts - I (threat modeling)</h2>
+    </div>
+  </a>
+  
+
+  
+  <a class="post__next" href="/reversing-radare-15">
+    <div class="next__box">
+      <span class="post__nav post__nav__next">Newer post</span>
+      <h2 class="post__nav__title">Reverse engineering x64 binaries with Radare2 - 16 (unix sockets fundamentals)</h2>
+    </div>
+    <div class="next__image">
+      <img class="lazy" data-src="/images//hacktivism/anonymous_0.jpg" alt="Anonymous and the rise of 'hacktivism' as a collective action phenomenon">
+    </div>
+  </a>
+  
+</div>
+
+     <!-- begin comments -->
+<div id="disqus_thread" class="post__comments">
+  <div id="disqus_empty"></div>
+</div>
+
+<script>
+  function load_disqus() {
+    var disqus_shortname = 'artikblue',
+      is_disqus_empty = document.getElementById('disqus_empty'),
+      disqus_target = document.getElementById('disqus_thread'),
+      disqus_embed = document.createElement('script'),
+      disqus_hook = (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]);
+
+    if (disqus_target && is_disqus_empty) {
+      disqus_embed.type = 'text/javascript';
+      disqus_embed.async = true;
+      disqus_embed.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      disqus_hook.appendChild(disqus_embed);
+      is_disqus_empty.remove();
+    }
+  }
+
+  window.addEventListener('scroll', function (e) {
+    var currentScroll = document.scrollingElement.scrollTop;
+    var disqus_target = document.getElementById('disqus_thread');
+
+    if (disqus_target && (currentScroll > disqus_target.getBoundingClientRect().top - 150)) {
+      load_disqus('disqus_shortname');
+    }
+  }, false);
+
+</script>
+<noscript>Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+</noscript>
+<!-- end comments --> 
+
+  </article>
+</div>
+<!-- end post -->
+      </div>
+      <!-- end wrapper-page -->
+    </main>
+    <!-- end content -->
+    <div class="top" title="Top"><i class="ion ion-ios-arrow-round-up"></i></div>
+    <!-- begin footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12 col-m-12">
+        <div class="footer__inner">
+
+          <div class="footer__head">
+            <div class="row">
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-recent">
+    <div class="widget__head">
+      <h3 class="widget__title">Recent Posts</h3>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-22">
+        <img class="lazy" data-src="/images//radare2/radare2_22.png" alt="Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-20T00:01:35+02:00">Jun 20, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-22">Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack</a></h4>
+      </div>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-21">
+        <img class="lazy" data-src="/images//radare2/radare2_21.png" alt="Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-15T00:01:35+02:00">Jun 15, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-21">Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains</a></h4>
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-gallery">
+    <div class="widget__head">
+      <h3 class="widget__title">Gallery</h3>
+    </div>
+    
+    <div class="gallery-box gallery-footer">
+      <div class="gallery">
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/landscape1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sasha1.jpeg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/castle1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/scotland1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sanfran1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/newyork1.jpg" alt="Minimalism">
+        </div>
+        
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-subscribe">
+    <div class="widget__head">
+      <h3 class="widget__title"></h3>
+    </div>
+    <div class="subscribe__inner">
+      <div class="subscribe__group">
+        <div class="subscribe__description"></div>
+      </div>
+      <!-- <form class="subscribe-form validate"
+           action="#" method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form" target="_blank" novalidate>
+           <label class="screen-reader-text" for="mce-EMAIL">Email address</label>
+           <input class="subscribe-email required email" id="mce-EMAIL" type="text" name="EMAIL"
+           placeholder="Your email address">
+           <button class="button subscribe-button" id="membedded-subscribe" type="submit" name="subscribe"></button>
+           </form> -->
+    </div>
+  </div>
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        
+  <div class="social">
+    <ul class="social__list list-reset">
+      
+      <li class="social__item">
+        <a class="social__link" href="https://twitter.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-twitter"></i></a>
+      </li>
+      
+      <li class="social__item">
+        <a class="social__link" href="https://github.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-github"></i></a>
+      </li>
+      
+    </ul>
+  </div>
+
+        <div class="copyright">2022 &copy; <a href="/">Artik Blue</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- end footer -->
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="/js/scripts.js"></script>
+</body>
+
+</html>

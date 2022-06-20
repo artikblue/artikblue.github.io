@@ -1,0 +1,392 @@
+[
+  
+    {
+      "title"    : "Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-22'> <img src='/images//radare2/radare2_22.png' alt='Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-22'>Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack</a> </h2> <p class='article__excerpt'> DEP and Execution on the stack
+Hello again my dear reverse engineers-in-progress. In the previous post on these series we ... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2022-06-20T00:01:35+02:00'>20 Jun 2022</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-22",
+      "date"     : "2022-06-20 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-21'> <img src='/images//radare2/radare2_21.png' alt='Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-21'>Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains</a> </h2> <p class='article__excerpt'> Hello again my dear friends. And congratulations if you got as far as here, it’s been more than 20 tutorials so far and we... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2022-06-15T00:01:35+02:00'>15 Jun 2022</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-21",
+      "date"     : "2022-06-15 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-20'> <img src='/images//radare2/radare2_20.png' alt='Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-20'>Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows</a> </h2> <p class='article__excerpt'> And after a very well deserved rest, here we go again. While these tutorials are generally aimed at developing skills in r... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2022-06-13T00:01:35+02:00'>13 Jun 2022</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing,' class='article__tag'>reversing,</a>  <a href='/tag/c,' class='article__tag'>c,</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing,, c,, and radare",
+      "url"      : "/reversing-radare-20",
+      "date"     : "2022-06-13 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Generating contextual geographic intelligence with shodan",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/shodan-intelligence-1'> <img src='/images//shodan.png' alt='Generating contextual geographic intelligence with shodan'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/shodan-intelligence-1'>Generating contextual geographic intelligence with shodan</a> </h2> <p class='article__excerpt'> About shodan
+Shodan.io is the world known search engine that is continously indexing ipv4/ipv6 hosts connected to the inte... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-12-01T23:01:35+01:00'>01 Dec 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/shodan' class='article__tag'>shodan</a>  <a href='/tag/python' class='article__tag'>python</a>  <a href='/tag/analysis' class='article__tag'>analysis</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "shodan, python, and analysis",
+      "url"      : "/shodan-intelligence-1",
+      "date"     : "2020-12-01 23:01:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering x64 binaries with Radare2 - 19 (unix encrypted bind shells over TLS)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-19'> <img src='/images//radare2/radare2_19.png' alt='Reverse engineering x64 binaries with Radare2 - 19 (unix encrypted bind shells over TLS)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-19'>Reverse engineering x64 binaries with Radare2 - 19 (unix encrypted bind shells over TLS)</a> </h2> <p class='article__excerpt'> You see, it’s been a while and together we’ve learned a lot of things about the C language and it’s adventures inside the ... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-06-15T00:01:35+02:00'>15 Jun 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-19",
+      "date"     : "2020-06-15 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering x64 binaries with Radare2 - 18 (Bind and reverse shells)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-18'> <img src='/images//radare2/radare2_18.png' alt='Reverse engineering x64 binaries with Radare2 - 18 (Bind and reverse shells)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-18'>Reverse engineering x64 binaries with Radare2 - 18 (Bind and reverse shells)</a> </h2> <p class='article__excerpt'> “Shells”
+
+Today I wanto to introduce a small and simple idea, to complement what we’ve been learning on these past posts.
+... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-06-14T00:01:35+02:00'>14 Jun 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-18",
+      "date"     : "2020-06-14 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering x64 binaries with Radare2 - 17 (winsock, udp C&amp;C and file exfiltration through DNS)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-17'> <img src='/images//radare2/radare2_17.png' alt='Reverse engineering x64 binaries with Radare2 - 17 (winsock, udp C&C and file exfiltration through DNS)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-17'>Reverse engineering x64 binaries with Radare2 - 17 (winsock, udp C&C and file exfiltration through DNS)</a> </h2> <p class='article__excerpt'> Buckle up kids cause this post is going to be LONG.
+
+About Winsock
+
+In computing, the Windows Sockets API (WSA), later sho... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-06-11T00:01:35+02:00'>11 Jun 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/eversing' class='article__tag'>eversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "eversing, c, and radare",
+      "url"      : "/reversing-radare-17",
+      "date"     : "2020-06-11 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering x64 binaries with Radare2 - 16 - II (more sockets, http emulation, radasm, ragg and shellcode)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-16'> <img src='/images//radare2/radare2_17.png' alt='Reverse engineering x64 binaries with Radare2 - 16 - II (more sockets, http emulation, radasm, ragg and shellcode)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-16'>Reverse engineering x64 binaries with Radare2 - 16 - II (more sockets, http emulation, radasm, ragg and shellcode)</a> </h2> <p class='article__excerpt'> Performing get requests with UNIX sockets
+
+Sockets are the very fundamentals of networking in any operating system. You ca... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-06-05T00:01:35+02:00'>05 Jun 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-16",
+      "date"     : "2020-06-05 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Operational security techniques in asymmetric conflicts - II (device acquisitions)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/opsec-2'> <img src='/images//opsec/opsec2.png' alt='Operational security techniques in asymmetric conflicts - II (device acquisitions)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/opsec-2'>Operational security techniques in asymmetric conflicts - II (device acquisitions)</a> </h2> <p class='article__excerpt'> Secure device acquisitions
+
+It is very important to remark that our first interaction with the device and therefore the or... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-06-04T00:01:35+02:00'>04 Jun 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/opsec' class='article__tag'>opsec</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "opsec",
+      "url"      : "/opsec-2",
+      "date"     : "2020-06-04 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering x64 binaries with Radare2 - 16 (unix sockets fundamentals)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-15'> <img src='/images//radare2/radare2_16.png' alt='Reverse engineering x64 binaries with Radare2 - 16 (unix sockets fundamentals)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-15'>Reverse engineering x64 binaries with Radare2 - 16 (unix sockets fundamentals)</a> </h2> <p class='article__excerpt'> Today we’ll talk about sockets, fundamental stuff on computer progams and used by many malware and exploits. We’ll start f... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-06-02T00:01:35+02:00'>02 Jun 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-15",
+      "date"     : "2020-06-02 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Anonymous and the rise of &#39;hacktivism&#39; as a collective action phenomenon",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/hacktivism-0'> <img src='/images//hacktivism/anonymous_0.jpg' alt='Anonymous and the rise of 'hacktivism' as a collective action phenomenon'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/hacktivism-0'>Anonymous and the rise of 'hacktivism' as a collective action phenomenon</a> </h2> <p class='article__excerpt'> Abstract
+
+This paper seeks to reflect on the role of groups of individuals with remarkable technical skills and a particul... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-06-02T00:01:35+02:00'>02 Jun 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/hacktivism' class='article__tag'>hacktivism</a>  <a href='/tag/hacktivists' class='article__tag'>hacktivists</a>  <a href='/tag/anonymous' class='article__tag'>anonymous</a>  <a href='/tag/communities' class='article__tag'>communities</a>  <a href='/tag/analysis' class='article__tag'>analysis</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "hacktivism, hacktivists, anonymous, communities, and analysis",
+      "url"      : "/hacktivism-0",
+      "date"     : "2020-06-02 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Operational security techniques in asymmetric conflicts - I (threat modeling)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/opsec-1'> <img src='/images//opsec/opsec1.jpg' alt='Operational security techniques in asymmetric conflicts - I (threat modeling)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/opsec-1'>Operational security techniques in asymmetric conflicts - I (threat modeling)</a> </h2> <p class='article__excerpt'> About asymmetric conflicts
+
+According to WikiPedia:
+
+Asymmetric warfare (or asymmetric engagement) is war between belliger... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-30T00:01:35+02:00'>30 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/opsec' class='article__tag'>opsec</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "opsec",
+      "url"      : "/opsec-1",
+      "date"     : "2020-05-30 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering x64 binaries with Radare2 - 15 (Windows fundamentals; Intro to WinApi and file management)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-14'> <img src='/images//radare2/radare2_15.png' alt='Reverse engineering x64 binaries with Radare2 - 15 (Windows fundamentals; Intro to WinApi and file management)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-14'>Reverse engineering x64 binaries with Radare2 - 15 (Windows fundamentals; Intro to WinApi and file management)</a> </h2> <p class='article__excerpt'> Today we are going to talk about the windows api, something that will allow us to do similar stuff as what we are doing wi... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-26T00:01:35+02:00'>26 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-14",
+      "date"     : "2020-05-26 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering x64 binaries with Radare2 - 14 - I (linux systems programming; theory, syscalls, files and ESIL)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-13'> <img src='/images//radare2/radare2_14.png' alt='Reverse engineering x64 binaries with Radare2 - 14 - I (linux systems programming; theory, syscalls, files and ESIL)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-13'>Reverse engineering x64 binaries with Radare2 - 14 - I (linux systems programming; theory, syscalls, files and ESIL)</a> </h2> <p class='article__excerpt'> What’s up family, today we are going one step further in reversing. From our fist reversing tutorial untill now, we saw th... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-16T00:01:35+02:00'>16 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-13",
+      "date"     : "2020-05-16 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 13 (defines, unions and bitmaps)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-12'> <img src='/images//radare2/radare2_13.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 13 (defines, unions and bitmaps)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-12'>Reverse engineering 32 and 64 bits binaries with Radare2 - 13 (defines, unions and bitmaps)</a> </h2> <p class='article__excerpt'> Today we are gonna get a bit low level. We’ll review important stuff like unions bitmaps and defines, that are commonly us... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-14T00:01:35+02:00'>14 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-12",
+      "date"     : "2020-05-14 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 12 (linked lists, enums, bitwise operations and r2pipe)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-11'> <img src='/images//radare2/radare2_12.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 12 (linked lists, enums, bitwise operations and r2pipe)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-11'>Reverse engineering 32 and 64 bits binaries with Radare2 - 12 (linked lists, enums, bitwise operations and r2pipe)</a> </h2> <p class='article__excerpt'> Hello everybody!
+
+We are about to end this first part of the course, aren’t you excited? I’m sure you are.
+
+Today we will ... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-12T00:01:35+02:00'>12 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-11",
+      "date"     : "2020-05-12 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 11 (more pointers and dynamic structs)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-10'> <img src='/images//radare2/radare2_10.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 11 (more pointers and dynamic structs)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-10'>Reverse engineering 32 and 64 bits binaries with Radare2 - 11 (more pointers and dynamic structs)</a> </h2> <p class='article__excerpt'> As pointers and dynamic memory in general are a very relevant topics that play a criticcal role in modern programs they de... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-08T00:01:35+02:00'>08 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-10",
+      "date"     : "2020-05-08 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (pointers and dynamic memory)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-9'> <img src='/images//radare2/radare2_10.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (pointers and dynamic memory)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-9'>Reverse engineering 32 and 64 bits binaries with Radare2 - 10 (pointers and dynamic memory)</a> </h2> <p class='article__excerpt'> Hello I’m Artik Blue and today you will finally understand C pointers.
+
+Let’s start with this code
+#include &lt;stdio.h&gt... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-07T00:01:35+02:00'>07 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-9",
+      "date"     : "2020-05-07 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 9 (files; read, write, seek and some heaps :O)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-8'> <img src='/images//radare2/radare2_9.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 9 (files; read, write, seek and some heaps :O)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-8'>Reverse engineering 32 and 64 bits binaries with Radare2 - 9 (files; read, write, seek and some heaps :O)</a> </h2> <p class='article__excerpt'> Heeello!
+
+Today I want to talk you about file operations. File read and write operations are very important as most of the... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-06T00:01:35+02:00'>06 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-8",
+      "date"     : "2020-05-06 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 8 (start doing crackmes now!)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-8-i'> <img src='/images//radare2/radare2_8i.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 8 (start doing crackmes now!)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-8-i'>Reverse engineering 32 and 64 bits binaries with Radare2 - 8 (start doing crackmes now!)</a> </h2> <p class='article__excerpt'> Heeeeeello.
+
+No tutorial, only crackmes. 
+
+
+So according to Wikipedia: A crackme is a small program designed to test a pro... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-05T00:01:35+02:00'>05 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-8-i",
+      "date"     : "2020-05-05 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 7 (struct arrays, r2pm and patching)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-7'> <img src='/images//radare2/radare2_8.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 7 (struct arrays, r2pm and patching)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-7'>Reverse engineering 32 and 64 bits binaries with Radare2 - 7 (struct arrays, r2pm and patching)</a> </h2> <p class='article__excerpt'> So today we are going to work with a more complete example related to structs, the goal is to correctly understand how the... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-05T00:01:35+02:00'>05 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-7",
+      "date"     : "2020-05-05 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 6 (2d arrays and structs)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-6'> <img src='/images//radare2/radare2_7.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 6 (2d arrays and structs)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-6'>Reverse engineering 32 and 64 bits binaries with Radare2 - 6 (2d arrays and structs)</a> </h2> <p class='article__excerpt'> Hi there, I hope you are all good, as I promised here we have this next part of the reversing with radare2 mini course :)
+... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-03T00:01:35+02:00'>03 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-6",
+      "date"     : "2020-05-03 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 5 (var types and casting)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-5'> <img src='images/radare2/radare2_6.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 5 (var types and casting)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-5'>Reverse engineering 32 and 64 bits binaries with Radare2 - 5 (var types and casting)</a> </h2> <p class='article__excerpt'> Hi folks and welcome back to the most awesome reverse engineering with r2 post series 8) Today I’m going to drop some note... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-02T00:01:35+02:00'>02 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-5",
+      "date"     : "2020-05-02 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 4 - II (more strings)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-4-ii'> <img src='/images/radare2/radare2_5.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 4 - II (more strings)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-4-ii'>Reverse engineering 32 and 64 bits binaries with Radare2 - 4 - II (more strings)</a> </h2> <p class='article__excerpt'> On this one, we are going to walk a little bit more through char arrays and strings to set solid fundamentals on the topic... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-05-01T00:01:35+02:00'>01 May 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-4-ii",
+      "date"     : "2020-05-01 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 4 (arrays and strings)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-4'> <img src='/images/radare2/radare_4.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 4 (arrays and strings)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-4'>Reverse engineering 32 and 64 bits binaries with Radare2 - 4 (arrays and strings)</a> </h2> <p class='article__excerpt'> Yeahyeah, we are back at it!
+
+Today I’m going to walk you through some very basic data structures such as uni dimensional ... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-04-30T00:01:35+02:00'>30 Apr 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-4",
+      "date"     : "2020-04-30 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 3 (funcs, cases and loops)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare-3'> <img src='/images//radare2/radare2_2.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 3 (funcs, cases and loops)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare-3'>Reverse engineering 32 and 64 bits binaries with Radare2 - 3 (funcs, cases and loops)</a> </h2> <p class='article__excerpt'> Here we go again. In the previous chapter of this radare2 full course, we walked through the very basic structure of an ex... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-04-27T00:01:35+02:00'>27 Apr 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare-3",
+      "date"     : "2020-04-27 00:01:35 +0200"
+    } ,
+  
+    {
+      "title"    : "Embedded systems programming with atmel328 - 6",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/arduino-embedded-5'> <img src='/images//arduino/keypad.jpg' alt='Embedded systems programming with atmel328 - 6'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/arduino-embedded-5'>Embedded systems programming with atmel328 - 6</a> </h2> <p class='article__excerpt'> About keypads
+Keypads are simple input devices that can be used in embedded projects. Most of the time, we can find keyboa... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-01-25T23:01:35+01:00'>25 Jan 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/arduino' class='article__tag'>arduino</a>  <a href='/tag/atmel' class='article__tag'>atmel</a>  <a href='/tag/processing' class='article__tag'>processing</a>  <a href='/tag/relay' class='article__tag'>relay</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "arduino, atmel, processing, and relay",
+      "url"      : "/arduino-embedded-5",
+      "date"     : "2020-01-25 23:01:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare2-2'> <img src='/images//radare2/radare2_20.png' alt='Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare2-2'>Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows</a> </h2> <p class='article__excerpt'> And after a very well deserved rest, here we go again. While these tutorials are generally aimed at developing skills in r... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-01-20T23:01:35+01:00'>20 Jan 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare2-2",
+      "date"     : "2020-01-20 23:01:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Async programming made easy with python asyncio",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/asyncio-python'> <img src='/images//asyncio/head.jpeg' alt='Async programming made easy with python asyncio'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/asyncio-python'>Async programming made easy with python asyncio</a> </h2> <p class='article__excerpt'> Good morning warriors of the code! Today I’m going to walk you through the misteries of asyncronous programming with pytho... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-01-19T23:01:35+01:00'>19 Jan 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/python' class='article__tag'>python</a>  <a href='/tag/asyncio' class='article__tag'>asyncio</a>  <a href='/tag/apis' class='article__tag'>apis</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "python, asyncio, and apis",
+      "url"      : "/asyncio-python",
+      "date"     : "2020-01-19 23:01:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Writting linux32 shellcode from scratch - 1",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/shellcode-linux32-1'> <img src='/images//shellcode/shellcode1.png' alt='Writting linux32 shellcode from scratch - 1'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/shellcode-linux32-1'>Writting linux32 shellcode from scratch - 1</a> </h2> <p class='article__excerpt'> Here we go!
+About this course
+In these series of posts we’ll walk through the creation and implementation of Linux Shellco... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-01-14T23:01:35+01:00'>14 Jan 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/shellcode' class='article__tag'>shellcode</a>  <a href='/tag/asm' class='article__tag'>asm</a>  <a href='/tag/linux' class='article__tag'>linux</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "shellcode, asm, and linux",
+      "url"      : "/shellcode-linux32-1",
+      "date"     : "2020-01-14 23:01:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Embedded systems programming with atmel328 - 5",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/arduino-embedded-5'> <img src='/images//arduino/relayheader.jpg' alt='Embedded systems programming with atmel328 - 5'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/arduino-embedded-5'>Embedded systems programming with atmel328 - 5</a> </h2> <p class='article__excerpt'> What is a Relay?
+A relay is an electrically operated switch. It consists of a set of input terminals for a single or multi... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-01-14T23:01:35+01:00'>14 Jan 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/arduino' class='article__tag'>arduino</a>  <a href='/tag/atmel' class='article__tag'>atmel</a>  <a href='/tag/processing' class='article__tag'>processing</a>  <a href='/tag/relay' class='article__tag'>relay</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "arduino, atmel, processing, and relay",
+      "url"      : "/arduino-embedded-5",
+      "date"     : "2020-01-14 23:01:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Reverse engineering 32 and 64 bits binaries with Radare2 - 1",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/reversing-radare2-1'> <img src='/images/radare2/radare2_1.png' alt='Reverse engineering 32 and 64 bits binaries with Radare2 - 1'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/reversing-radare2-1'>Reverse engineering 32 and 64 bits binaries with Radare2 - 1</a> </h2> <p class='article__excerpt'> About this course
+This series of post that I’m starting with this one will cover the fundamentals of reverse engineering w... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-01-13T23:01:35+01:00'>13 Jan 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/reversing' class='article__tag'>reversing</a>  <a href='/tag/c' class='article__tag'>c</a>  <a href='/tag/radare' class='article__tag'>radare</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "reversing, c, and radare",
+      "url"      : "/reversing-radare2-1",
+      "date"     : "2020-01-13 23:01:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Embedded systems programming with atmel328 - 4 (temperature&amp;humidity)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/arduino-embedded-4'> <img src='/images//arduino/pdht.jpg' alt='Embedded systems programming with atmel328 - 4 (temperature&humidity)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/arduino-embedded-4'>Embedded systems programming with atmel328 - 4 (temperature&humidity)</a> </h2> <p class='article__excerpt'> About dht22
+The DHT22 sensor is the next version of the DHT11 sensor and is capable to read temperature and humidity value... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-01-11T23:01:35+01:00'>11 Jan 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/arduino' class='article__tag'>arduino</a>  <a href='/tag/atmel' class='article__tag'>atmel</a>  <a href='/tag/processing' class='article__tag'>processing</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "arduino, atmel, and processing",
+      "url"      : "/arduino-embedded-4",
+      "date"     : "2020-01-11 23:01:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Embedded systems programming with atmel328 - 3 (microservos)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/arduino-embedded-3'> <img src='/images//arduino/pservo.jpg' alt='Embedded systems programming with atmel328 - 3 (microservos)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/arduino-embedded-3'>Embedded systems programming with atmel328 - 3 (microservos)</a> </h2> <p class='article__excerpt'> About servo-motors
+Servo motors are small dc engines that transmit their power to a series of gears to maximize the amount... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-01-11T23:01:35+01:00'>11 Jan 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/arduino' class='article__tag'>arduino</a>  <a href='/tag/atmel' class='article__tag'>atmel</a>  <a href='/tag/processing' class='article__tag'>processing</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "arduino, atmel, and processing",
+      "url"      : "/arduino-embedded-3",
+      "date"     : "2020-01-11 23:01:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Madrid real estate renting market data analysis",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/arduino-embedded-2'> <img src='/images//madrid_renting/group1pairs.png' alt='Madrid real estate renting market data analysis'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/arduino-embedded-2'>Madrid real estate renting market data analysis</a> </h2> <p class='article__excerpt'> Data analysis
+Today I’m working with the data that I gathered from “habitaclia.com”, related to the flat renting market in... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-01-11T23:01:35+01:00'>11 Jan 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/r' class='article__tag'>r</a>  <a href='/tag/python' class='article__tag'>python</a>  <a href='/tag/analysis' class='article__tag'>analysis</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "r, python, and analysis",
+      "url"      : "/arduino-embedded-2",
+      "date"     : "2020-01-11 23:01:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Embedded systems programming with atmel328 - 1",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/arduino-embedded-1'> <img src='/images/arduino/desktop2.png' alt='Embedded systems programming with atmel328 - 1'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/arduino-embedded-1'>Embedded systems programming with atmel328 - 1</a> </h2> <p class='article__excerpt'> About this course
+Hello all and welcome to this yet another “arduino” course! And yes I am totally aware that there are mo... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-01-11T23:01:35+01:00'>11 Jan 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/arduino' class='article__tag'>arduino</a>  <a href='/tag/atmel' class='article__tag'>atmel</a>  <a href='/tag/processing' class='article__tag'>processing</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "arduino, atmel, and processing",
+      "url"      : "/arduino-embedded-1",
+      "date"     : "2020-01-11 23:01:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Embedded systems programming with atmel328 - 2 (ultrasounds)",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/madrid-realestate-analysis'> <img src='/images//arduino/pultrasound.jpg' alt='Embedded systems programming with atmel328 - 2 (ultrasounds)'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/madrid-realestate-analysis'>Embedded systems programming with atmel328 - 2 (ultrasounds)</a> </h2> <p class='article__excerpt'> About the hc-sr04 sensor
+Among the lands of arduino and diy projects, the HC-SR04 is one of the easiest components to reco... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2020-01-05T23:01:35+01:00'>05 Jan 2020</time></span>  <div class='article-tags__box'>  <a href='/tag/arduino' class='article__tag'>arduino</a>  <a href='/tag/atmel' class='article__tag'>atmel</a>  <a href='/tag/processing' class='article__tag'>processing</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "arduino, atmel, and processing",
+      "url"      : "/madrid-realestate-analysis",
+      "date"     : "2020-01-05 23:01:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Selectors in Ember Page Object",
+      "article"  : "<div class='article col col-4 col-d-6 col-t-12'> <div class='article__inner'>  <div class='image-wrap'> <a class='article__image' href='/selectors-in-ember-page-object'> <img src='/images//emberjs_daily.png' alt='Selectors in Ember Page Object'> </a> </div>  <div class='article__content'> <h2 class='article__title'> <a href='/selectors-in-ember-page-object'>Selectors in Ember Page Object</a> </h2> <p class='article__excerpt'> Selectors in Ember Page Object
+Ember CLI Page Object is a fantastic addon. It’s an implementation of Page Object Pattern f... </p> <div class='article__meta'> <a href='/about/' class='article__author-link'>Artik Blue</a> <span class='article__date'><time datetime='2019-01-19T23:01:35+01:00'>19 Jan 2019</time></span>  <div class='article-tags__box'>  <a href='/tag/Ember.js' class='article__tag'>Ember.js</a>  <a href='/tag/Testing' class='article__tag'>Testing</a>  <a href='/tag/Patterns' class='article__tag'>Patterns</a>  <a href='/tag/JavaScript' class='article__tag'>JavaScript</a>  </div>  </div> </div> </div> </div>",
+      "category" : "",
+      "tags"     : "Ember.js, Testing, Patterns, and JavaScript",
+      "url"      : "/selectors-in-ember-page-object",
+      "date"     : "2019-01-19 23:01:35 +0100"
+    } 
+  
+]

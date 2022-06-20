@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering x64 binaries with Radare2 - 16 - II (more sockets, http emulation, radasm, ragg and shellcode)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_17.png
-featured_image: assets/images/radare2/radare2_17.png
+title:  Reverse engineering x64 binaries with Radare2 - 16 - II (more sockets, http emulation, radasm, ragg and shellcode)
+tags: reversing c radare
+image: '/images//radare2/radare2_17.png'
+date: 2020-06-04 15:01:35 -0700
 ---
 
 ### Performing get requests with UNIX sockets

@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering x64 binaries with Radare2 - 16 (unix sockets fundamentals)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_16.png
-featured_image: assets/images/radare2/radare2_16.png
+title:  Reverse engineering x64 binaries with Radare2 - 16 (unix sockets fundamentals)
+tags: reversing c radare
+image: '/images//radare2/radare2_16.png'
+date: 2020-06-01 15:01:35 -0700
 ---
 
 Today we'll talk about sockets, fundamental stuff on computer progams and used by many malware and exploits. We'll start from the very basics and move to some actual examples later on.

@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Embedded systems programming with atmel328 - 2 (ultrasounds) "
-tags: [arduino, atmel, processing]
-featured_image_thumbnail: assets/images/arduino/pultrasound.jpg
-featured_image: assets/images/arduino/pultrasound.jpg
+title:  Embedded systems programming with atmel328 - 2 (ultrasounds) 
+tags: arduino atmel processing
+image: '/images//arduino/pultrasound.jpg'
+date: 2020-01-05 15:01:35 -0700
 ---
 
 

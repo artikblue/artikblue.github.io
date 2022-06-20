@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Embedded systems programming with atmel328 - 5"
-tags: [arduino, atmel, processing, relay]
-featured_image_thumbnail: assets/images/arduino/relayheader.jpg
-featured_image: assets/images/arduino/relayheader.jpg
+title:  Embedded systems programming with atmel328 - 5
+tags: arduino atmel processing relay
+image: '/images//arduino/relayheader.jpg'
+date:  2020-01-14 15:01:35 -0700
 ---
 
 #### What is a Relay?

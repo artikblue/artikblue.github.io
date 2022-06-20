@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 13 (defines, unions and bitmaps)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_13.png
-featured_image: assets/images/radare2/radare2_13.png
+title:  Reverse engineering 32 and 64 bits binaries with Radare2 - 13 (defines, unions and bitmaps)
+tags: reversing c radare
+image: '/images//radare2/radare2_13.png'
+date: 2020-05-13 15:01:35 -0700
 ---
 
 Today we are gonna get a bit low level. We'll review important stuff like unions bitmaps and defines, that are commonly used in progams that run inside small systems.

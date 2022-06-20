@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_20.png
-featured_image: assets/images/radare2/radare2_20.png
+title:  Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows
+tags: reversing, c, radare
+image: '/images//radare2/radare2_20.png'
+date: 2022-06-12 15:01:35 -0700
 ---
 
 And after a very well deserved rest, here we go again. While these tutorials are generally aimed at developing skills in reverse engineergin using open source tools such as radare2 when possible I think that a general knowledge on basic exploitation techniques is a must, as most of the times you'll find malware using exploits to gain access to the system, you'll see your own projects failing due to mistakes that can be vulnerabilities and overall knowing about explotation will make things easier for you, as you will get a wider picture. 

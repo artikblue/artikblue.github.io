@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_22.png
-featured_image: assets/images/radare2/radare2_22.png
+title:  Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack
+tags: reversing c radare
+image: '/images//radare2/radare2_22.png'
+date: 2022-06-19 15:01:35 -0700
 ---
 
 ##### DEP and Execution on the stack

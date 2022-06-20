@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 5 (var types and casting)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_6.png
-featured_image: assets/images/radare2/radare2_6.png
+title: Reverse engineering 32 and 64 bits binaries with Radare2 - 5 (var types and casting)
+tags: reversing c radare
+image: images/radare2/radare2_6.png
+date: 2020-05-01 15:01:35 -0700
 ---
 
 Hi folks and welcome back to the most awesome reverse engineering with r2 post series 8) Today I'm going to drop some notes on very basic variable types you may encounter when reversing C code (and in general terms) and we'll review how casting is done at low level. It will be relatively quick.

@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Anonymous and the rise of 'hacktivism' as a collective action phenomenon"
-tags: [hacktivism, hacktivists, anonymous, communities, analysis]
-featured_image_thumbnail: assets/images/hacktivism/anonymous_0.jpg
-featured_image:  assets/images/hacktivism/anonymous_0.jpg
+title:  Anonymous and the rise of 'hacktivism' as a collective action phenomenon
+tags: hacktivism hacktivists anonymous communities analysis
+image: '/images//hacktivism/anonymous_0.jpg'
+date: 2020-06-01 15:01:35 -0700
 ---
 
 #### Abstract

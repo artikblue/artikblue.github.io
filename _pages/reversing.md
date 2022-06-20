@@ -1,19 +1,17 @@
 ---
 layout: page
-title: Reverse engineering course (with radare2)
+title: Reversing
 permalink: /reversing
 comments: false
+image: '/images//radare2.png'
 ---
-
-
 <div class="row justify-content-between">
 <div class="col-md-8 pr-5">
+<h2>Reverse engineering with radare2</h2>
 <p>Some notes on reverse engineering on various architectures, mostly using free software such as the radare2 framework, gdb, frida, x64dbg among others</p>
 
 <i><a href="https://www.twitter.com/artikblue">Wanna show your support to these materials? Follow me on twitter at @artikblue and let me know</a>If I see interest I'll post more :)</i>
-<hr />
 <h3>Reversing basic C code (x86)</h3>
-<hr />
 <ul>
   <li><a href="https://artik.blue/reversing-radare2-1">Reversing x32/x64 with radare2 - 1 (intro) </a></li>
   <li><a href="https://artik.blue/reversing-radare2-2">Reversing x32/x64 with radare2 - 2 (conditionals) </a></li>
@@ -30,9 +28,7 @@ comments: false
   <li><a href="https://artik.blue/reversing-radare-11">Reversing x32/x64 with radare2 - 11 (linked lists, enums, bitwise operations and r2pipe)</a></li>
   <li><a href="https://artik.blue/reversing-radare-12">Reversing x32/x64 with radare2 - 12 (defines, unions and bitmaps)</a></li>
 </ul>
-<hr />
 <h3>Advanced topics on reversing C code (Windows and Unix)</h3>
-<hr />
 <ul>
   <li><a href="https://artik.blue/reversing-radare-13">Reverse engineering x64 binaries with Radare2 - 13 (linux systems programming: theory, syscalls, files and ESIL)</a></li>
   <li><a href="https://artik.blue/reversing-radare-14">Reverse engineering x64 binaries with Radare2 - 14 (the windows api: theory, helloworld and files)</a></li>
@@ -44,8 +40,6 @@ comments: false
   <li><a href="https://artik.blue/reversing-radare-20">Reverse engineering x64 binaries with Radare2 - 19 (Exploiting basic Buffer Overflows)</a></li>
   <li><a href="https://artik.blue/reversing-radare-21">Reverse engineering x64 binaries with Radare2 - 20 (Bypassing DEP with simple ROP Chains)</a></li>
   <li><a href="https://artik.blue/reversing-radare-22">Reverse engineering x64 binaries with Radare2 - 21 (Enabling code execution on stack)</a></li>
-
 </ul>
-<hr />
 <h3>Malware analysis</h3>
 <hr />

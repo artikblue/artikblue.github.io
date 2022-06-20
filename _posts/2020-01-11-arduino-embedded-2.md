@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Madrid real estate renting market data analysis"
-tags: [r, python, analysis]
-featured_image_thumbnail: assets/images/madrid_renting/group1pairs.png
-featured_image: assets/images/madrid_renting/group1pairs.png
+title:  Madrid real estate renting market data analysis
+tags: r python analysis
+image: '/images//madrid_renting/group1pairs.png'
+date: 2020-01-11 15:01:35 -0700
 ---
 
 

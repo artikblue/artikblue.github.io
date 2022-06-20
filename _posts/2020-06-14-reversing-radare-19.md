@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering x64 binaries with Radare2 - 19 (unix encrypted bind shells over TLS)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_19.png
-featured_image: assets/images/radare2/radare2_19.png
+title:  Reverse engineering x64 binaries with Radare2 - 19 (unix encrypted bind shells over TLS)
+tags: reversing c radare
+image: '/images//radare2/radare2_19.png'
+date: 2020-06-14 15:01:35 -0700
 ---
 
 You see, it's been a while and together we've learned a lot of things about the C language and it's adventures inside the CPU :)

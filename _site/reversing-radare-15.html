@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Reverse engineering x64 binaries with Radare2 - 16 (unix sockets fundamentals)</title>
+  <meta name='description' content='All things cyber'>
+
+  <link rel="canonical" href="http://localhost:4000/reversing-radare-15">
+  <link rel="alternate" type="application/rss+xml" title="Artik Blue" href="/feed.xml">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Ionicons -->
+  <link href="https://unpkg.com/ionicons@4.2.2/dist/css/ionicons.min.css" rel="stylesheet">
+
+  <style>
+  
+      /*!------------------------------------------------------------------
+[MAIN STYLESHEET]
+-------------------------------------------------------------------*/.list-reset{list-style-type:none;margin:0;padding:0}.clearfix::after,.clearfix ::before{content:"";display:table;clear:both}.screen-reader-text{clip:rect(1px, 1px, 1px, 1px);height:1px;overflow:hidden;position:absolute !important;width:1px;word-wrap:normal !important}/*! normalize.css v8.0.0 | MIT License | github.com/necolas/normalize.css */html{line-height:1.15;-webkit-text-size-adjust:100%}body{margin:0}h1{font-size:2em;margin:0.67em 0}hr{box-sizing:content-box;height:0;overflow:visible}pre{font-family:monospace, monospace;font-size:1em}a{background-color:transparent}abbr[title]{border-bottom:none;text-decoration:underline;text-decoration:underline dotted}b,strong{font-weight:bolder}code,kbd,samp{font-family:monospace, monospace;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-0.25em}sup{top:-0.5em}img{border-style:none}button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;line-height:1.15;margin:0}button,input{overflow:visible}button,select{text-transform:none}button,[type="button"],[type="reset"],[type="submit"]{-webkit-appearance:button}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner{border-style:none;padding:0}button:-moz-focusring,[type="button"]:-moz-focusring,[type="reset"]:-moz-focusring,[type="submit"]:-moz-focusring{outline:1px dotted ButtonText}fieldset{padding:0.35em 0.75em 0.625em}legend{box-sizing:border-box;color:inherit;display:table;max-width:100%;padding:0;white-space:normal}progress{vertical-align:baseline}textarea{overflow:auto}[type="checkbox"],[type="radio"]{box-sizing:border-box;padding:0}[type="number"]::-webkit-inner-spin-button,[type="number"]::-webkit-outer-spin-button{height:auto}[type="search"]{-webkit-appearance:textfield;outline-offset:-2px}[type="search"]::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}details{display:block}summary{display:list-item}template{display:none}[hidden]{display:none}body,h1,h2,h3,h4,h5,h6,p,blockquote,pre,dl,dd,ol,ul,fieldset,legend,figure,hr{margin:0;padding:0}li>ul,li>ol{margin-bottom:0}table{border-collapse:collapse;border-spacing:0}h1,h2,h3,h4,h5,h6,ul,ol,dl,blockquote,p,address,hr,table,fieldset,figure,pre{margin-bottom:30px}ul,ol,dd{margin-left:15px}ul li,ol li{margin-bottom:10px}.highlight{background:#161d25}.highlighter-rouge .highlight{background:#eef}.highlight .c{color:#998;font-style:italic}.highlight .err{color:#a61717;background-color:#e3d2d2}.highlight .k{font-weight:bold}.highlight .o{font-weight:bold}.highlight .cm{color:#998;font-style:italic}.highlight .cp{color:#999;font-weight:bold}.highlight .c1{color:#998;font-style:italic}.highlight .cs{color:#999;font-weight:bold;font-style:italic}.highlight .gd{color:#000;background-color:#fdd}.highlight .gd .x{color:#000;background-color:#faa}.highlight .ge{font-style:italic}.highlight .gr{color:#a00}.highlight .gh{color:#999}.highlight .gi{color:#000;background-color:#dfd}.highlight .gi .x{color:#000;background-color:#afa}.highlight .go{color:#888}.highlight .gp{color:#555}.highlight .gs{font-weight:bold}.highlight .gu{color:#aaa}.highlight .gt{color:#a00}.highlight .kc{font-weight:bold}.highlight .kd{font-weight:bold}.highlight .kp{font-weight:bold}.highlight .kr{font-weight:bold}.highlight .kt{color:#458;font-weight:bold}.highlight .m{color:#099}.highlight .s{color:#d14}.highlight .na{color:teal}.highlight .nb{color:#0086B3}.highlight .nc{color:#458;font-weight:bold}.highlight .no{color:teal}.highlight .ni{color:purple}.highlight .ne{color:#900;font-weight:bold}.highlight .nf{color:#900;font-weight:bold}.highlight .nn{color:#555}.highlight .nt{color:navy}.highlight .nv{color:teal}.highlight .ow{font-weight:bold}.highlight .w{color:#bbb}.highlight .mf{color:#099}.highlight .mh{color:#099}.highlight .mi{color:#099}.highlight .mo{color:#099}.highlight .sb{color:#d14}.highlight .sc{color:#d14}.highlight .sd{color:#d14}.highlight .s2{color:#d14}.highlight .se{color:#d14}.highlight .sh{color:#d14}.highlight .si{color:#d14}.highlight .sx{color:#d14}.highlight .sr{color:#009926}.highlight .s1{color:#d14}.highlight .ss{color:#990073}.highlight .bp{color:#999}.highlight .vc{color:teal}.highlight .vg{color:teal}.highlight .vi{color:teal}.highlight .il{color:#099}.container{max-width:1270px;padding-left:15px;padding-right:15px;margin:0 auto}@media only screen and (max-width: 1300px){.container{max-width:1100px}}@media only screen and (max-width: 1130px){.container{max-width:1000px}}@media only screen and (max-width: 1024px){.container{max-width:740px}}@media only screen and (max-width: 768px){.container{max-width:540px}}@media only screen and (max-width: 576px){.container{max-width:380px}}.row{display:flex;flex-wrap:wrap;flex:0 1 auto;flex-direction:row;box-sizing:border-box;margin-left:-15px;margin-right:-15px}.col{padding-left:15px;padding-right:15px}[class^="col-"]{flex:auto}.col-0{width:0%}.col-1{width:8.3333333333%}.col-2{width:16.6666666667%}.col-3{width:25%}.col-4{width:33.3333333333%}.col-5{width:41.6666666667%}.col-6{width:50%}.col-7{width:58.3333333333%}.col-8{width:66.6666666667%}.col-9{width:75%}.col-10{width:83.3333333333%}.col-11{width:91.6666666667%}.col-12{width:100%}.push-0{margin-left:0%}.push-1{margin-left:8.3333333333%}.push-2{margin-left:16.6666666667%}.push-3{margin-left:25%}.push-4{margin-left:33.3333333333%}.push-5{margin-left:41.6666666667%}.push-6{margin-left:50%}.push-7{margin-left:58.3333333333%}.push-8{margin-left:66.6666666667%}.push-9{margin-left:75%}.push-10{margin-left:83.3333333333%}.push-11{margin-left:91.6666666667%}.push-12{margin-left:100%}.pull-0{margin-right:0%}.pull-1{margin-right:8.3333333333%}.pull-2{margin-right:16.6666666667%}.pull-3{margin-right:25%}.pull-4{margin-right:33.3333333333%}.pull-5{margin-right:41.6666666667%}.pull-6{margin-right:50%}.pull-7{margin-right:58.3333333333%}.pull-8{margin-right:66.6666666667%}.pull-9{margin-right:75%}.pull-10{margin-right:83.3333333333%}.pull-11{margin-right:91.6666666667%}.pull-12{margin-right:100%}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}img[data-action="zoom"]{cursor:pointer;cursor:-webkit-zoom-in;cursor:-moz-zoom-in}.zoom-img,.zoom-img-wrap{position:relative;z-index:666;-webkit-transition:all 300ms;-o-transition:all 300ms;transition:all 300ms}img.zoom-img{cursor:pointer;cursor:-webkit-zoom-out;cursor:-moz-zoom-out}.zoom-overlay{z-index:420;background:#161d25;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;opacity:0;-webkit-transition:opacity 300ms;-o-transition:opacity 300ms;transition:opacity 300ms}.zoom-overlay-open .zoom-overlay{opacity:1}.zoom-overlay-open,.zoom-overlay-transitioning{cursor:default}.animate{animation:animateElement cubic-bezier(0.3, 0.45, 0.45, 0.95) 0.75s;animation-duration:0.5s;animation-iteration-count:1;transition:transform .15s}@keyframes animateElement{0%{opacity:0;transform:translate(0px, 50px)}100%{opacity:1;transform:translate(0px, 0px)}}*,*::after,*::before{box-sizing:border-box}body{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-size:18px;line-height:34px;border:10px solid #131212;color:#fff;background-color:#131212;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}body.dark .footer__head{background:#131212}@media only screen and (max-width: 768px){body.dark .footer__head{padding:40px}}@media only screen and (max-width: 576px){body.dark .footer__head{padding:30px}}body.dark .subscribe-form .subscribe-email{background:#161d25}@media only screen and (max-width: 576px){body{font-size:16px;line-height:29px;border-width:5px}}*::selection{color:#fff;background-color:rgba(0,112,255,0.8)}h1,h2,h3,h4,h5,h6{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-weight:700;line-height:1.3;letter-spacing:-1px}h1{font-size:36px}h2{font-size:28px}h3{font-size:24px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px}blockquote{position:relative;margin-top:30px;padding:25px 25px 15px 60px;font-size:30px;line-height:45px;font-weight:600;font-style:normal}blockquote::before{content:'\201C';position:absolute;top:0.35em;left:0.05em;font-size:3.5em;color:#0070ff}blockquote p{margin-bottom:10px}blockquote cite{display:inline-block;margin-top:7px;font-size:15px;font-style:normal;color:#ccc}blockquote cite:before{content:'\2014' '\00a0'}@media only screen and (max-width: 1024px){blockquote{font-size:24px;line-height:37px}}@media only screen and (max-width: 576px){blockquote{padding:38px 0 15px 35px;font-size:21px;line-height:31px}}pre{overflow:auto;padding:15px;margin-bottom:0;font-size:14px;white-space:pre-wrap;word-wrap:break-word;word-break:break-all}img,.zoom-img-wrap{max-width:100%;height:auto;vertical-align:middle}img+em,.zoom-img-wrap+em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}img+em a,.zoom-img-wrap+em a{border-bottom:1px solid #fff}img+em a:hover,.zoom-img-wrap+em a:hover{color:#fff;border-color:#0070ff}a{text-decoration:none;color:#fff;transition:all 0.35s}a:hover{color:#fff}hr{display:block;height:1px;width:100px;margin:50px 0;border:0;background:#000}.wrapper-page{margin-bottom:70px}@media only screen and (max-width: 768px){.wrapper-page{margin-bottom:60px}}@media only screen and (max-width: 576px){.wrapper-page{margin-bottom:40px}}.button{display:inline-block;height:45px;padding:0 20px;font-size:15px;font-weight:700;border:none;outline:none;color:#fff;background:#0070ff;transition:all 0.35s;cursor:pointer}.button:hover{color:#fff;background:#0065e6}.lazy{opacity:0;transition:0.3s}.lazy.loaded{opacity:1}.top{position:fixed;bottom:40px;right:-100px;z-index:1;width:28px;height:40px;font-size:28px;line-height:40px;text-align:center;border-radius:6px;background-color:#161d25;color:#fff;cursor:pointer;transition:all .25s ease;box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.top:hover{color:#fff;background-color:#0070ff}.top.is-active{right:40px}@media only screen and (max-width: 768px){.top{bottom:25px}.top.is-active{right:30px}}.header{height:auto;border-bottom:1px solid #131212;background:#161d25;transition:all 0.35s}.header .header__overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:15;background-color:rgba(17,17,17,0.7);cursor:pointer;opacity:0;visibility:hidden;transition:all 0.5s ease}@media only screen and (max-width: 1024px){.header .header__overlay.is-visible{opacity:1;visibility:visible}}.header__inner{position:relative;display:flex;align-items:center;min-height:80px}.logo__link{font-size:20px;line-height:26px;font-weight:700}.logo__link:hover{color:#0070ff}.logo__image{max-height:50px}.main-nav{margin-left:80px}@media only screen and (max-width: 1024px){.main-nav{position:fixed;top:0;left:inherit;right:-300px;bottom:0;transform:none;z-index:100;width:300px;height:100vh;padding:40px 30px 30px;border:10px solid #131212;transition:right 0.5s cubic-bezier(0.7, 0.4, 0, 1);background:#161d25}.main-nav.is-open{right:0}.main-nav .nav__list{width:100%}.main-nav .nav__list .nav__item{display:block;margin:0 10px}.main-nav .nav__list .nav__item:last-child{margin-right:10px}.main-nav .nav__list .nav__item .nav__link{display:block;padding:10px 0;font-size:16px;line-height:26px;font-weight:500}}@media only screen and (max-width: 576px){.main-nav{padding:20px 30px;border-width:5px}}.main-nav__box{display:flex;align-items:center}.main-nav__box .nav__icon-close{display:none;font-size:24px;text-align:right}.main-nav__box .nav__icon-close .ion-md-close{transition:all 0.35s;cursor:pointer}.main-nav__box .nav__icon-close .ion-md-close:hover{color:#0070ff}.main-nav__box .nav__title{display:none}@media only screen and (max-width: 1024px){.main-nav__box{display:block}.main-nav__box .nav__icon-close{display:block}.main-nav__box .nav__title{display:block;margin:0 10px 15px;padding-bottom:15px;font-size:24px;font-weight:700;color:#fff;border-bottom:1px solid #131212}}.nav__list .nav__item{display:inline-block;margin:0 20px}.nav__list .nav__item:last-child{margin-right:40px}.nav__list .nav__item .nav__link{font-size:15px;line-height:24px;font-weight:500}.nav__list .nav__item .nav__link:hover{color:#0070ff}.nav-buttons{display:flex;align-items:center;margin-left:auto;font-size:21px;color:#fff;cursor:pointer}.nav-buttons .nav__icon{transition:all 0.35s}.nav-buttons .nav__icon:hover{color:#0070ff}.nav-buttons .nav__icon:first-child{margin-right:15px}.nav-buttons .nav__icon-menu{display:none}@media only screen and (max-width: 1024px){.nav-buttons{margin-left:auto}.nav-buttons .nav__icon-menu{display:block}}.search{position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;transform:scale(0.95);overflow:auto;opacity:0;background:#131212;transition:all .25s ease}.search.is-visible{transform:scale(1);z-index:100;opacity:1;transition:all .25s ease}.search__box{width:50%;margin:0 auto;padding-top:140px}@media only screen and (max-width: 1024px){.search__box{width:80%;padding-top:100px}}.search__group{position:relative;margin-bottom:50px}.search__group .search__close{position:absolute;right:20px;top:17px;font-size:27px;line-height:40px;cursor:pointer;transition:all .2s}.search__group .search__close:hover{color:#0070ff}.search__group .search__text{width:100%;padding:20px;font-size:21px;line-height:31px;border:2px solid transparent;border-radius:4px;color:#fff;background:#161d25;outline:none;transition:all .2s}.search__group .search__text:focus{border-color:#0070ff}.search__group .search__text::placeholder{font-weight:500;color:#fff}.search__group .search__text::-ms-clear{display:none}.search-results-list .no-results{width:100%;font-size:21px;font-weight:600;text-align:center;color:#fff}.pagination{margin-top:40px}@media only screen and (max-width: 768px){.pagination{margin-top:30px}}@media only screen and (max-width: 576px){.pagination{margin-top:20px}}.pagination__inner{display:flex;justify-content:center;align-items:center}.pagination__list{display:flex;font-weight:600;height:40px;padding:0 20px;font-size:14px;line-height:40px;border-radius:3px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);color:#fff;background-color:#161d25}.pagination__count{display:inline-block;padding:0 15px;margin:0 15px;font-size:13px;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1);color:#ccc}.pagination__next i,.pagination__prev i{font-size:13px}.pagination__next:hover,.pagination__prev:hover{color:#0070ff}.pagination__next.disabled,.pagination__prev.disabled{opacity:0.2;cursor:not-allowed;color:inherit}.pagination__next i{margin-left:4px}.pagination__prev i{margin-right:4px}.footer{padding-top:70px;background:#161d25}.footer .row .col{flex-grow:1}.footer .footer__inner{padding:60px 0;margin:0 60px 0;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.footer .footer__head{margin:0 -60px;padding:60px;background:#161d25;box-shadow:0 10px 40px rgba(0,0,0,0.07)}.footer .footer__content{padding:60px 0}@media only screen and (max-width: 1024px){.footer .row .col:last-child>.widget{margin-bottom:0}}@media only screen and (max-width: 768px){.footer{padding-top:60px}.footer .footer__inner{padding:0;margin:0;background-image:none}.footer .footer__head{margin:0;padding:0;box-shadow:none}}@media only screen and (max-width: 576px){.footer{padding-top:50px}}@media only screen and (max-width: 1024px){.widget{margin-bottom:30px}}@media only screen and (max-width: 576px){.widget{margin-bottom:40px}}.widget__head{margin-bottom:20px}.widget__head .widget__title{margin:0;font-size:24px;color:#fff}.widget-gallery{padding:0 35px}@media only screen and (max-width: 1024px){.widget-gallery{padding:0}}.recent-posts{position:relative;display:flex;margin-bottom:15px}.recent-posts:last-child{margin-bottom:0}.recent-posts__header{margin-right:15px}.recent-posts__image{position:relative;display:block;margin-right:15px;min-width:80px;height:80px;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:#131212}.recent-posts__image img{position:absolute;top:0;width:100%;height:100%;object-fit:cover}.recent-posts__date{margin-bottom:5px;font-size:13px;line-height:16px;color:#ccc}.recent-posts__title{margin-bottom:0;font-size:17px;line-height:22px;font-weight:700}.recent-posts__title a{color:#fff}.recent-posts__title a:hover{color:#fff}.widget-subscribe .subscribe__inner{display:flex;flex-direction:column;justify-content:space-between}.widget-subscribe .subscribe__group{margin-bottom:20px}.widget-subscribe .subscribe__group .subscribe__title{margin-bottom:15px;color:#fff}.widget-subscribe .subscribe__group .subscribe__description{font-size:15px;line-height:22px;color:#ccc}.widget-subscribe .subscribe-form{position:relative;height:60px}.widget-subscribe .subscribe-form .subscribe-email{width:100%;height:100%;padding:20px;font-size:14px;line-height:19px;font-weight:500;color:rgba(255,255,255,0.8);border:2px solid #131212;background:transparent;transition:border-color .2s ease-in-out;outline:0}.widget-subscribe .subscribe-form .subscribe-email::placeholder{color:rgba(255,255,255,0.8)}.widget-subscribe .subscribe-form .subscribe-email:focus{color:rgba(255,255,255,0.8);border-color:#0070ff}.widget-subscribe .subscribe-form .subscribe-button{position:absolute;top:10px;right:10px;height:40px;padding:0 15px;font-size:14px}@media only screen and (max-width: 1130px){.widget-subscribe .subscribe-form .subscribe-email{font-size:13px}.widget-subscribe .subscribe-form .subscribe-button{font-size:14px}}.copyright{padding:0 0 30px;margin-top:10px;font-size:13px;font-weight:500;text-align:center;color:#ccc}.copyright a:hover{color:#0070ff}@media only screen and (max-width: 768px){.copyright{text-align:left}}.gallery-box{margin:40px 0}.gallery-box.gallery-footer{margin:0}.gallery-box em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}.gallery-box em a{border-bottom:1px solid #fff}.gallery-box em a:hover{color:#fff;border-color:#0070ff}.gallery{display:grid;grid-template-columns:repeat(3, auto);justify-content:center;align-content:center;grid-gap:10px}.gallery .gallery__image{background:#131212}.gallery .gallery__image img{display:block;width:100%;height:auto;object-fit:cover}.social{margin:60px 0 0;text-align:center}.social .social__list{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}.social .social__item{display:inline-block;margin:0 2px}.social .social__link{position:relative;z-index:1;padding:0 10px;font-size:21px;line-height:1}.social .social__link:hover{color:#fff}.social .social__link:hover::after{transform:translate3d(-50%, -50%, 0) scale(1)}.social .social__link::after{content:'';display:block;position:absolute;z-index:-1;top:50%;left:50%;transform:translate3d(-50%, -50%, 0) scale(0);width:100%;height:0;padding-bottom:100%;border-radius:50%;background:#0070ff;transition:all .25s}@media only screen and (max-width: 768px){.social{margin:50px 0 0;text-align:left}.social .social__list{justify-content:start}}.hero{padding:60px 0 70px;margin-bottom:70px;background:#161d25}.hero.hero--post .article__meta{margin-bottom:13px;font-size:14px;font-weight:500}.hero.hero--post .article__meta .article__date::before{content:none}.hero.hero--post .article__author-link{font-size:14px;line-height:20px;font-weight:500;color:#ccc}.hero.hero--post .article__author-link span{color:#ccc}.hero.hero--post .article__author-link:hover{color:#fff}.hero.hero--page .hero__title{margin-bottom:0}@media only screen and (max-width: 768px){.hero{padding:60px 0 60px;margin-bottom:60px}}@media only screen and (max-width: 576px){.hero{padding:40px 0 40px;margin-bottom:40px}}.hero__inner{display:flex;align-items:center}@media only screen and (max-width: 768px){.hero__inner{flex-direction:column}}.hero__left,.hero__right{width:50%}@media only screen and (max-width: 768px){.hero__left,.hero__right{width:100%}}.hero__left .hero__title,.hero__left .hero__job{font-size:50px;font-weight:700;letter-spacing:-2px;color:#fff}@media only screen and (max-width: 1130px){.hero__left .hero__title,.hero__left .hero__job{font-size:40px;line-height:1.2}}@media only screen and (max-width: 1024px){.hero__left .hero__title,.hero__left .hero__job{font-size:33px}}@media only screen and (max-width: 576px){.hero__left .hero__title,.hero__left .hero__job{font-size:27px}}.hero__left .hero__title{margin-right:20px;margin-bottom:10px}@media only screen and (max-width: 768px){.hero__left .hero__title{margin-right:0}}.hero__left .hero__job{margin-bottom:20px}.hero__left .hero__name{position:relative;font-weight:400}.hero__left .hero__name::after{content:"";position:absolute;left:0;bottom:0px;width:100%;height:38%;background-color:rgba(0,112,255,0.1)}.hero__left .hero__description{max-width:550px;margin:0;font-size:21px;font-weight:500;color:#ccc}@media only screen and (max-width: 1024px){.hero__left .hero__description{font-size:16px;line-height:26px}}.hero__left .hero__button{margin-top:20px;padding-right:12px;display:inline-block;font-size:16px;line-height:16px;font-weight:700;color:#fff;outline:none;cursor:pointer;transition:all 0.35s}.hero__left .hero__button:hover{color:#fff;background:#0065e6}.hero__left .hero__button .button-arrow{display:inline-block;margin-right:10px;width:30px;height:30px;line-height:30px;text-align:center;color:#fff;background:#0070ff}.hero__right{position:relative}.hero__right::after{content:"";position:absolute;top:50%;transform:translateY(-50%);display:block;width:100%;height:50%;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.hero__right .hero__image{position:relative;z-index:10;width:370px;height:470px;margin:0 auto}.hero__right .hero__image::before{content:"";display:block;position:absolute;top:0;z-index:1;width:100%;height:100%;background:#131212}.hero__right .hero__image img{position:absolute;top:0;z-index:1;height:100%;width:100%;object-fit:cover;box-shadow:10px 10px 0 #0070ff;background:#131212}@media only screen and (max-width: 1130px){.hero__right .hero__image{width:270px;height:370px}}@media only screen and (max-width: 1024px){.hero__right .hero__image{width:230px;height:330px}}@media only screen and (max-width: 768px){.hero__right{order:-1}.hero__right .hero__image{width:100%;height:330px;margin-bottom:40px}}@media only screen and (max-width: 576px){.hero__right .hero__image{height:270px;margin-bottom:30px}.hero__right .hero__image img{box-shadow:none}}.contact-head{margin-bottom:30px}.form-box{max-width:750px;margin:0 auto}.form__group{margin-bottom:20px}.form__group:last-child{margin-bottom:0}.form__input{width:100%;padding:20px;font-size:14px;font-weight:500;border:1px solid #131212;outline:none;transition:250ms;resize:vertical;color:rgba(255,255,255,0.8);background:#161d25}.form__input::placeholder{color:rgba(255,255,255,0.8)}.form__input:focus{border:1px solid #0070ff}.article{margin-bottom:30px;border-radius:3px;overflow:hidden;transition:transform .2s}.article:hover{transform:translateY(-3px)}.article__inner{box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.image-wrap{padding:15px 15px 0 15px;background:#161d25}.article__image{position:relative;display:block;height:0;padding-bottom:56.25%;background:#131212;overflow:hidden}.article__image img{position:absolute;width:100%;height:100%;object-fit:cover}.article__content{padding:25px;background:#161d25}.article__title{margin-bottom:10px;font-size:22px;line-height:32px}.article__title a:hover{color:#fff}.article__excerpt{font-size:15px;line-height:24px;font-weight:500;margin-bottom:20px;color:#ccc}.article__meta{display:flex;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:500;line-height:20px}.article__meta .article__author-link{color:#ccc}.article__meta .article__author-link:hover{color:#fff}.article__meta .article-tags__box{display:flex}.article__meta .article-tags__box::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}.article__meta .article-tags__box .article__tag{color:#ccc}.article__meta .article-tags__box .article__tag:hover{color:#fff}.article__meta .article-tags__box .article__tag::after{content:",";display:inline-block;margin:0 2px}.article__meta .article-tags__box .article__tag:last-child::after{content:none}.article__meta .article__date{color:#ccc}.article__meta .article__date::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}img[src$="centerme"]{display:block;margin:0 auto}.post,.page{max-width:850px;margin:0 auto;color:#fff}.post__content a,.page__content a{text-decoration:underline}.image-box{margin:40px 0}.post__share{margin:50px 0}.post__share .share__list{display:flex;justify-content:center;align-items:center;width:100%}.post__share .share__item{margin:0 2px;text-align:center}.post__share .share__link{display:block;padding:2px 12px;font-size:18px;color:#161d25}.post__share .share__link.share__facebook,.post__share .share__link.share__twitter,.post__share .share__link.share__linkedin,.post__share .share__link.share__pinterest{border:1px solid #131212;background:#161d25}.post__share .share__link.share__facebook:hover,.post__share .share__link.share__twitter:hover,.post__share .share__link.share__linkedin:hover,.post__share .share__link.share__pinterest:hover{color:#fff}.post__share .share__link.share__facebook{color:#3b5998}.post__share .share__link.share__facebook:hover{background:#3b5998}.post__share .share__link.share__twitter{color:#55acee}.post__share .share__link.share__twitter:hover{background:#55acee}.post__share .share__link.share__linkedin{color:#0077b5}.post__share .share__link.share__linkedin:hover{background:#0077b5}.post__share .share__link.share__pinterest{color:#bd081c}.post__share .share__link.share__pinterest:hover{background:#bd081c}@media only screen and (max-width: 576px){.post__share{margin:40px 0}}.post__navigation{display:flex;justify-content:space-between;margin-bottom:20px}.post__navigation .post__prev,.post__navigation .post__next{display:flex;width:48%;padding:25px;margin-bottom:30px;background:#161d25;box-shadow:0px 0px 20px rgba(0,0,0,0.05);transition:transform .2s}.post__navigation .post__prev:hover,.post__navigation .post__next:hover{transform:translateY(-3px)}.post__navigation .post__prev .prev__image,.post__navigation .post__prev .next__image,.post__navigation .post__next .prev__image,.post__navigation .post__next .next__image{position:relative;display:block;width:100px;min-width:100px;height:100px;background-color:#131212}.post__navigation .post__prev .prev__image img,.post__navigation .post__prev .next__image img,.post__navigation .post__next .prev__image img,.post__navigation .post__next .next__image img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.post__navigation .post__prev .prev__image,.post__navigation .post__next .prev__image{margin-right:15px}.post__navigation .post__prev .next__image,.post__navigation .post__next .next__image{margin-left:15px}.post__navigation .post__prev .post__nav,.post__navigation .post__next .post__nav{display:inline-block;margin-bottom:5px;font-size:13px;line-height:1;font-weight:500;color:#ccc}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{margin-bottom:0;font-size:18px;line-height:24px}.post__navigation .post__prev .post__nav__title a:hover,.post__navigation .post__next .post__nav__title a:hover{color:#fff}.post__navigation .post__next{text-align:right;margin-left:auto;justify-content:flex-end}@media only screen and (max-width: 768px){.post__navigation{flex-wrap:wrap}.post__navigation .post__prev,.post__navigation .post__next{width:100%}.post__navigation .post__prev{margin-bottom:30px}.post__navigation .next__box{margin-left:auto}}@media only screen and (max-width: 576px){.post__navigation{margin-bottom:10px}.post__navigation .post__prev,.post__navigation .post__next{padding:20px}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{font-size:15px;line-height:20px}}.post__comments{padding:40px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);background:#161d25}@media only screen and (max-width: 576px){.post__comments{padding:30px}}.error{margin-bottom:30px;text-align:center}.error .error__title{margin-bottom:0;font-size:100px}.error .error__text{margin-bottom:20px;font-size:21px;color:#ccc}.error .error__button{line-height:45px}.tag{padding:70px 0;margin-bottom:70px;text-align:center;background:#161d25}.tag .tag__meta{font-size:16px;color:#ccc}.tag .tag__title{margin:0;font-size:50px}@media only screen and (max-width: 768px){.tag{padding:60px 0;margin-bottom:60px}}@media only screen and (max-width: 576px){.tag{padding:40px 0;margin-bottom:40px}}
+
+  </style>
+</head>
+
+<body class="dark">
+
+  
+
+    <!-- begin header -->
+<header class="header">
+  <div class="container">
+    <div class="row">
+      <div class="header__inner col col-12">
+
+        <div class="logo">
+          <a class="logo__link" href="/">
+          
+            Artik Blue
+          
+          </a>
+        </div>
+
+        <nav class="main-nav">
+          <div class="main-nav__box">
+            <div class="nav__icon-close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <div class="nav__title">Menu</div>
+            <ul class="nav__list list-reset">
+              <li class="nav__item">
+                <a href="/" class="nav__link">Home</a>
+              </li>
+              
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/about/" class="nav__link">About</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/reversing" class="nav__link">Reversing</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+            </ul>
+          </div>
+        </nav>
+
+        <div class="nav-buttons">
+          <i class="nav__icon nav__icon-menu ion ion-md-menu"></i>
+          <i class="nav__icon nav__icon-search ion ion-md-search"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="header__overlay"></div>
+</header>
+<!-- end header -->
+
+<!-- begin search -->
+<div class="search">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="search__box">
+          <div class="search__group">
+            <div class="search__close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <label for="js-search-input" class="screen-reader-text">Search for Blog</label>
+            <input type="text" id="js-search-input" class="search__text" autocomplete="off" placeholder="Type to search...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="container__inner">
+          <div class="row search-results-list" id="js-results-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- end search -->
+    <!-- begin content -->
+    <main class="content" aria-label="Content">
+      <!-- begin wrapper-page -->
+      <div class="wrapper-page">
+        <!-- begin hero -->
+
+<section class="hero hero--post">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="hero__inner">
+          <div class="hero__left">
+            
+
+            <div class="article__meta">
+              <span class="article__date"><time datetime="2020-06-02T00:01:35+02:00">02 Jun 2020</time></span>
+              
+              <div class="article-tags__box">
+                
+                  <a href="/tag/reversing" class="article__tag">reversing</a>
+                
+                  <a href="/tag/c" class="article__tag">c</a>
+                
+                  <a href="/tag/radare" class="article__tag">radare</a>
+                
+              </div>
+              
+            </div>
+
+            <h1 class="hero__title">Reverse engineering x64 binaries with Radare2 - 16 (unix sockets fundamentals)</h1>
+            <a href="/about/" class="article__author-link"><span>By</span> Artik Blue</a>
+
+            
+          </div>
+
+          <div class="hero__right">
+
+            
+            <div class="hero__image">
+              <img class="lazy" data-src="/images//radare2/radare2_16.png" alt="Reverse engineering x64 binaries with Radare2 - 16 (unix sockets fundamentals)">
+            </div>
+
+            
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- end hero -->
+
+<!-- begin post -->
+<div class="container">
+  <article class="post animate">
+
+    <div class="post__content">
+      <p>Today we’ll talk about sockets, fundamental stuff on computer progams and used by many malware and exploits. We’ll start from the very basics and move to some actual examples later on.</p>
+
+<h3 id="about-sockets">About sockets</h3>
+
+<p>Sockets allow us to communicate between two different processes, the thing here is that those processess can be located in different systems, so they can be on the same machine or in different machines.</p>
+
+<p>In Unix systems, as we presented, every input/output operation is done over file descriptors remember the “everything is a file” thing we talked about, so we can use read() and write()</p>
+
+<p>Sockets are used to perform network communications, common applications such as ftp, mail or web clients are built on top of them and many high level functions present in many libraries make an internal use of sockets.</p>
+
+<p>Here I’m assuming that you already know about some networking fundamentals eg: what is an ip address vs what is a mac, ip classes and basic routing etc. You should also know about the fundamentals of domain name resolutions and the role of /etc/resolv.conf and /etc/hosts.</p>
+
+<h3 id="basic-usage">Basic usage</h3>
+
+<p>In general terms network progams work in a client-server architecture where one program waits for a client connection, then the client connects they exchange data and that’s it, the server can then wait for more connections and the client can re connect or connect to other servers. In P2P (peertopeer) architectures both programs act as client and server.</p>
+
+<h4 id="client-processes">Client processes</h4>
+
+<p>A client process would create a socket then connect it to a remote server on a specific port and write/read content from/to a particular buffer, it then may clear the buffer and read again or close the connection freeing the socket and proceed with the program.</p>
+
+<h4 id="server-processes">Server processes</h4>
+
+<p>A server would typically create a socket and bind it to an ip address and port then listen for connections. Those connections will be accepted and then the read/write will happen, at the end the process may repeat or the socket may be closed.</p>
+
+<p>Servers can be “iterative” or “concurrent”. An iterative server will accept connections one after another, a connection will be accepted and treated then the next one on queue will come and so on. Concurrent servers will treat many connections at the same time, by creating a new process for each connection.</p>
+
+<p>The most basic client-server interaction through sockets will look like this, those calls actually correspond to the unix syscalls we’ll be using after:</p>
+
+<p><img src="https://www.tutorialspoint.com/unix_sockets/images/socket_client_server.gif" alt="diagram from tutorialspoint" /></p>
+
+<h3 id="unix-sockets-in-c">Unix sockets in C</h3>
+
+<h4 id="basic-data-structures">Basic data structures</h4>
+
+<p>Various structures are used in Unix Socket Programming to hold information about the address and port, among other useful information. Most socket functions require a pointer to a socket address structure as an argument.</p>
+
+<p>So here we have the first structure</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">sockaddr</span> <span class="p">{</span>
+   <span class="kt">unsigned</span> <span class="kt">short</span>   <span class="n">sa_family</span><span class="p">;</span>
+   <span class="kt">char</span>             <span class="n">sa_data</span><span class="p">[</span><span class="mi">14</span><span class="p">];</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>This one holds the basic socket info, sa_family it references the kind of socket we are working with, most of the programs use AF_INET. Then sa_data relates to the specific data related to the family socket, for example when using AF_INET sa_data will hold stuff like the remote ip and port</p>
+
+<p>Then we have this second (complementary) structure over here:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="p">{</span>
+   <span class="kt">short</span> <span class="kt">int</span>            <span class="n">sin_family</span><span class="p">;</span>
+   <span class="kt">unsigned</span> <span class="kt">short</span> <span class="kt">int</span>   <span class="n">sin_port</span><span class="p">;</span>
+   <span class="k">struct</span> <span class="n">in_addr</span>       <span class="n">sin_addr</span><span class="p">;</span>
+   <span class="kt">unsigned</span> <span class="kt">char</span>        <span class="n">sin_zero</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>
+<span class="p">};</span>
+</code></pre></div></div>
+<p>Very similar to the other, you can guess about those fields and just note that sin_zero is not used.</p>
+
+<p>And finally we have this one:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">in_addr</span> <span class="p">{</span>
+   <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">s_addr</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div></div>
+<p>Used as sin_addr for the previous structure. Just note that s_addr represents ip, port in network byte order.</p>
+
+<p>Other structures such as hostent and servent exist as well but we won’t use them here.</p>
+
+<h4 id="about-the-network-byte-order">About the network byte order</h4>
+
+<p>Not all computers store the bytes that comprise a multibyte value in the same order. Little Endian and Big Endian are the schemes you’ll find out there.</p>
+
+<p>In Little Endian, low-order byte is stored on the starting address (A) and high-order byte is stored on the next address (A + 1). And in Big Endian high-order byte is stored on the starting address (A) and low-order byte is stored on the next address (A + 1). Little Endian is very common.</p>
+
+<p>To allow programs that may be running in different machines (that may employ their byte order) internet protocols (that are above individual physical machines) network byte order is implemented. So data in sin_port, sin_addr and sockaddr_in structs needs to be encoded in network byte order.</p>
+
+<p>So the following functions are used to convert hosts from big/little endian to byte order and back, you’ll see them in the code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>htons() host to network short
+htonl() host to network long
+ntohl() network to host long
+ntohs() network to host short
+</code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+
+   <span class="k">union</span> <span class="p">{</span>
+      <span class="kt">short</span> <span class="n">s</span><span class="p">;</span>
+      <span class="kt">char</span> <span class="n">c</span><span class="p">[</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">short</span><span class="p">)];</span>
+   <span class="p">}</span><span class="n">un</span><span class="p">;</span>
+	
+   <span class="n">un</span><span class="p">.</span><span class="n">s</span> <span class="o">=</span> <span class="mh">0x0102</span><span class="p">;</span>
+   
+   <span class="k">if</span> <span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">short</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">un</span><span class="p">.</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">un</span><span class="p">.</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
+         <span class="n">printf</span><span class="p">(</span><span class="s">"big-endian</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+      
+      <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">un</span><span class="p">.</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">un</span><span class="p">.</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+         <span class="n">printf</span><span class="p">(</span><span class="s">"little-endian</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+      
+      <span class="k">else</span>
+         <span class="n">printf</span><span class="p">(</span><span class="s">"unknown</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+   <span class="p">}</span>
+   <span class="k">else</span> <span class="p">{</span>
+      <span class="n">printf</span><span class="p">(</span><span class="s">"sizeof(short) = %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">short</span><span class="p">));</span>
+   <span class="p">}</span>
+	
+   <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>So, you get it right? As we previously saw, in a union like that that short s and the c array (the size of a short) will share space, then will be filled with 0x0102, so depending on where the last value, the 0x2 is stored we’ll know if we are on a big endian or little endian system.</p>
+
+<p>Just out of curiosity, let us open it inside our favorite reversing framework</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x564d509f9145]&gt; pdf
+            ; DATA XREF from entry0 @ 0x564d509f907d
+┌ 118: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_20h @ rbp-0x20
+│           ; var int64_t var_14h @ rbp-0x14
+│           ; var int64_t var_ah @ rbp-0xa
+│           ; var int64_t var_9h @ rbp-0x9
+│           ; var int64_t var_8h @ rbp-0x8
+│           ; arg int argc @ rdi
+│           ; arg char **argv @ rsi
+│           0x564d509f9145      55             push rbp
+│           0x564d509f9146      4889e5         mov rbp, rsp
+│           0x564d509f9149      4883ec20       sub rsp, 0x20
+│           0x564d509f914d      897dec         mov dword [var_14h], edi ; argc
+│           0x564d509f9150      488975e0       mov qword [var_20h], rsi ; argv
+│           0x564d509f9154      64488b042528.  mov rax, qword fs:[0x28]
+│           0x564d509f915d      488945f8       mov qword [var_8h], rax
+│           0x564d509f9161      31c0           xor eax, eax
+│           0x564d509f9163      66c745f60201   mov word [var_ah], 0x102 ; 258
+│           0x564d509f9169      0fb645f6       movzx eax, byte [var_ah]
+│           0x564d509f916d      3c01           cmp al, 1               ; 1
+│       ┌─&lt; 0x564d509f916f      7516           jne 0x564d509f9187
+│       │   0x564d509f9171      0fb645f7       movzx eax, byte [var_9h]
+│       │   0x564d509f9175      3c02           cmp al, 2               ; 2
+│      ┌──&lt; 0x564d509f9177      750e           jne 0x564d509f9187
+│      ││   0x564d509f9179      488d3d840e00.  lea rdi, str.big_endian ; 0x564d509fa004 ; "big-endian"
+│      ││   0x564d509f9180      e8abfeffff     call sym.imp.puts       ; int puts(const char *s)
+│     ┌───&lt; 0x564d509f9185      eb2a           jmp 0x564d509f91b1
+│     │└└─&gt; 0x564d509f9187      0fb645f6       movzx eax, byte [var_ah]
+│     │     0x564d509f918b      3c02           cmp al, 2               ; 2
+│     │ ┌─&lt; 0x564d509f918d      7516           jne 0x564d509f91a5
+│     │ │   0x564d509f918f      0fb645f7       movzx eax, byte [var_9h]
+│     │ │   0x564d509f9193      3c01           cmp al, 1               ; 1
+│     │┌──&lt; 0x564d509f9195      750e           jne 0x564d509f91a5
+│     │││   0x564d509f9197      488d3d710e00.  lea rdi, str.little_endian ; 0x564d509fa00f ; "little-endian"
+│     │││   0x564d509f919e      e88dfeffff     call sym.imp.puts       ; int puts(const char *s)
+│    ┌────&lt; 0x564d509f91a3      eb0c           jmp 0x564d509f91b1
+│    ││└└─&gt; 0x564d509f91a5      488d3d710e00.  lea rdi, str.unknown    ; 0x564d509fa01d ; "unknown"
+│    ││     0x564d509f91ac      e87ffeffff     call sym.imp.puts       ; int puts(const char *s)
+│    ││     ; CODE XREFS from main @ 0x564d509f9185, 0x564d509f91a3
+│    └└───&gt; 0x564d509f91b1      bf00000000     mov edi, 0
+└           0x564d509f91b6      e885feffff     call sym.imp.exit       ; void exit(int status)
+[0x564d509f9145]&gt; 
+</code></pre></div></div>
+<p>So the value is first loaded, and then as we know that our number “starts” with 1 and ends with 2 we try to discover how it has been loaded in memory</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55d1f3ec0163      66c745f60201   mov word [var_ah], 0x102 ; 258
+│           0x55d1f3ec0169 b    0fb645f6       movzx eax, byte [var_ah]
+│           0x55d1f3ec016d      3c01           cmp al, 1               ; 1
+│       ┌─&lt; 0x55d1f3ec016f      7516           jne 0x55d1f3ec0187
+│       │   0x55d1f3ec0171      0fb645f7       movzx eax, byte [var_9h]
+│       │   0x55d1f3ec0175      3c02           cmp al, 2               ; 2
+│      ┌──&lt; 0x55d1f3ec0177 b    750e           jne 0x55d1f3ec0187
+│      ││   0x55d1f3ec0179      488d3d840e00.  lea rdi, str.big_endian ; 0x55d1f3ec1004 ; "big-endian"
+│      ││   0x55d1f3ec0180      e8abfeffff     call sym.imp.puts       ; int puts(const char *s)
+</code></pre></div></div>
+<p>So we load the value and we see it in memory here, little endian</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55d1f3ec0169]&gt; pxw @ 0x7ffeee763916
+0x7ffeee763916  0x51000102 0x6efd5e62 0x01c009a0 0x55d1f3ec  ...Qb^.n.......U
+</code></pre></div></div>
+<p>And then we load it inside al and here we have it:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55d1f3ec0169]&gt; ds
+[0x55d1f3ec016d]&gt; dr al
+0x00000002
+</code></pre></div></div>
+<p>Most of the machines we can find out there work in little endian.</p>
+
+<p>So in many programs we would prefeer to work with IP addesses as ASCII strings or something like that, we have some interesting calls than can help us converting.</p>
+
+<p>For example inet_aton(const char *strptr, struct in_addr *addrptr) converts the specified string in the Internet standard dot notation to a network address, and stores the address in the structure provided. The converted address will be in Network Byte Order (bytes ordered from left to right). It returns 1 if the string was valid and 0 on error.</p>
+
+<p>Let’s see how this works on the inside:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;arpa/inet.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+
+<span class="kt">int</span> <span class="n">retval</span><span class="p">;</span>
+   <span class="k">struct</span> <span class="n">in_addr</span> <span class="n">addrptr</span><span class="p">;</span>
+   
+   <span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">addrptr</span><span class="p">,</span> <span class="sc">'\0'</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">addrptr</span><span class="p">));</span>
+   <span class="n">retval</span> <span class="o">=</span> <span class="n">inet_aton</span><span class="p">(</span><span class="s">"68.178.157.132"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">addrptr</span><span class="p">);</span>
+   <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55fdbfcb3155]&gt; pdf
+            ; DATA XREF from entry0 @ 0x55fdbfcb308d
+┌ 84: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_20h @ rbp-0x20
+│           ; var int64_t var_14h @ rbp-0x14
+│           ; var int64_t var_10h @ rbp-0x10
+│           ; var int64_t var_ch @ rbp-0xc
+│           ; var int64_t var_8h @ rbp-0x8
+│           ; arg int argc @ rdi
+│           ; arg char **argv @ rsi
+│           0x55fdbfcb3155      55             push rbp
+│           0x55fdbfcb3156      4889e5         mov rbp, rsp
+│           0x55fdbfcb3159      4883ec20       sub rsp, 0x20
+│           0x55fdbfcb315d      897dec         mov dword [var_14h], edi ; argc
+│           0x55fdbfcb3160      488975e0       mov qword [var_20h], rsi ; argv
+│           0x55fdbfcb3164      64488b042528.  mov rax, qword fs:[0x28]
+│           0x55fdbfcb316d      488945f8       mov qword [var_8h], rax
+│           0x55fdbfcb3171      31c0           xor eax, eax
+│           0x55fdbfcb3173      488d45f0       lea rax, [var_10h]
+│           0x55fdbfcb3177      ba04000000     mov edx, 4
+│           0x55fdbfcb317c      be00000000     mov esi, 0
+│           0x55fdbfcb3181      4889c7         mov rdi, rax
+│           0x55fdbfcb3184      e8a7feffff     call sym.imp.memset     ; void *memset(void *s, int c, size_t n)
+│           0x55fdbfcb3189      488d45f0       lea rax, [var_10h]
+│           0x55fdbfcb318d      4889c6         mov rsi, rax
+│           0x55fdbfcb3190      488d3d6d0e00.  lea rdi, str.68.178.157.132 ; 0x55fdbfcb4004 ; "68.178.157.132"
+│           0x55fdbfcb3197      e8a4feffff     call sym.imp.inet_aton  ; int inet_aton(const char *cp, void *pin)
+│           0x55fdbfcb319c      8945f4         mov dword [var_ch], eax
+│           0x55fdbfcb319f      bf00000000     mov edi, 0
+└           0x55fdbfcb31a4      e8a7feffff     call sym.imp.exit       ; void exit(int status)
+[0x55fdbfcb3155]&gt; 
+</code></pre></div></div>
+<p>First of all, the ip address is loaded as an ascii string in memory inside var_10h</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55fdbfcb3197]&gt; dr rdi
+0x55fdbfcb4004
+[0x55fdbfcb3197]&gt; pxw @ 0x55fdbfcb4004
+0x55fdbfcb4004  0x312e3836 0x312e3837 0x312e3735 0x00003233  68.178.157.132..
+</code></pre></div></div>
+<p>Then, after the call, our variable is updated like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55fdbfcb319c]&gt; pxw @ 0x7ffc84ca8590
+0x7ffc84ca8590  0x849db244 0x00007ffc 0x4fde3400 0xd921b956  D........4.OV.!.
+</code></pre></div></div>
+<p>And here we sii that 68.178.157.132 is represented as 0x849db244 in network byte order!</p>
+
+<p>Feel free to check it using this calculator here: https://ncalculators.com/digital-computation/ip-address-hex-decimal-binary.htm</p>
+
+<p>Knowing about the network byte order is important, specially if you are doing malware analysis as when working with some of those so called “indicators of compromise” network byte order needs to be taken into account as some malware can hardcode values like those for C&amp;C/Data Exfiltration related stuff through sockets.</p>
+
+<h4 id="main-networking-syscalls-in-unix">Main networking syscalls in Unix</h4>
+
+<h5 id="socket">Socket</h5>
+
+<p>To perform network I/O, the first thing a process must do is, call the socket function, specifying the type of communication protocol desired and protocol family, etc.
+It’ll work like this</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">socket</span> <span class="p">(</span><span class="kt">int</span> <span class="n">family</span><span class="p">,</span> <span class="kt">int</span> <span class="n">type</span><span class="p">,</span> <span class="kt">int</span> <span class="n">protocol</span><span class="p">);</span>
+</code></pre></div></div>
+<p>It will return a socket descriptor, same thing as a file descriptor it will be an identifier for the socket, write/read calls will be able to be done on it. Family can mainly be AF_INET and AF_INET6 for ipv4/ipv6 connections, other connections can be made but are less common and we won’t talk about them here. Type can be SOCK_STREAM, DGRAM, RAW, SEQPACKET will talk about them on the example, and finally protocol will commonly be IPPROTO_TCP/UDP. I assume you know about the fundamentals of networking.</p>
+
+<h5 id="connect">Connect</h5>
+<p>This call connects a (tcp) socket to a (tcp) server</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">connect</span><span class="p">(</span><span class="kt">int</span> <span class="n">sockfd</span><span class="p">,</span> <span class="k">struct</span> <span class="n">sockaddr</span> <span class="o">*</span><span class="n">serv_addr</span><span class="p">,</span> <span class="kt">int</span> <span class="n">addrlen</span><span class="p">);</span>
+</code></pre></div></div>
+<p>We enter the socket file descriptor and then a socket address for the server (corresponding to the sockaddr struct: ip and port in network byte order) along with its lenght.</p>
+
+<p>It will return 0 if everything worked fine.</p>
+
+<h5 id="bind">Bind</h5>
+
+<p>The bind function assigns a local protocol address to a socket. With the Internet protocols, the protocol address is the combination of either a 32-bit IPv4 address or a 128-bit IPv6 address, along with a 16-bit TCP or UDP port number. This function is called by TCP server only.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">bind</span><span class="p">(</span><span class="kt">int</span> <span class="n">sockfd</span><span class="p">,</span> <span class="k">struct</span> <span class="n">sockaddr</span> <span class="o">*</span><span class="n">my_addr</span><span class="p">,</span><span class="kt">int</span> <span class="n">addrlen</span><span class="p">);</span>
+</code></pre></div></div>
+<p>Parameters are the same as the previous function, will return 0 if it has sucessfully binded to the adress.</p>
+
+<h5 id="listen">Listen</h5>
+<p>The listen function performs two actions and it is called on the server it:</p>
+
+<ul>
+  <li>Converts an unconnected socket into a passive socket (the one that is waiting for connections) indicating that the kernel should accept incomming connections directed to the socket</li>
+  <li>Accepts a limited number of connections, indicated in the second parameter
+```c
+#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;</li>
+</ul>
+
+<p>int listen(int sockfd,int backlog);</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Parameters are obvious, it will return 0 on success.
+
+##### Accept
+The accept function is called by a TCP server to return the next completed connection from the front of the completed connection queue. It allows us to start communicating with a client.
+```c
+#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int accept (int sockfd, struct sockaddr *cliaddr, socklen_t *addrlen);
+</code></pre></div></div>
+<p>This call returns a non-negative descriptor on success, otherwise it returns -1 on error. The returned descriptor is assumed to be a client socket descriptor and all read-write operations will be done on this descriptor to communicate with the client.</p>
+
+<h5 id="send">Send</h5>
+<p>The send function is used to send data over stream sockets or CONNECTED datagram sockets. If you want to send data over UNCONNECTED datagram sockets, you must use sendto() function.</p>
+
+<p>You can use write() system call that we have previously seen to send data by writting to the socket.</p>
+
+<pre><code class="language-C">int send(int sockfd, const void *msg, int len, int flags);
+</code></pre>
+<p>Parameters are the socket file descriptor, a pointer to a buffer containing the bytes you wanna send, the lenght of those and some flags that will be set to zero.</p>
+
+<h5 id="recv">Recv</h5>
+<p>The recv function is used to receive data over stream sockets or CONNECTED datagram sockets. If you want to receive data over UNCONNECTED datagram sockets you must use recvfrom(). And this time yes, you can use read to get the content.</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">recv</span><span class="p">(</span><span class="kt">int</span> <span class="n">sockfd</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">flags</span><span class="p">);</span>
+</code></pre></div></div>
+<p>It works the same</p>
+
+<p>We also have to close() function that will close the socket virtually eliminating it.</p>
+
+<h4 id="the-server">The server</h4>
+
+<p>Here I present you the very very basic server program written in C using unix network related syscalls. You will find this example on many tutorials but I think it is pretty fundamental to get it right before moving into something more complex, everythig that relates to networking will be somewhow built on top of this, so if you get this well you almost have it all.</p>
+<pre><code class="language-C">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+#include &lt;netdb.h&gt;
+#include &lt;netinet/in.h&gt;
+
+#include &lt;string.h&gt;
+
+int main( int argc, char *argv[] ) {
+   int sockfd, newsockfd, portno, clilen;
+   char buffer[256];
+   struct sockaddr_in serv_addr, cli_addr;
+   int  n;
+   
+   /* First call to socket() function */
+   sockfd = socket(AF_INET, SOCK_STREAM, 0);
+   
+   if (sockfd &lt; 0) {
+      perror("ERROR opening socket");
+      exit(1);
+   }
+   
+   /* Initialize socket structure */
+   bzero((char *) &amp;serv_addr, sizeof(serv_addr)); // bzero initializes the data with zeros
+   portno = 5001;
+   
+   serv_addr.sin_family = AF_INET;
+   serv_addr.sin_addr.s_addr = INADDR_ANY;
+   serv_addr.sin_port = htons(portno);
+   
+   /* Now bind the host address using bind() call.*/
+   if (bind(sockfd, (struct sockaddr *) &amp;serv_addr, sizeof(serv_addr)) &lt; 0) {
+      perror("ERROR on binding");
+      exit(1);
+   }
+      
+   /* Now start listening for the clients, here process will
+      * go in sleep mode and will wait for the incoming connection
+   */
+   
+   listen(sockfd,5);
+   clilen = sizeof(cli_addr);
+   
+   /* Accept actual connection from the client */
+   newsockfd = accept(sockfd, (struct sockaddr *)&amp;cli_addr, &amp;clilen);
+	
+   if (newsockfd &lt; 0) {
+      perror("ERROR on accept");
+      exit(1);
+   }
+   
+   /* If connection is established then start communicating */
+   bzero(buffer,256);
+   n = read( newsockfd,buffer,255 );
+   
+   if (n &lt; 0) {
+      perror("ERROR reading from socket");
+      exit(1);
+   }
+   
+   printf("Here is the message: %s\n",buffer);
+   
+   /* Write a response to the client */
+   n = write(newsockfd,"I got your message",18);
+   
+   if (n &lt; 0) {
+      perror("ERROR writing to socket");
+      exit(1);
+   }
+      
+   return 0;
+}
+</code></pre>
+
+<p>So the program is simple, it is a server that will start listening and accepting connections at any address on port 5001 on the local machine, after a new connection it will read a message and write another one, then close.</p>
+
+<p>Let’s jump into radare2</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5595c1faa1d5]&gt; pdf
+            ; DATA XREF from entry0 @ 0x5595c1faa10d
+┌ 539: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_160h @ rbp-0x160
+│           ; var int64_t var_154h @ rbp-0x154
+│           ; var int64_t var_144h @ rbp-0x144
+│           ; var int64_t var_140h @ rbp-0x140
+│           ; var int64_t var_13ch @ rbp-0x13c
+│           ; var int64_t var_138h @ rbp-0x138
+│           ; var int64_t var_134h @ rbp-0x134
+│           ; var int64_t var_130h @ rbp-0x130
+│           ; var int64_t var_12eh @ rbp-0x12e
+│           ; var int64_t var_12ch @ rbp-0x12c
+│           ; var int64_t var_120h @ rbp-0x120
+│           ; var int64_t var_110h @ rbp-0x110
+│           ; var int64_t var_8h @ rbp-0x8
+│           ; arg int argc @ rdi
+│           ; arg char **argv @ rsi
+│           0x5595c1faa1d5      55             push rbp
+│           0x5595c1faa1d6      4889e5         mov rbp, rsp
+│           0x5595c1faa1d9      4881ec600100.  sub rsp, 0x160
+│           0x5595c1faa1e0      89bdacfeffff   mov dword [var_154h], edi ; argc
+│           0x5595c1faa1e6      4889b5a0feff.  mov qword [var_160h], rsi ; argv
+│           0x5595c1faa1ed      64488b042528.  mov rax, qword fs:[0x28]
+│           0x5595c1faa1f6      488945f8       mov qword [var_8h], rax
+│           0x5595c1faa1fa      31c0           xor eax, eax
+│           0x5595c1faa1fc      ba00000000     mov edx, 0
+│           0x5595c1faa201      be01000000     mov esi, 1
+│           0x5595c1faa206      bf02000000     mov edi, 2
+│           0x5595c1faa20b      e8c0feffff     call sym.imp.socket     ; int socket(int domain, int type, int protocol)
+│           0x5595c1faa210      8985c0feffff   mov dword [var_140h], eax
+│           0x5595c1faa216      83bdc0feffff.  cmp dword [var_140h], 0
+│       ┌─&lt; 0x5595c1faa21d      7916           jns 0x5595c1faa235
+│       │   0x5595c1faa21f      488d3dde0d00.  lea rdi, str.ERROR_opening_socket ; 0x5595c1fab004 ; "ERROR opening socket"
+│       │   0x5595c1faa226      e875feffff     call sym.imp.perror     ; void perror(const char *s)
+│       │   0x5595c1faa22b      bf01000000     mov edi, 1
+│       │   0x5595c1faa230      e88bfeffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x5595c1faa235      488d85d0feff.  lea rax, [var_130h]
+│           0x5595c1faa23c      48c700000000.  mov qword [rax], 0
+│           0x5595c1faa243      48c740080000.  mov qword [rax + 8], 0
+│           0x5595c1faa24b      c785c4feffff.  mov dword [var_13ch], 0x1389
+│           0x5595c1faa255      66c785d0feff.  mov word [var_130h], 2
+│           0x5595c1faa25e      c785d4feffff.  mov dword [var_12ch], 0
+│           0x5595c1faa268      8b85c4feffff   mov eax, dword [var_13ch]
+│           0x5595c1faa26e      0fb7c0         movzx eax, ax
+│           0x5595c1faa271      89c7           mov edi, eax
+│           0x5595c1faa273      e8d8fdffff     call sym.imp.htons
+│           0x5595c1faa278      668985d2feff.  mov word [var_12eh], ax
+│           0x5595c1faa27f      488d8dd0feff.  lea rcx, [var_130h]
+│           0x5595c1faa286      8b85c0feffff   mov eax, dword [var_140h]
+│           0x5595c1faa28c      ba10000000     mov edx, 0x10           ; 16
+│           0x5595c1faa291      4889ce         mov rsi, rcx
+│           0x5595c1faa294      89c7           mov edi, eax
+│           0x5595c1faa296      e8f5fdffff     call sym.imp.bind       ; int bind(int socket, struct sockaddr*address, socklen_t address_len)
+│           0x5595c1faa29b      85c0           test eax, eax
+│       ┌─&lt; 0x5595c1faa29d      7916           jns 0x5595c1faa2b5
+│       │   0x5595c1faa29f      488d3d730d00.  lea rdi, str.ERROR_on_binding ; 0x5595c1fab019 ; "ERROR on binding"
+│       │   0x5595c1faa2a6      e8f5fdffff     call sym.imp.perror     ; void perror(const char *s)
+│       │   0x5595c1faa2ab      bf01000000     mov edi, 1
+│       │   0x5595c1faa2b0      e80bfeffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x5595c1faa2b5      8b85c0feffff   mov eax, dword [var_140h]
+│           0x5595c1faa2bb      be05000000     mov esi, 5
+│           0x5595c1faa2c0      89c7           mov edi, eax
+│           0x5595c1faa2c2      e8b9fdffff     call sym.imp.listen
+│           0x5595c1faa2c7      c785bcfeffff.  mov dword [var_144h], 0x10 ; 16
+│           0x5595c1faa2d1      488d95bcfeff.  lea rdx, [var_144h]
+│           0x5595c1faa2d8      488d8de0feff.  lea rcx, [var_120h]
+│           0x5595c1faa2df      8b85c0feffff   mov eax, dword [var_140h]
+│           0x5595c1faa2e5      4889ce         mov rsi, rcx
+│           0x5595c1faa2e8      89c7           mov edi, eax
+│           0x5595c1faa2ea      e8c1fdffff     call sym.imp.accept
+│           0x5595c1faa2ef      8985c8feffff   mov dword [var_138h], eax
+│           0x5595c1faa2f5      83bdc8feffff.  cmp dword [var_138h], 0
+│       ┌─&lt; 0x5595c1faa2fc      7916           jns 0x5595c1faa314
+│       │   0x5595c1faa2fe      488d3d250d00.  lea rdi, str.ERROR_on_accept ; 0x5595c1fab02a ; "ERROR on accept"
+│       │   0x5595c1faa305      e896fdffff     call sym.imp.perror     ; void perror(const char *s)
+│       │   0x5595c1faa30a      bf01000000     mov edi, 1
+│       │   0x5595c1faa30f      e8acfdffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x5595c1faa314      488d85f0feff.  lea rax, [var_110h]
+│           0x5595c1faa31b      4889c6         mov rsi, rax
+│           0x5595c1faa31e      b800000000     mov eax, 0
+│           0x5595c1faa323      ba20000000     mov edx, 0x20           ; 32
+│           0x5595c1faa328      4889f7         mov rdi, rsi
+│           0x5595c1faa32b      4889d1         mov rcx, rdx
+│           0x5595c1faa32e      f348ab         rep stosq qword [rdi], rax
+│           0x5595c1faa331      488d8df0feff.  lea rcx, [var_110h]
+│           0x5595c1faa338      8b85c8feffff   mov eax, dword [var_138h]
+│           0x5595c1faa33e      baff000000     mov edx, 0xff           ; 255
+│           0x5595c1faa343      4889ce         mov rsi, rcx
+│           0x5595c1faa346      89c7           mov edi, eax
+│           0x5595c1faa348      b800000000     mov eax, 0
+│           0x5595c1faa34d      e81efdffff     call sym.imp.read       ; ssize_t read(int fildes, void *buf, size_t nbyte)
+│           0x5595c1faa352      8985ccfeffff   mov dword [var_134h], eax
+│           0x5595c1faa358      83bdccfeffff.  cmp dword [var_134h], 0
+│       ┌─&lt; 0x5595c1faa35f      7916           jns 0x5595c1faa377
+│       │   0x5595c1faa361      488d3dd20c00.  lea rdi, str.ERROR_reading_from_socket ; 0x5595c1fab03a ; "ERROR reading from socket"
+│       │   0x5595c1faa368      e833fdffff     call sym.imp.perror     ; void perror(const char *s)
+│       │   0x5595c1faa36d      bf01000000     mov edi, 1
+│       │   0x5595c1faa372      e849fdffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x5595c1faa377      488d85f0feff.  lea rax, [var_110h]
+│           0x5595c1faa37e      4889c6         mov rsi, rax
+│           0x5595c1faa381      488d3dcc0c00.  lea rdi, str.Here_is_the_message:__s ; 0x5595c1fab054 ; "Here is the message: %s\n"
+│           0x5595c1faa388      b800000000     mov eax, 0
+│           0x5595c1faa38d      e8cefcffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x5595c1faa392      8b85c8feffff   mov eax, dword [var_138h]
+│           0x5595c1faa398      ba12000000     mov edx, 0x12           ; 18
+│           0x5595c1faa39d      488d35c90c00.  lea rsi, str.I_got_your_message ; 0x5595c1fab06d ; "I got your message"
+│           0x5595c1faa3a4      89c7           mov edi, eax
+│           0x5595c1faa3a6      b800000000     mov eax, 0
+│           0x5595c1faa3ab      e880fcffff     call sym.imp.write      ; ssize_t write(int fd, const char *ptr, size_t nbytes)
+│           0x5595c1faa3b0      8985ccfeffff   mov dword [var_134h], eax
+│           0x5595c1faa3b6      83bdccfeffff.  cmp dword [var_134h], 0
+│       ┌─&lt; 0x5595c1faa3bd      7916           jns 0x5595c1faa3d5
+│       │   0x5595c1faa3bf      488d3dba0c00.  lea rdi, str.ERROR_writing_to_socket ; 0x5595c1fab080 ; "ERROR writing to socket"
+│       │   0x5595c1faa3c6      e8d5fcffff     call sym.imp.perror     ; void perror(const char *s)
+│       │   0x5595c1faa3cb      bf01000000     mov edi, 1
+│       │   0x5595c1faa3d0      e8ebfcffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x5595c1faa3d5      b800000000     mov eax, 0
+│           0x5595c1faa3da      488b4df8       mov rcx, qword [var_8h]
+│           0x5595c1faa3de      6448330c2528.  xor rcx, qword fs:[0x28]
+│       ┌─&lt; 0x5595c1faa3e7      7405           je 0x5595c1faa3ee
+│       │   0x5595c1faa3e9      e852fcffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x5595c1faa3ee      c9             leave
+└           0x5595c1faa3ef      c3             ret
+[0x5595c1faa1d5]&gt; 
+</code></pre></div></div>
+
+<p>First of all the program creates a socket for streaming, ipv4:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>           0x5595c1faa20b      e8c0feffff     call sym.imp.socket     ; int socket(int domain, int type, int protocol)
+│           ;-- rip:
+│           0x5595c1faa210 b    8985c0feffff   mov dword [var_140h], eax
+│           0x5595c1faa216      83bdc0feffff.  cmp dword [var_140h], 0
+│       ┌─&lt; 0x5595c1faa21d      7916           jns 0x5595c1faa235
+</code></pre></div></div>
+<p>Socket will have 0x3 as socket descriptor:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5595c1faa210]&gt; dr eax
+0x00000003
+</code></pre></div></div>
+
+<p>Then the serv_addr struct (sockaddr_in) will be initialized like this</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│       └─&gt; 0x5595c1faa235      488d85d0feff.  lea rax, [var_130h]
+│           0x5595c1faa23c      48c700000000.  mov qword [rax], 0
+│           0x5595c1faa243      48c740080000.  mov qword [rax + 8], 0
+│           0x5595c1faa24b      c785c4feffff.  mov dword [var_13ch], 0x1389 ; rdi
+│           0x5595c1faa255      66c785d0feff.  mov word [var_130h], 2
+│           0x5595c1faa25e      c785d4feffff.  mov dword [var_12ch], 0
+│           0x5595c1faa268      8b85c4feffff   mov eax, dword [var_13ch]
+│           0x5595c1faa26e      0fb7c0         movzx eax, ax
+│           0x5595c1faa271      89c7           mov edi, eax
+│           0x5595c1faa273      e8d8fdffff     call sym.imp.htons
+│           0x5595c1faa278      668985d2feff.  mov word [var_12eh], ax
+│           ;-- rip:
+│           0x5595c1faa27f b    488d8dd0feff.  lea rcx, [var_130h]
+</code></pre></div></div>
+<p>0x1389 corresponds to port 5001. And INADDR_ANY is commonly represented with a 0 as you see there.</p>
+
+<p>Then bind is called, the progam sends the socket and the address along with the size as you can see (16)</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5595c1faa286      8b85c0feffff   mov eax, dword [var_140h]
+│           0x5595c1faa28c      ba10000000     mov edx, 0x10           ; 16
+│           0x5595c1faa291      4889ce         mov rsi, rcx
+│           0x5595c1faa294      89c7           mov edi, eax
+│           0x5595c1faa296      e8f5fdffff     call sym.imp.bind       ; int bind(int socket, struct sockaddr*address, socklen_t address_len)
+│           0x5595c1faa29b      85c0           test eax, eax
+</code></pre></div></div>
+<p>Zero is returned as everything went OK</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5595c1faa29b]&gt; dr
+rax = 0x00000000
+</code></pre></div></div>
+<p>Then the listen, it will listen for 5 connections on the socket that is now bind to an address</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│       └─&gt; 0x5595c1faa2b5      8b85c0feffff   mov eax, dword [var_140h]
+│           0x5595c1faa2bb      be05000000     mov esi, 5
+│           0x5595c1faa2c0      89c7           mov edi, eax
+│           0x5595c1faa2c2      e8b9fdffff     call sym.imp.listen
+</code></pre></div></div>
+<p>After this point we should see how our machine is actually listening for connections on that port:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lab@hal9000:~/rev/socket$ netstat -putona | grep "5001"
+tcp        0      0 0.0.0.0:5001            0.0.0.0:*               LISTEN    19351/./server       off (0.00/0/0)
+</code></pre></div></div>
+<p>The next step? We have to accept connections on that socket, so we’ll call accept() passing the socket that is listening as well as pointers to sockaddr.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5595c1faa2c7      c785bcfeffff.  mov dword [var_144h], 0x10 ; rdx
+│           0x5595c1faa2d1      488d95bcfeff.  lea rdx, [var_144h]
+│           0x5595c1faa2d8      488d8de0feff.  lea rcx, [var_120h]
+│           0x5595c1faa2df      8b85c0feffff   mov eax, dword [var_140h]
+│           0x5595c1faa2e5      4889ce         mov rsi, rcx
+│           0x5595c1faa2e8      89c7           mov edi, eax
+│           0x5595c1faa2ea      e8c1fdffff     call sym.imp.accept
+│           0x5595c1faa2ef      8985c8feffff   mov dword [var_138h], eax
+│           0x5595c1faa2f5      83bdc8feffff.  cmp dword [var_138h], 0
+</code></pre></div></div>
+<p>It will return a new socket descriptor.</p>
+
+<p>Then as we’ll be reading from there with read() syscall we need to make some room for the message, look at this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5595c1faa31e      b800000000     mov eax, 0
+│           0x5595c1faa323      ba20000000     mov edx, 0x20           ; 32
+│           0x5595c1faa328      4889f7         mov rdi, rsi
+│           0x5595c1faa32b      4889d1         mov rcx, rdx
+│           0x5595c1faa32e      f348ab         rep stosq qword [rdi], rax
+│           0x5595c1faa331      488d8df0feff.  lea rcx, [var_110h]
+│           0x5595c1faa338      8b85c8feffff   mov eax, dword [var_138h]
+</code></pre></div></div>
+<p>that rep instruction along with rax(=0x0) wil fill that structure with 0s, so will repeat moving zeroes there until done (https://docs.oracle.com/cd/E19455-01/806-3773/instructionset-64/index.html)</p>
+
+<p>Then read will read from the socket.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5595c1faa331      488d8df0feff.  lea rcx, [var_110h]
+│           0x5595c1faa338      8b85c8feffff   mov eax, dword [var_138h]
+│           0x5595c1faa33e      baff000000     mov edx, 0xff           ; rdx
+│           0x5595c1faa343      4889ce         mov rsi, rcx
+│           0x5595c1faa346      89c7           mov edi, eax
+│           0x5595c1faa348      b800000000     mov eax, 0
+│           0x5595c1faa34d      e81efdffff     call sym.imp.read       ; ssize_t read(int fildes, void *buf, size_t nbyte)
+</code></pre></div></div>
+<p>As we can see, the new socket descriptor will be send</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5595c1faa352]&gt; pxw @ 0x7ffd85c18908
+0x7ffd85c18908  0x00000004 0x00007fc3 0x89130002 0x00000000  ................
+</code></pre></div></div>
+<p>This is interesting as on the previous tutorials we used a descriptor refered to a file, now we are refering to something on the network, write does the same.</p>
+
+<p>And we can see the contents.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5595c1faa352]&gt; afvd
+[...]
+var var_110h = 0x7ffd85c18930 = (qword)0x554c424b49545241
+[0x5595c1faa352]&gt; pxw @ 0x7ffd85c18930
+0x7ffd85c18930  0x49545241 0x554c424b 0x00000a45 0x00000000  ARTIKBLUE.......
+</code></pre></div></div>
+<p>And then the program ends by doing the write on that new socket</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5595c1faa392      8b85c8feffff   mov eax, dword [var_138h]
+│           0x5595c1faa398      ba12000000     mov edx, 0x12           ; rdx
+│           0x5595c1faa39d      488d35c90c00.  lea rsi, str.I_got_your_message ; 0x5595c1fab06d ; "I got your message"
+│           0x5595c1faa3a4      89c7           mov edi, eax
+│           0x5595c1faa3a6      b800000000     mov eax, 0
+│           ;-- rip:
+│           0x5595c1faa3ab b    e880fcffff     call sym.imp.write      ; ssize_t write(int fd, const char *ptr, size_t nbytes)
+</code></pre></div></div>
+<p>As you can see, same socket is used here, this time for write. This is also an important concept as this new socket created when accept()ing the connection is now a stream socket associated with an actual communication, it is the communication channel between the two machines.</p>
+
+<h4 id="the-client">The client</h4>
+
+<p>Meanwhile on the client…</p>
+
+<p>Let’s now explore the client progam for that server</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;netdb.h&gt;
+#include &lt;netinet/in.h&gt;
+#include &lt;string.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+   <span class="kt">int</span> <span class="n">sockfd</span><span class="p">,</span> <span class="n">portno</span><span class="p">,</span> <span class="n">n</span><span class="p">;</span>
+   <span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">serv_addr</span><span class="p">;</span>
+   <span class="k">struct</span> <span class="n">hostent</span> <span class="o">*</span><span class="n">server</span><span class="p">;</span>
+   
+   <span class="kt">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+   
+   <span class="k">if</span> <span class="p">(</span><span class="n">argc</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s">"usage %s hostname port</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+      <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+   <span class="p">}</span>
+   <span class="n">portno</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
+   <span class="cm">/* Create a socket point */</span>
+   <span class="n">sockfd</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+   
+   <span class="k">if</span> <span class="p">(</span><span class="n">sockfd</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">perror</span><span class="p">(</span><span class="s">"ERROR opening socket"</span><span class="p">);</span>
+      <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+   <span class="p">}</span>
+	
+   <span class="n">server</span> <span class="o">=</span> <span class="n">gethostbyname</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+   
+   <span class="k">if</span> <span class="p">(</span><span class="n">server</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s">"ERROR, no such host</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+      <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+   <span class="p">}</span>
+   <span class="n">bzero</span><span class="p">((</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">serv_addr</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">serv_addr</span><span class="p">));</span>
+   <span class="n">serv_addr</span><span class="p">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span>
+   <span class="n">bcopy</span><span class="p">((</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="n">server</span><span class="o">-&gt;</span><span class="n">h_addr</span><span class="p">,</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">serv_addr</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">.</span><span class="n">s_addr</span><span class="p">,</span> <span class="n">server</span><span class="o">-&gt;</span><span class="n">h_length</span><span class="p">);</span>
+   <span class="n">serv_addr</span><span class="p">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="n">portno</span><span class="p">);</span>
+   <span class="cm">/* Now connect to the server */</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">connect</span><span class="p">(</span><span class="n">sockfd</span><span class="p">,</span> <span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">serv_addr</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">serv_addr</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">perror</span><span class="p">(</span><span class="s">"ERROR connecting"</span><span class="p">);</span>
+      <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+   <span class="p">}</span>
+   
+   <span class="cm">/* Now ask for a message from the user, this message
+      * will be read by server
+   */</span>
+   <span class="n">printf</span><span class="p">(</span><span class="s">"Please enter the message: "</span><span class="p">);</span>
+   <span class="n">bzero</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="mi">256</span><span class="p">);</span>
+   <span class="n">fgets</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="n">stdin</span><span class="p">);</span>
+   
+   <span class="cm">/* Send message to the server */</span>
+   <span class="n">n</span> <span class="o">=</span> <span class="n">write</span><span class="p">(</span><span class="n">sockfd</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="n">buffer</span><span class="p">));</span>
+   
+   <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">perror</span><span class="p">(</span><span class="s">"ERROR writing to socket"</span><span class="p">);</span>
+      <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+   <span class="p">}</span>
+   
+   <span class="cm">/* Now read server response */</span>
+   <span class="n">bzero</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="mi">256</span><span class="p">);</span>
+   <span class="n">n</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">sockfd</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="mi">255</span><span class="p">);</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">perror</span><span class="p">(</span><span class="s">"ERROR reading from socket"</span><span class="p">);</span>
+      <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+   <span class="p">}</span>
+	
+   <span class="n">printf</span><span class="p">(</span><span class="s">"%s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">buffer</span><span class="p">);</span>
+   <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Again, this is another of those examples you can find anywhere in the internet, what it does is very simple and very similar to the server. It creates a socket connects it to the remote server on a ip:port then sends a message and waits for a response.</p>
+
+<p>Here’s the disasm</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x563973801235]&gt; pdf
+            ; DATA XREF from entry0 @ 0x56397380116d
+┌ 715: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_8h @ rbp-0x8
+│           ; arg int argc @ rdi
+│           ; arg char **argv @ rsi
+│           0x563973801235      55             push rbp
+│           0x563973801236      4889e5         mov rbp, rsp
+│           0x563973801239      4881ec500100.  sub rsp, 0x150
+│           0x563973801240      89bdbcfeffff   mov dword [var_144h], edi ; argc
+│           0x563973801246      4889b5b0feff.  mov qword [var_150h], rsi ; argv
+│           0x56397380124d      64488b042528.  mov rax, qword fs:[0x28]
+│           0x563973801256      488945f8       mov qword [var_8h], rax
+│           0x56397380125a      31c0           xor eax, eax
+│           0x56397380125c      83bdbcfeffff.  cmp dword [var_144h], 2
+│       ┌─&lt; 0x563973801263      7f2f           jg 0x563973801294
+│       │   0x563973801265      488b85b0feff.  mov rax, qword [var_150h]
+│       │   0x56397380126c      488b10         mov rdx, qword [rax]
+│       │   0x56397380126f      488b05ca2d00.  mov rax, qword [reloc.stderr] ; [0x563973804040:8]=0
+│       │   0x563973801276      488d35870d00.  lea rsi, str.usage__s_hostname_port ; 0x563973802004 ; "usage %s hostname port\n"
+│       │   0x56397380127d      4889c7         mov rdi, rax
+│       │   0x563973801280      b800000000     mov eax, 0
+│       │   0x563973801285      e836feffff     call sym.imp.fprintf    ; int fprintf(FILE *stream, const char *format,   ...)
+│       │   0x56397380128a      bf00000000     mov edi, 0
+│       │   0x56397380128f      e86cfeffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x563973801294      488b85b0feff.  mov rax, qword [var_150h]
+│           0x56397380129b      4883c010       add rax, 0x10           ; 16
+│           0x56397380129f      488b00         mov rax, qword [rax]
+│           0x5639738012a2      4889c7         mov rdi, rax
+│           0x5639738012a5      e846feffff     call sym.imp.atoi       ; int atoi(const char *str)
+│           0x5639738012aa      8985ccfeffff   mov dword [var_134h], eax
+│           0x5639738012b0      ba00000000     mov edx, 0
+│           0x5639738012b5      be01000000     mov esi, 1
+│           0x5639738012ba      bf02000000     mov edi, 2
+│           0x5639738012bf      e86cfeffff     call sym.imp.socket     ; int socket(int domain, int type, int protocol)
+│           0x5639738012c4      8985d0feffff   mov dword [var_130h], eax
+│           0x5639738012ca      83bdd0feffff.  cmp dword [var_130h], 0
+│       ┌─&lt; 0x5639738012d1      7916           jns 0x5639738012e9
+│       │   0x5639738012d3      488d3d420d00.  lea rdi, str.ERROR_opening_socket ; 0x56397380201c ; "ERROR opening socket"
+│       │   0x5639738012da      e801feffff     call sym.imp.perror     ; void perror(const char *s)
+│       │   0x5639738012df      bf01000000     mov edi, 1
+│       │   0x5639738012e4      e817feffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x5639738012e9      488b85b0feff.  mov rax, qword [var_150h]
+│           0x5639738012f0      4883c008       add rax, 8
+│           0x5639738012f4      488b00         mov rax, qword [rax]
+│           0x5639738012f7      4889c7         mov rdi, rax
+│           0x5639738012fa      e8b1fdffff     call sym.imp.gethostbyname
+│           0x5639738012ff      488985d8feff.  mov qword [var_128h], rax
+│           0x563973801306      4883bdd8feff.  cmp qword [var_128h], 0
+│       ┌─&lt; 0x56397380130e      752a           jne 0x56397380133a
+│       │   0x563973801310      488b05292d00.  mov rax, qword [reloc.stderr] ; [0x563973804040:8]=0
+│       │   0x563973801317      4889c1         mov rcx, rax
+│       │   0x56397380131a      ba14000000     mov edx, 0x14           ; 20
+│       │   0x56397380131f      be01000000     mov esi, 1
+│       │   0x563973801324      488d3d060d00.  lea rdi, str.ERROR__no_such_host ; 0x563973802031 ; "ERROR, no such host\n"
+│       │   0x56397380132b      e8f0fdffff     call sym.imp.fwrite     ; size_t fwrite(const void *ptr, size_t size, size_t nitems, FILE *stream)
+│       │   0x563973801330      bf00000000     mov edi, 0
+│       │   0x563973801335      e8c6fdffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x56397380133a      488d85e0feff.  lea rax, [var_120h]
+│           0x563973801341      48c700000000.  mov qword [rax], 0
+│           0x563973801348      48c740080000.  mov qword [rax + 8], 0
+│           0x563973801350      66c785e0feff.  mov word [var_120h], 2
+│           0x563973801359      488b85d8feff.  mov rax, qword [var_128h]
+│           0x563973801360      8b4014         mov eax, dword [rax + 0x14]
+│           0x563973801363      4863d0         movsxd rdx, eax
+│           0x563973801366      488b85d8feff.  mov rax, qword [var_128h]
+│           0x56397380136d      488b4018       mov rax, qword [rax + 0x18]
+│           0x563973801371      488b00         mov rax, qword [rax]
+│           0x563973801374      488d8de0feff.  lea rcx, [var_120h]
+│           0x56397380137b      4883c104       add rcx, 4
+│           0x56397380137f      4889c6         mov rsi, rax
+│           0x563973801382      4889cf         mov rdi, rcx
+│           0x563973801385      e846fdffff     call sym.imp.memmove    ; void *memmove(void *s1, const void *s2, size_t n)
+│           0x56397380138a      8b85ccfeffff   mov eax, dword [var_134h]
+│           0x563973801390      0fb7c0         movzx eax, ax
+│           0x563973801393      89c7           mov edi, eax
+│           0x563973801395      e8d6fcffff     call sym.imp.htons
+│           0x56397380139a      668985e2feff.  mov word [var_11eh], ax
+│           0x5639738013a1      488d8de0feff.  lea rcx, [var_120h]
+│           0x5639738013a8      8b85d0feffff   mov eax, dword [var_130h]
+│           0x5639738013ae      ba10000000     mov edx, 0x10           ; 16
+│           0x5639738013b3      4889ce         mov rsi, rcx
+│           0x5639738013b6      89c7           mov edi, eax
+│           0x5639738013b8      e853fdffff     call sym.imp.connect    ; ssize_t connect(int socket, void *addr, size_t addrlen)
+│           0x5639738013bd      85c0           test eax, eax
+│       ┌─&lt; 0x5639738013bf      7916           jns 0x5639738013d7
+│       │   0x5639738013c1      488d3d7e0c00.  lea rdi, str.ERROR_connecting ; 0x563973802046 ; "ERROR connecting"
+│       │   0x5639738013c8      e813fdffff     call sym.imp.perror     ; void perror(const char *s)
+│       │   0x5639738013cd      bf01000000     mov edi, 1
+│       │   0x5639738013d2      e829fdffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x5639738013d7      488d3d790c00.  lea rdi, str.Please_enter_the_message: ; 0x563973802057 ; "Please enter the message: "
+│           0x5639738013de      b800000000     mov eax, 0
+│           0x5639738013e3      e898fcffff     call sym.imp.printf     ; int printf(const char *format)
+│           0x5639738013e8      488d85f0feff.  lea rax, [var_110h]
+│           0x5639738013ef      4889c6         mov rsi, rax
+│           0x5639738013f2      b800000000     mov eax, 0
+│           0x5639738013f7      ba20000000     mov edx, 0x20           ; 32
+│           0x5639738013fc      4889f7         mov rdi, rsi
+│           0x5639738013ff      4889d1         mov rcx, rdx
+│           0x563973801402      f348ab         rep stosq qword [rdi], rax
+│           0x563973801405      488b15142c00.  mov rdx, qword [reloc.stdin] ; [0x563973804020:8]=0
+│           0x56397380140c      488d85f0feff.  lea rax, [var_110h]
+│           0x563973801413      beff000000     mov esi, 0xff           ; 255
+│           0x563973801418      4889c7         mov rdi, rax
+│           0x56397380141b      e880fcffff     call sym.imp.fgets      ; char *fgets(char *s, int size, FILE *stream)
+│           0x563973801420      488d85f0feff.  lea rax, [var_110h]
+│           0x563973801427      4889c7         mov rdi, rax
+│           0x56397380142a      e821fcffff     call sym.imp.strlen     ; size_t strlen(const char *s)
+│           0x56397380142f      4889c2         mov rdx, rax
+│           0x563973801432      488d8df0feff.  lea rcx, [var_110h]
+│           0x563973801439      8b85d0feffff   mov eax, dword [var_130h]
+│           0x56397380143f      4889ce         mov rsi, rcx
+│           0x563973801442      89c7           mov edi, eax
+│           0x563973801444      b800000000     mov eax, 0
+│           0x563973801449      e8f2fbffff     call sym.imp.write      ; ssize_t write(int fd, const char *ptr, size_t nbytes)
+│           0x56397380144e      8985d4feffff   mov dword [var_12ch], eax
+│           0x563973801454      83bdd4feffff.  cmp dword [var_12ch], 0
+│       ┌─&lt; 0x56397380145b      7916           jns 0x563973801473
+│       │   0x56397380145d      488d3d0e0c00.  lea rdi, str.ERROR_writing_to_socket ; 0x563973802072 ; "ERROR writing to socket"
+│       │   0x563973801464      e877fcffff     call sym.imp.perror     ; void perror(const char *s)
+│       │   0x563973801469      bf01000000     mov edi, 1
+│       │   0x56397380146e      e88dfcffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x563973801473      488d85f0feff.  lea rax, [var_110h]
+│           0x56397380147a      4889c6         mov rsi, rax
+│           0x56397380147d      b800000000     mov eax, 0
+│           0x563973801482      ba20000000     mov edx, 0x20           ; 32
+│           0x563973801487      4889f7         mov rdi, rsi
+│           0x56397380148a      4889d1         mov rcx, rdx
+│           0x56397380148d      f348ab         rep stosq qword [rdi], rax
+│           0x563973801490      488d8df0feff.  lea rcx, [var_110h]
+│           0x563973801497      8b85d0feffff   mov eax, dword [var_130h]
+│           0x56397380149d      baff000000     mov edx, 0xff           ; 255
+│           0x5639738014a2      4889ce         mov rsi, rcx
+│           0x5639738014a5      89c7           mov edi, eax
+│           0x5639738014a7      b800000000     mov eax, 0
+│           0x5639738014ac      e8dffbffff     call sym.imp.read       ; ssize_t read(int fildes, void *buf, size_t nbyte)
+│           0x5639738014b1      8985d4feffff   mov dword [var_12ch], eax
+│           0x5639738014b7      83bdd4feffff.  cmp dword [var_12ch], 0
+│       ┌─&lt; 0x5639738014be      7916           jns 0x5639738014d6
+│       │   0x5639738014c0      488d3dc30b00.  lea rdi, str.ERROR_reading_from_socket ; 0x56397380208a ; "ERROR reading from socket"
+│       │   0x5639738014c7      e814fcffff     call sym.imp.perror     ; void perror(const char *s)
+│       │   0x5639738014cc      bf01000000     mov edi, 1
+│       │   0x5639738014d1      e82afcffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x5639738014d6      488d85f0feff.  lea rax, [var_110h]
+│           0x5639738014dd      4889c7         mov rdi, rax
+│           0x5639738014e0      e84bfbffff     call sym.imp.puts       ; int puts(const char *s)
+│           0x5639738014e5      b800000000     mov eax, 0
+│           0x5639738014ea      488b75f8       mov rsi, qword [var_8h]
+│           0x5639738014ee      644833342528.  xor rsi, qword fs:[0x28]
+│       ┌─&lt; 0x5639738014f7      7405           je 0x5639738014fe
+│       │   0x5639738014f9      e862fbffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x5639738014fe      c9             leave
+└           0x5639738014ff      c3             ret
+[0x563973801235]&gt; 
+</code></pre></div></div>
+<p>Let’s now inspect the program.</p>
+
+<p>Again as when dealing with many large progams, a smart approach is to focus on relevant syscalls analyzing their contexts</p>
+
+<p>Let’s start with socket()</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5639738012b0      ba00000000     mov edx, 0
+│           0x5639738012b5      be01000000     mov esi, 1
+│           0x5639738012ba      bf02000000     mov edi, 2
+│           0x5639738012bf      e86cfeffff     call sym.imp.socket     ; int socket(int domain, int type, int protocol)
+</code></pre></div></div>
+<p>As usual, we define a AF_INET, SOCK_STREAM socket</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55bd5654d2c4]&gt; dr rax
+0x00000003
+</code></pre></div></div>
+<p>And we get the socket descriptor as usual</p>
+
+<p>Then we have this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│       └─&gt; 0x55bd5654d2e9      488b85b0feff.  mov rax, qword [var_150h]
+│           0x55bd5654d2f0      4883c008       add rax, 8
+│           0x55bd5654d2f4      488b00         mov rax, qword [rax]
+│           0x55bd5654d2f7      4889c7         mov rdi, rax
+│           0x55bd5654d2fa      e8b1fdffff     call sym.imp.gethostbyname
+</code></pre></div></div>
+<p>Gethostbyname (returns a structure of type hostent for the given host name) will read something like 127.0.0.1 ascii and return a network compatbile struct.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55bd5654d2fa]&gt; dr
+rax = 0x7ffd9295a32f
+
+[0x55bd5654d2fa]&gt; pxw @ 0x7ffd9295a32f
+0x7ffd9295a32f  0x2e373231 0x2e302e30 0x30350031 0x53003130  127.0.0.1.5001.S
+</code></pre></div></div>
+
+<p>After that it will set up the struct for the server address (sockaddr_in) by making use of the data returned by gethostbyname()</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55bd5654d341      48c700000000.  mov qword [rax], 0
+│           0x55bd5654d348      48c740080000.  mov qword [rax + 8], 0
+│           0x55bd5654d350      66c785e0feff.  mov word [var_120h], 2
+│           0x55bd5654d359      488b85d8feff.  mov rax, qword [var_128h]
+│           0x55bd5654d360      8b4014         mov eax, dword [rax + 0x14]
+│           0x55bd5654d363      4863d0         movsxd rdx, eax
+│           0x55bd5654d366      488b85d8feff.  mov rax, qword [var_128h]
+│           0x55bd5654d36d      488b4018       mov rax, qword [rax + 0x18]
+│           0x55bd5654d371      488b00         mov rax, qword [rax]
+│           0x55bd5654d374      488d8de0feff.  lea rcx, [var_120h]
+│           0x55bd5654d37b      4883c104       add rcx, 4
+│           0x55bd5654d37f      4889c6         mov rsi, rax
+│           0x55bd5654d382      4889cf         mov rdi, rcx
+│           0x55bd5654d385      e846fdffff     call sym.imp.memmove    ; void *memmove(void *s1, const void *s2, size_t n)
+</code></pre></div></div>
+<p>After that htons is called for the port</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55bd5654d38a b    8b85ccfeffff   mov eax, dword [var_134h]
+│           0x55bd5654d390      0fb7c0         movzx eax, ax
+│           0x55bd5654d393      89c7           mov edi, eax
+│           0x55bd5654d395      e8d6fcffff     call sym.imp.htons
+│           ;-- rip:
+│           0x55bd5654d39a b    668985e2feff.  mov word [var_11eh], ax
+
+[0x55bd5654d39a]&gt; dr rax
+0x00008913
+</code></pre></div></div>
+<p>So, 8913 corresponding to 5001dec</p>
+
+<p>And now we see the connect()</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55bd5654d3b8      e853fdffff     call sym.imp.connect    ; ssize_t connect(int socket, void *addr, size_t addrlen)
+│           0x55bd5654d3bd      85c0           test eax, eax
+</code></pre></div></div>
+<p>The socket will be connected to the server, that will now accept() the connection.</p>
+
+<p>Then the program, now connected to the remote server, will use write on the socket descriptor to send the message:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55bd5654d42f      4889c2         mov rdx, rax
+│           0x55bd5654d432      488d8df0feff.  lea rcx, [var_110h]
+│           0x55bd5654d439      8b85d0feffff   mov eax, dword [var_130h]
+│           0x55bd5654d43f      4889ce         mov rsi, rcx
+│           0x55bd5654d442      89c7           mov edi, eax
+│           0x55bd5654d444      b800000000     mov eax, 0
+│           0x55bd5654d449      e8f2fbffff     call sym.imp.write      ; ssize_t write(int fd, const char *ptr, size_t nbytes)
+</code></pre></div></div>
+
+<p>Later on on the code, it will read from the input after making some space in a buffer as we saw in the server:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55bd5654d47a      4889c6         mov rsi, rax
+│           0x55bd5654d47d      b800000000     mov eax, 0
+│           0x55bd5654d482      ba20000000     mov edx, 0x20           ; 32
+│           0x55bd5654d487      4889f7         mov rdi, rsi
+│           0x55bd5654d48a      4889d1         mov rcx, rdx
+│           0x55bd5654d48d      f348ab         rep stosq qword [rdi], rax
+│           0x55bd5654d490      488d8df0feff.  lea rcx, [var_110h]
+│           0x55bd5654d497      8b85d0feffff   mov eax, dword [var_130h]
+│           0x55bd5654d49d      baff000000     mov edx, 0xff           ; 255
+│           0x55bd5654d4a2      4889ce         mov rsi, rcx
+│           0x55bd5654d4a5      89c7           mov edi, eax
+│           0x55bd5654d4a7      b800000000     mov eax, 0
+│           0x55bd5654d4ac      e8dffbffff     call sym.imp.read       ; ssize_t read(int fildes, void *buf, size_t nbyte)
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0x7ffd92958e50  0x89130002 0x0100007f 0x00000000 0x00000000  ................
+0x7ffd92958e60  0x6f672049 0x6f792074 0x6d207275 0x61737365  I got your messa
+0x7ffd92958e70  0x00006567 0x00000000 0x00000000 0x00000000  ge..............
+</code></pre></div></div>
+
+<p>That’s it for today. We’ll go on a second part of this to show more advanced stuff like for example how malware makes use of this to implement C&amp;C mechanisms via forging GET/DNS requests. We’ll also see how to deal with this stuff on windows.</p>
+
+<p>Stay tuned!</p>
+
+    </div>
+
+    <div class="post__share">
+  <ul class="share__list list-reset">
+    <li class="share__item">
+      <a class="share__link share__facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/reversing-radare-15"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Facebook" rel="nofollow"><i class="ion ion-logo-facebook"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__twitter" href="https://twitter.com/intent/tweet?text=Reverse%20engineering%20x64%20binaries%20with%20Radare2%20-%2016%20(unix%20sockets%20fundamentals)&url=http://localhost:4000/reversing-radare-15"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Twitter" rel="nofollow"><i class="ion ion-logo-twitter"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url=http://localhost:4000/reversing-radare-15&title=Reverse%20engineering%20x64%20binaries%20with%20Radare2%20-%2016%20(unix%20sockets%20fundamentals)&summary=&source=Artik%20Blue"
+      onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn" rel="nofollow"><i class="ion ion-logo-linkedin"></i></a>
+    </li>
+  </ul>
+</div>
+
+
+    <div class="post__navigation">
+  
+  <a class="post__prev" href="/hacktivism-0">
+    <div class="prev__image">
+      <img class="lazy" data-src="/images//hacktivism/anonymous_0.jpg" alt="Reverse engineering x64 binaries with Radare2 - 16 (unix sockets fundamentals)">
+    </div>
+    <div class="prev__box">
+      <span class="post__nav post__nav__prev">Older post</span>
+      <h2 class="post__nav__title">Anonymous and the rise of 'hacktivism' as a collective action phenomenon</h2>
+    </div>
+  </a>
+  
+
+  
+  <a class="post__next" href="/opsec-2">
+    <div class="next__box">
+      <span class="post__nav post__nav__next">Newer post</span>
+      <h2 class="post__nav__title">Operational security techniques in asymmetric conflicts - II (device acquisitions)</h2>
+    </div>
+    <div class="next__image">
+      <img class="lazy" data-src="/images//radare2/radare2_16.png" alt="Reverse engineering x64 binaries with Radare2 - 16 (unix sockets fundamentals)">
+    </div>
+  </a>
+  
+</div>
+
+     <!-- begin comments -->
+<div id="disqus_thread" class="post__comments">
+  <div id="disqus_empty"></div>
+</div>
+
+<script>
+  function load_disqus() {
+    var disqus_shortname = 'artikblue',
+      is_disqus_empty = document.getElementById('disqus_empty'),
+      disqus_target = document.getElementById('disqus_thread'),
+      disqus_embed = document.createElement('script'),
+      disqus_hook = (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]);
+
+    if (disqus_target && is_disqus_empty) {
+      disqus_embed.type = 'text/javascript';
+      disqus_embed.async = true;
+      disqus_embed.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      disqus_hook.appendChild(disqus_embed);
+      is_disqus_empty.remove();
+    }
+  }
+
+  window.addEventListener('scroll', function (e) {
+    var currentScroll = document.scrollingElement.scrollTop;
+    var disqus_target = document.getElementById('disqus_thread');
+
+    if (disqus_target && (currentScroll > disqus_target.getBoundingClientRect().top - 150)) {
+      load_disqus('disqus_shortname');
+    }
+  }, false);
+
+</script>
+<noscript>Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+</noscript>
+<!-- end comments --> 
+
+  </article>
+</div>
+<!-- end post -->
+      </div>
+      <!-- end wrapper-page -->
+    </main>
+    <!-- end content -->
+    <div class="top" title="Top"><i class="ion ion-ios-arrow-round-up"></i></div>
+    <!-- begin footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12 col-m-12">
+        <div class="footer__inner">
+
+          <div class="footer__head">
+            <div class="row">
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-recent">
+    <div class="widget__head">
+      <h3 class="widget__title">Recent Posts</h3>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-22">
+        <img class="lazy" data-src="/images//radare2/radare2_22.png" alt="Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-20T00:01:35+02:00">Jun 20, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-22">Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack</a></h4>
+      </div>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-21">
+        <img class="lazy" data-src="/images//radare2/radare2_21.png" alt="Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-15T00:01:35+02:00">Jun 15, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-21">Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains</a></h4>
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-gallery">
+    <div class="widget__head">
+      <h3 class="widget__title">Gallery</h3>
+    </div>
+    
+    <div class="gallery-box gallery-footer">
+      <div class="gallery">
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/landscape1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sasha1.jpeg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/castle1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/scotland1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sanfran1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/newyork1.jpg" alt="Minimalism">
+        </div>
+        
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-subscribe">
+    <div class="widget__head">
+      <h3 class="widget__title"></h3>
+    </div>
+    <div class="subscribe__inner">
+      <div class="subscribe__group">
+        <div class="subscribe__description"></div>
+      </div>
+      <!-- <form class="subscribe-form validate"
+           action="#" method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form" target="_blank" novalidate>
+           <label class="screen-reader-text" for="mce-EMAIL">Email address</label>
+           <input class="subscribe-email required email" id="mce-EMAIL" type="text" name="EMAIL"
+           placeholder="Your email address">
+           <button class="button subscribe-button" id="membedded-subscribe" type="submit" name="subscribe"></button>
+           </form> -->
+    </div>
+  </div>
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        
+  <div class="social">
+    <ul class="social__list list-reset">
+      
+      <li class="social__item">
+        <a class="social__link" href="https://twitter.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-twitter"></i></a>
+      </li>
+      
+      <li class="social__item">
+        <a class="social__link" href="https://github.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-github"></i></a>
+      </li>
+      
+    </ul>
+  </div>
+
+        <div class="copyright">2022 &copy; <a href="/">Artik Blue</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- end footer -->
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="/js/scripts.js"></script>
+</body>
+
+</html>

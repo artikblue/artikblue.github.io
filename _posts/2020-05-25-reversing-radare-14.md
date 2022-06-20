@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering x64 binaries with Radare2 - 15 (Windows fundamentals: Intro to WinApi and file management)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_15.png
-featured_image: assets/images/radare2/radare2_15.png
+title:  Reverse engineering x64 binaries with Radare2 - 15 (Windows fundamentals; Intro to WinApi and file management)
+tags: reversing c radare
+image: '/images//radare2/radare2_15.png'
+date: 2020-05-25 15:01:35 -0700
 ---
 
 Today we are going to talk about the windows api, something that will allow us to do similar stuff as what we are doing with linux using syscalls.

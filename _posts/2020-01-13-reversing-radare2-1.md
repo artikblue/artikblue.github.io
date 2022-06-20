@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 1"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_1.png
-featured_image: assets/images/radare2/radare2_1.png
+title:  Reverse engineering 32 and 64 bits binaries with Radare2 - 1
+tags: reversing c radare
+image: '/images/radare2/radare2_1.png'
+date: 2020-01-13 15:01:35 -0700
 ---
 
 

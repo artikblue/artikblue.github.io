@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Reverse engineering 32 and 64 bits binaries with Radare2 - 6 (2d arrays and structs)"
-tags: [reversing, c, radare]
-featured_image_thumbnail: assets/images/radare2/radare2_7.png
-featured_image: assets/images/radare2/radare2_7.png
+title:  Reverse engineering 32 and 64 bits binaries with Radare2 - 6 (2d arrays and structs)
+tags: reversing c radare
+image: '/images//radare2/radare2_7.png'
+date: 2020-05-02 15:01:35 -0700
 ---
 
 Hi there, I hope you are all good, as I promised here we have this next part of the reversing with radare2 mini course :)

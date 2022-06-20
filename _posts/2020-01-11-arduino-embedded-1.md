@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Embedded systems programming with atmel328 - 1""
-tags: [arduino, atmel, processing]
-featured_image_thumbnail: assets/images/arduino/desktop2.png
-featured_image: assets/images/arduino/pultrasound.jpg
+title:  Embedded systems programming with atmel328 - 1
+tags: arduino atmel processing
+image: '/images/arduino/desktop2.png'
+date: 2020-01-11 15:01:35 -0700
 ---
 
 ### About this course

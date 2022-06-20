@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Reverse engineering x64 binaries with Radare2 - 14 - I (linux systems programming; theory, syscalls, files and ESIL)</title>
+  <meta name='description' content='All things cyber'>
+
+  <link rel="canonical" href="http://localhost:4000/reversing-radare-13">
+  <link rel="alternate" type="application/rss+xml" title="Artik Blue" href="/feed.xml">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Ionicons -->
+  <link href="https://unpkg.com/ionicons@4.2.2/dist/css/ionicons.min.css" rel="stylesheet">
+
+  <style>
+  
+      /*!------------------------------------------------------------------
+[MAIN STYLESHEET]
+-------------------------------------------------------------------*/.list-reset{list-style-type:none;margin:0;padding:0}.clearfix::after,.clearfix ::before{content:"";display:table;clear:both}.screen-reader-text{clip:rect(1px, 1px, 1px, 1px);height:1px;overflow:hidden;position:absolute !important;width:1px;word-wrap:normal !important}/*! normalize.css v8.0.0 | MIT License | github.com/necolas/normalize.css */html{line-height:1.15;-webkit-text-size-adjust:100%}body{margin:0}h1{font-size:2em;margin:0.67em 0}hr{box-sizing:content-box;height:0;overflow:visible}pre{font-family:monospace, monospace;font-size:1em}a{background-color:transparent}abbr[title]{border-bottom:none;text-decoration:underline;text-decoration:underline dotted}b,strong{font-weight:bolder}code,kbd,samp{font-family:monospace, monospace;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-0.25em}sup{top:-0.5em}img{border-style:none}button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;line-height:1.15;margin:0}button,input{overflow:visible}button,select{text-transform:none}button,[type="button"],[type="reset"],[type="submit"]{-webkit-appearance:button}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner{border-style:none;padding:0}button:-moz-focusring,[type="button"]:-moz-focusring,[type="reset"]:-moz-focusring,[type="submit"]:-moz-focusring{outline:1px dotted ButtonText}fieldset{padding:0.35em 0.75em 0.625em}legend{box-sizing:border-box;color:inherit;display:table;max-width:100%;padding:0;white-space:normal}progress{vertical-align:baseline}textarea{overflow:auto}[type="checkbox"],[type="radio"]{box-sizing:border-box;padding:0}[type="number"]::-webkit-inner-spin-button,[type="number"]::-webkit-outer-spin-button{height:auto}[type="search"]{-webkit-appearance:textfield;outline-offset:-2px}[type="search"]::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}details{display:block}summary{display:list-item}template{display:none}[hidden]{display:none}body,h1,h2,h3,h4,h5,h6,p,blockquote,pre,dl,dd,ol,ul,fieldset,legend,figure,hr{margin:0;padding:0}li>ul,li>ol{margin-bottom:0}table{border-collapse:collapse;border-spacing:0}h1,h2,h3,h4,h5,h6,ul,ol,dl,blockquote,p,address,hr,table,fieldset,figure,pre{margin-bottom:30px}ul,ol,dd{margin-left:15px}ul li,ol li{margin-bottom:10px}.highlight{background:#161d25}.highlighter-rouge .highlight{background:#eef}.highlight .c{color:#998;font-style:italic}.highlight .err{color:#a61717;background-color:#e3d2d2}.highlight .k{font-weight:bold}.highlight .o{font-weight:bold}.highlight .cm{color:#998;font-style:italic}.highlight .cp{color:#999;font-weight:bold}.highlight .c1{color:#998;font-style:italic}.highlight .cs{color:#999;font-weight:bold;font-style:italic}.highlight .gd{color:#000;background-color:#fdd}.highlight .gd .x{color:#000;background-color:#faa}.highlight .ge{font-style:italic}.highlight .gr{color:#a00}.highlight .gh{color:#999}.highlight .gi{color:#000;background-color:#dfd}.highlight .gi .x{color:#000;background-color:#afa}.highlight .go{color:#888}.highlight .gp{color:#555}.highlight .gs{font-weight:bold}.highlight .gu{color:#aaa}.highlight .gt{color:#a00}.highlight .kc{font-weight:bold}.highlight .kd{font-weight:bold}.highlight .kp{font-weight:bold}.highlight .kr{font-weight:bold}.highlight .kt{color:#458;font-weight:bold}.highlight .m{color:#099}.highlight .s{color:#d14}.highlight .na{color:teal}.highlight .nb{color:#0086B3}.highlight .nc{color:#458;font-weight:bold}.highlight .no{color:teal}.highlight .ni{color:purple}.highlight .ne{color:#900;font-weight:bold}.highlight .nf{color:#900;font-weight:bold}.highlight .nn{color:#555}.highlight .nt{color:navy}.highlight .nv{color:teal}.highlight .ow{font-weight:bold}.highlight .w{color:#bbb}.highlight .mf{color:#099}.highlight .mh{color:#099}.highlight .mi{color:#099}.highlight .mo{color:#099}.highlight .sb{color:#d14}.highlight .sc{color:#d14}.highlight .sd{color:#d14}.highlight .s2{color:#d14}.highlight .se{color:#d14}.highlight .sh{color:#d14}.highlight .si{color:#d14}.highlight .sx{color:#d14}.highlight .sr{color:#009926}.highlight .s1{color:#d14}.highlight .ss{color:#990073}.highlight .bp{color:#999}.highlight .vc{color:teal}.highlight .vg{color:teal}.highlight .vi{color:teal}.highlight .il{color:#099}.container{max-width:1270px;padding-left:15px;padding-right:15px;margin:0 auto}@media only screen and (max-width: 1300px){.container{max-width:1100px}}@media only screen and (max-width: 1130px){.container{max-width:1000px}}@media only screen and (max-width: 1024px){.container{max-width:740px}}@media only screen and (max-width: 768px){.container{max-width:540px}}@media only screen and (max-width: 576px){.container{max-width:380px}}.row{display:flex;flex-wrap:wrap;flex:0 1 auto;flex-direction:row;box-sizing:border-box;margin-left:-15px;margin-right:-15px}.col{padding-left:15px;padding-right:15px}[class^="col-"]{flex:auto}.col-0{width:0%}.col-1{width:8.3333333333%}.col-2{width:16.6666666667%}.col-3{width:25%}.col-4{width:33.3333333333%}.col-5{width:41.6666666667%}.col-6{width:50%}.col-7{width:58.3333333333%}.col-8{width:66.6666666667%}.col-9{width:75%}.col-10{width:83.3333333333%}.col-11{width:91.6666666667%}.col-12{width:100%}.push-0{margin-left:0%}.push-1{margin-left:8.3333333333%}.push-2{margin-left:16.6666666667%}.push-3{margin-left:25%}.push-4{margin-left:33.3333333333%}.push-5{margin-left:41.6666666667%}.push-6{margin-left:50%}.push-7{margin-left:58.3333333333%}.push-8{margin-left:66.6666666667%}.push-9{margin-left:75%}.push-10{margin-left:83.3333333333%}.push-11{margin-left:91.6666666667%}.push-12{margin-left:100%}.pull-0{margin-right:0%}.pull-1{margin-right:8.3333333333%}.pull-2{margin-right:16.6666666667%}.pull-3{margin-right:25%}.pull-4{margin-right:33.3333333333%}.pull-5{margin-right:41.6666666667%}.pull-6{margin-right:50%}.pull-7{margin-right:58.3333333333%}.pull-8{margin-right:66.6666666667%}.pull-9{margin-right:75%}.pull-10{margin-right:83.3333333333%}.pull-11{margin-right:91.6666666667%}.pull-12{margin-right:100%}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}@media (max-width: 1024px){.col-d-0{width:0%}.col-d-1{width:8.3333333333%}.col-d-2{width:16.6666666667%}.col-d-3{width:25%}.col-d-4{width:33.3333333333%}.col-d-5{width:41.6666666667%}.col-d-6{width:50%}.col-d-7{width:58.3333333333%}.col-d-8{width:66.6666666667%}.col-d-9{width:75%}.col-d-10{width:83.3333333333%}.col-d-11{width:91.6666666667%}.col-d-12{width:100%}.push-d-0{margin-left:0%}.push-d-1{margin-left:8.3333333333%}.push-d-2{margin-left:16.6666666667%}.push-d-3{margin-left:25%}.push-d-4{margin-left:33.3333333333%}.push-d-5{margin-left:41.6666666667%}.push-d-6{margin-left:50%}.push-d-7{margin-left:58.3333333333%}.push-d-8{margin-left:66.6666666667%}.push-d-9{margin-left:75%}.push-d-10{margin-left:83.3333333333%}.push-d-11{margin-left:91.6666666667%}.push-d-12{margin-left:100%}.pull-d-0{margin-right:0%}.pull-d-1{margin-right:8.3333333333%}.pull-d-2{margin-right:16.6666666667%}.pull-d-3{margin-right:25%}.pull-d-4{margin-right:33.3333333333%}.pull-d-5{margin-right:41.6666666667%}.pull-d-6{margin-right:50%}.pull-d-7{margin-right:58.3333333333%}.pull-d-8{margin-right:66.6666666667%}.pull-d-9{margin-right:75%}.pull-d-10{margin-right:83.3333333333%}.pull-d-11{margin-right:91.6666666667%}.pull-d-12{margin-right:100%}}@media (max-width: 768px){.col-t-0{width:0%}.col-t-1{width:8.3333333333%}.col-t-2{width:16.6666666667%}.col-t-3{width:25%}.col-t-4{width:33.3333333333%}.col-t-5{width:41.6666666667%}.col-t-6{width:50%}.col-t-7{width:58.3333333333%}.col-t-8{width:66.6666666667%}.col-t-9{width:75%}.col-t-10{width:83.3333333333%}.col-t-11{width:91.6666666667%}.col-t-12{width:100%}.push-t-0{margin-left:0%}.push-t-1{margin-left:8.3333333333%}.push-t-2{margin-left:16.6666666667%}.push-t-3{margin-left:25%}.push-t-4{margin-left:33.3333333333%}.push-t-5{margin-left:41.6666666667%}.push-t-6{margin-left:50%}.push-t-7{margin-left:58.3333333333%}.push-t-8{margin-left:66.6666666667%}.push-t-9{margin-left:75%}.push-t-10{margin-left:83.3333333333%}.push-t-11{margin-left:91.6666666667%}.push-t-12{margin-left:100%}.pull-t-0{margin-right:0%}.pull-t-1{margin-right:8.3333333333%}.pull-t-2{margin-right:16.6666666667%}.pull-t-3{margin-right:25%}.pull-t-4{margin-right:33.3333333333%}.pull-t-5{margin-right:41.6666666667%}.pull-t-6{margin-right:50%}.pull-t-7{margin-right:58.3333333333%}.pull-t-8{margin-right:66.6666666667%}.pull-t-9{margin-right:75%}.pull-t-10{margin-right:83.3333333333%}.pull-t-11{margin-right:91.6666666667%}.pull-t-12{margin-right:100%}}@media (max-width: 576px){.col-m-0{width:0%}.col-m-1{width:8.3333333333%}.col-m-2{width:16.6666666667%}.col-m-3{width:25%}.col-m-4{width:33.3333333333%}.col-m-5{width:41.6666666667%}.col-m-6{width:50%}.col-m-7{width:58.3333333333%}.col-m-8{width:66.6666666667%}.col-m-9{width:75%}.col-m-10{width:83.3333333333%}.col-m-11{width:91.6666666667%}.col-m-12{width:100%}.push-m-0{margin-left:0%}.push-m-1{margin-left:8.3333333333%}.push-m-2{margin-left:16.6666666667%}.push-m-3{margin-left:25%}.push-m-4{margin-left:33.3333333333%}.push-m-5{margin-left:41.6666666667%}.push-m-6{margin-left:50%}.push-m-7{margin-left:58.3333333333%}.push-m-8{margin-left:66.6666666667%}.push-m-9{margin-left:75%}.push-m-10{margin-left:83.3333333333%}.push-m-11{margin-left:91.6666666667%}.push-m-12{margin-left:100%}.pull-m-0{margin-right:0%}.pull-m-1{margin-right:8.3333333333%}.pull-m-2{margin-right:16.6666666667%}.pull-m-3{margin-right:25%}.pull-m-4{margin-right:33.3333333333%}.pull-m-5{margin-right:41.6666666667%}.pull-m-6{margin-right:50%}.pull-m-7{margin-right:58.3333333333%}.pull-m-8{margin-right:66.6666666667%}.pull-m-9{margin-right:75%}.pull-m-10{margin-right:83.3333333333%}.pull-m-11{margin-right:91.6666666667%}.pull-m-12{margin-right:100%}}img[data-action="zoom"]{cursor:pointer;cursor:-webkit-zoom-in;cursor:-moz-zoom-in}.zoom-img,.zoom-img-wrap{position:relative;z-index:666;-webkit-transition:all 300ms;-o-transition:all 300ms;transition:all 300ms}img.zoom-img{cursor:pointer;cursor:-webkit-zoom-out;cursor:-moz-zoom-out}.zoom-overlay{z-index:420;background:#161d25;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;opacity:0;-webkit-transition:opacity 300ms;-o-transition:opacity 300ms;transition:opacity 300ms}.zoom-overlay-open .zoom-overlay{opacity:1}.zoom-overlay-open,.zoom-overlay-transitioning{cursor:default}.animate{animation:animateElement cubic-bezier(0.3, 0.45, 0.45, 0.95) 0.75s;animation-duration:0.5s;animation-iteration-count:1;transition:transform .15s}@keyframes animateElement{0%{opacity:0;transform:translate(0px, 50px)}100%{opacity:1;transform:translate(0px, 0px)}}*,*::after,*::before{box-sizing:border-box}body{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-size:18px;line-height:34px;border:10px solid #131212;color:#fff;background-color:#131212;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}body.dark .footer__head{background:#131212}@media only screen and (max-width: 768px){body.dark .footer__head{padding:40px}}@media only screen and (max-width: 576px){body.dark .footer__head{padding:30px}}body.dark .subscribe-form .subscribe-email{background:#161d25}@media only screen and (max-width: 576px){body{font-size:16px;line-height:29px;border-width:5px}}*::selection{color:#fff;background-color:rgba(0,112,255,0.8)}h1,h2,h3,h4,h5,h6{font-family:"Inter",Helvetica Neue,Helvetica,Arial,sans-serif;font-weight:700;line-height:1.3;letter-spacing:-1px}h1{font-size:36px}h2{font-size:28px}h3{font-size:24px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px}blockquote{position:relative;margin-top:30px;padding:25px 25px 15px 60px;font-size:30px;line-height:45px;font-weight:600;font-style:normal}blockquote::before{content:'\201C';position:absolute;top:0.35em;left:0.05em;font-size:3.5em;color:#0070ff}blockquote p{margin-bottom:10px}blockquote cite{display:inline-block;margin-top:7px;font-size:15px;font-style:normal;color:#ccc}blockquote cite:before{content:'\2014' '\00a0'}@media only screen and (max-width: 1024px){blockquote{font-size:24px;line-height:37px}}@media only screen and (max-width: 576px){blockquote{padding:38px 0 15px 35px;font-size:21px;line-height:31px}}pre{overflow:auto;padding:15px;margin-bottom:0;font-size:14px;white-space:pre-wrap;word-wrap:break-word;word-break:break-all}img,.zoom-img-wrap{max-width:100%;height:auto;vertical-align:middle}img+em,.zoom-img-wrap+em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}img+em a,.zoom-img-wrap+em a{border-bottom:1px solid #fff}img+em a:hover,.zoom-img-wrap+em a:hover{color:#fff;border-color:#0070ff}a{text-decoration:none;color:#fff;transition:all 0.35s}a:hover{color:#fff}hr{display:block;height:1px;width:100px;margin:50px 0;border:0;background:#000}.wrapper-page{margin-bottom:70px}@media only screen and (max-width: 768px){.wrapper-page{margin-bottom:60px}}@media only screen and (max-width: 576px){.wrapper-page{margin-bottom:40px}}.button{display:inline-block;height:45px;padding:0 20px;font-size:15px;font-weight:700;border:none;outline:none;color:#fff;background:#0070ff;transition:all 0.35s;cursor:pointer}.button:hover{color:#fff;background:#0065e6}.lazy{opacity:0;transition:0.3s}.lazy.loaded{opacity:1}.top{position:fixed;bottom:40px;right:-100px;z-index:1;width:28px;height:40px;font-size:28px;line-height:40px;text-align:center;border-radius:6px;background-color:#161d25;color:#fff;cursor:pointer;transition:all .25s ease;box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.top:hover{color:#fff;background-color:#0070ff}.top.is-active{right:40px}@media only screen and (max-width: 768px){.top{bottom:25px}.top.is-active{right:30px}}.header{height:auto;border-bottom:1px solid #131212;background:#161d25;transition:all 0.35s}.header .header__overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:15;background-color:rgba(17,17,17,0.7);cursor:pointer;opacity:0;visibility:hidden;transition:all 0.5s ease}@media only screen and (max-width: 1024px){.header .header__overlay.is-visible{opacity:1;visibility:visible}}.header__inner{position:relative;display:flex;align-items:center;min-height:80px}.logo__link{font-size:20px;line-height:26px;font-weight:700}.logo__link:hover{color:#0070ff}.logo__image{max-height:50px}.main-nav{margin-left:80px}@media only screen and (max-width: 1024px){.main-nav{position:fixed;top:0;left:inherit;right:-300px;bottom:0;transform:none;z-index:100;width:300px;height:100vh;padding:40px 30px 30px;border:10px solid #131212;transition:right 0.5s cubic-bezier(0.7, 0.4, 0, 1);background:#161d25}.main-nav.is-open{right:0}.main-nav .nav__list{width:100%}.main-nav .nav__list .nav__item{display:block;margin:0 10px}.main-nav .nav__list .nav__item:last-child{margin-right:10px}.main-nav .nav__list .nav__item .nav__link{display:block;padding:10px 0;font-size:16px;line-height:26px;font-weight:500}}@media only screen and (max-width: 576px){.main-nav{padding:20px 30px;border-width:5px}}.main-nav__box{display:flex;align-items:center}.main-nav__box .nav__icon-close{display:none;font-size:24px;text-align:right}.main-nav__box .nav__icon-close .ion-md-close{transition:all 0.35s;cursor:pointer}.main-nav__box .nav__icon-close .ion-md-close:hover{color:#0070ff}.main-nav__box .nav__title{display:none}@media only screen and (max-width: 1024px){.main-nav__box{display:block}.main-nav__box .nav__icon-close{display:block}.main-nav__box .nav__title{display:block;margin:0 10px 15px;padding-bottom:15px;font-size:24px;font-weight:700;color:#fff;border-bottom:1px solid #131212}}.nav__list .nav__item{display:inline-block;margin:0 20px}.nav__list .nav__item:last-child{margin-right:40px}.nav__list .nav__item .nav__link{font-size:15px;line-height:24px;font-weight:500}.nav__list .nav__item .nav__link:hover{color:#0070ff}.nav-buttons{display:flex;align-items:center;margin-left:auto;font-size:21px;color:#fff;cursor:pointer}.nav-buttons .nav__icon{transition:all 0.35s}.nav-buttons .nav__icon:hover{color:#0070ff}.nav-buttons .nav__icon:first-child{margin-right:15px}.nav-buttons .nav__icon-menu{display:none}@media only screen and (max-width: 1024px){.nav-buttons{margin-left:auto}.nav-buttons .nav__icon-menu{display:block}}.search{position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;transform:scale(0.95);overflow:auto;opacity:0;background:#131212;transition:all .25s ease}.search.is-visible{transform:scale(1);z-index:100;opacity:1;transition:all .25s ease}.search__box{width:50%;margin:0 auto;padding-top:140px}@media only screen and (max-width: 1024px){.search__box{width:80%;padding-top:100px}}.search__group{position:relative;margin-bottom:50px}.search__group .search__close{position:absolute;right:20px;top:17px;font-size:27px;line-height:40px;cursor:pointer;transition:all .2s}.search__group .search__close:hover{color:#0070ff}.search__group .search__text{width:100%;padding:20px;font-size:21px;line-height:31px;border:2px solid transparent;border-radius:4px;color:#fff;background:#161d25;outline:none;transition:all .2s}.search__group .search__text:focus{border-color:#0070ff}.search__group .search__text::placeholder{font-weight:500;color:#fff}.search__group .search__text::-ms-clear{display:none}.search-results-list .no-results{width:100%;font-size:21px;font-weight:600;text-align:center;color:#fff}.pagination{margin-top:40px}@media only screen and (max-width: 768px){.pagination{margin-top:30px}}@media only screen and (max-width: 576px){.pagination{margin-top:20px}}.pagination__inner{display:flex;justify-content:center;align-items:center}.pagination__list{display:flex;font-weight:600;height:40px;padding:0 20px;font-size:14px;line-height:40px;border-radius:3px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);color:#fff;background-color:#161d25}.pagination__count{display:inline-block;padding:0 15px;margin:0 15px;font-size:13px;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1);color:#ccc}.pagination__next i,.pagination__prev i{font-size:13px}.pagination__next:hover,.pagination__prev:hover{color:#0070ff}.pagination__next.disabled,.pagination__prev.disabled{opacity:0.2;cursor:not-allowed;color:inherit}.pagination__next i{margin-left:4px}.pagination__prev i{margin-right:4px}.footer{padding-top:70px;background:#161d25}.footer .row .col{flex-grow:1}.footer .footer__inner{padding:60px 0;margin:0 60px 0;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.footer .footer__head{margin:0 -60px;padding:60px;background:#161d25;box-shadow:0 10px 40px rgba(0,0,0,0.07)}.footer .footer__content{padding:60px 0}@media only screen and (max-width: 1024px){.footer .row .col:last-child>.widget{margin-bottom:0}}@media only screen and (max-width: 768px){.footer{padding-top:60px}.footer .footer__inner{padding:0;margin:0;background-image:none}.footer .footer__head{margin:0;padding:0;box-shadow:none}}@media only screen and (max-width: 576px){.footer{padding-top:50px}}@media only screen and (max-width: 1024px){.widget{margin-bottom:30px}}@media only screen and (max-width: 576px){.widget{margin-bottom:40px}}.widget__head{margin-bottom:20px}.widget__head .widget__title{margin:0;font-size:24px;color:#fff}.widget-gallery{padding:0 35px}@media only screen and (max-width: 1024px){.widget-gallery{padding:0}}.recent-posts{position:relative;display:flex;margin-bottom:15px}.recent-posts:last-child{margin-bottom:0}.recent-posts__header{margin-right:15px}.recent-posts__image{position:relative;display:block;margin-right:15px;min-width:80px;height:80px;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:#131212}.recent-posts__image img{position:absolute;top:0;width:100%;height:100%;object-fit:cover}.recent-posts__date{margin-bottom:5px;font-size:13px;line-height:16px;color:#ccc}.recent-posts__title{margin-bottom:0;font-size:17px;line-height:22px;font-weight:700}.recent-posts__title a{color:#fff}.recent-posts__title a:hover{color:#fff}.widget-subscribe .subscribe__inner{display:flex;flex-direction:column;justify-content:space-between}.widget-subscribe .subscribe__group{margin-bottom:20px}.widget-subscribe .subscribe__group .subscribe__title{margin-bottom:15px;color:#fff}.widget-subscribe .subscribe__group .subscribe__description{font-size:15px;line-height:22px;color:#ccc}.widget-subscribe .subscribe-form{position:relative;height:60px}.widget-subscribe .subscribe-form .subscribe-email{width:100%;height:100%;padding:20px;font-size:14px;line-height:19px;font-weight:500;color:rgba(255,255,255,0.8);border:2px solid #131212;background:transparent;transition:border-color .2s ease-in-out;outline:0}.widget-subscribe .subscribe-form .subscribe-email::placeholder{color:rgba(255,255,255,0.8)}.widget-subscribe .subscribe-form .subscribe-email:focus{color:rgba(255,255,255,0.8);border-color:#0070ff}.widget-subscribe .subscribe-form .subscribe-button{position:absolute;top:10px;right:10px;height:40px;padding:0 15px;font-size:14px}@media only screen and (max-width: 1130px){.widget-subscribe .subscribe-form .subscribe-email{font-size:13px}.widget-subscribe .subscribe-form .subscribe-button{font-size:14px}}.copyright{padding:0 0 30px;margin-top:10px;font-size:13px;font-weight:500;text-align:center;color:#ccc}.copyright a:hover{color:#0070ff}@media only screen and (max-width: 768px){.copyright{text-align:left}}.gallery-box{margin:40px 0}.gallery-box.gallery-footer{margin:0}.gallery-box em{display:block;margin-top:15px;font-size:14px;line-height:22px;font-style:normal;font-weight:normal;text-align:center;color:#fff}.gallery-box em a{border-bottom:1px solid #fff}.gallery-box em a:hover{color:#fff;border-color:#0070ff}.gallery{display:grid;grid-template-columns:repeat(3, auto);justify-content:center;align-content:center;grid-gap:10px}.gallery .gallery__image{background:#131212}.gallery .gallery__image img{display:block;width:100%;height:auto;object-fit:cover}.social{margin:60px 0 0;text-align:center}.social .social__list{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}.social .social__item{display:inline-block;margin:0 2px}.social .social__link{position:relative;z-index:1;padding:0 10px;font-size:21px;line-height:1}.social .social__link:hover{color:#fff}.social .social__link:hover::after{transform:translate3d(-50%, -50%, 0) scale(1)}.social .social__link::after{content:'';display:block;position:absolute;z-index:-1;top:50%;left:50%;transform:translate3d(-50%, -50%, 0) scale(0);width:100%;height:0;padding-bottom:100%;border-radius:50%;background:#0070ff;transition:all .25s}@media only screen and (max-width: 768px){.social{margin:50px 0 0;text-align:left}.social .social__list{justify-content:start}}.hero{padding:60px 0 70px;margin-bottom:70px;background:#161d25}.hero.hero--post .article__meta{margin-bottom:13px;font-size:14px;font-weight:500}.hero.hero--post .article__meta .article__date::before{content:none}.hero.hero--post .article__author-link{font-size:14px;line-height:20px;font-weight:500;color:#ccc}.hero.hero--post .article__author-link span{color:#ccc}.hero.hero--post .article__author-link:hover{color:#fff}.hero.hero--page .hero__title{margin-bottom:0}@media only screen and (max-width: 768px){.hero{padding:60px 0 60px;margin-bottom:60px}}@media only screen and (max-width: 576px){.hero{padding:40px 0 40px;margin-bottom:40px}}.hero__inner{display:flex;align-items:center}@media only screen and (max-width: 768px){.hero__inner{flex-direction:column}}.hero__left,.hero__right{width:50%}@media only screen and (max-width: 768px){.hero__left,.hero__right{width:100%}}.hero__left .hero__title,.hero__left .hero__job{font-size:50px;font-weight:700;letter-spacing:-2px;color:#fff}@media only screen and (max-width: 1130px){.hero__left .hero__title,.hero__left .hero__job{font-size:40px;line-height:1.2}}@media only screen and (max-width: 1024px){.hero__left .hero__title,.hero__left .hero__job{font-size:33px}}@media only screen and (max-width: 576px){.hero__left .hero__title,.hero__left .hero__job{font-size:27px}}.hero__left .hero__title{margin-right:20px;margin-bottom:10px}@media only screen and (max-width: 768px){.hero__left .hero__title{margin-right:0}}.hero__left .hero__job{margin-bottom:20px}.hero__left .hero__name{position:relative;font-weight:400}.hero__left .hero__name::after{content:"";position:absolute;left:0;bottom:0px;width:100%;height:38%;background-color:rgba(0,112,255,0.1)}.hero__left .hero__description{max-width:550px;margin:0;font-size:21px;font-weight:500;color:#ccc}@media only screen and (max-width: 1024px){.hero__left .hero__description{font-size:16px;line-height:26px}}.hero__left .hero__button{margin-top:20px;padding-right:12px;display:inline-block;font-size:16px;line-height:16px;font-weight:700;color:#fff;outline:none;cursor:pointer;transition:all 0.35s}.hero__left .hero__button:hover{color:#fff;background:#0065e6}.hero__left .hero__button .button-arrow{display:inline-block;margin-right:10px;width:30px;height:30px;line-height:30px;text-align:center;color:#fff;background:#0070ff}.hero__right{position:relative}.hero__right::after{content:"";position:absolute;top:50%;transform:translateY(-50%);display:block;width:100%;height:50%;background-image:-webkit-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-moz-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:-ms-repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);background-image:repeating-radial-gradient(center center, rgba(0,112,255,0.7), rgba(0,112,255,0.7) 2px, transparent 2px, transparent 100%);-webkit-background-size:15px 15px;-moz-background-size:15px 15px;background-size:15px 15px}.hero__right .hero__image{position:relative;z-index:10;width:370px;height:470px;margin:0 auto}.hero__right .hero__image::before{content:"";display:block;position:absolute;top:0;z-index:1;width:100%;height:100%;background:#131212}.hero__right .hero__image img{position:absolute;top:0;z-index:1;height:100%;width:100%;object-fit:cover;box-shadow:10px 10px 0 #0070ff;background:#131212}@media only screen and (max-width: 1130px){.hero__right .hero__image{width:270px;height:370px}}@media only screen and (max-width: 1024px){.hero__right .hero__image{width:230px;height:330px}}@media only screen and (max-width: 768px){.hero__right{order:-1}.hero__right .hero__image{width:100%;height:330px;margin-bottom:40px}}@media only screen and (max-width: 576px){.hero__right .hero__image{height:270px;margin-bottom:30px}.hero__right .hero__image img{box-shadow:none}}.contact-head{margin-bottom:30px}.form-box{max-width:750px;margin:0 auto}.form__group{margin-bottom:20px}.form__group:last-child{margin-bottom:0}.form__input{width:100%;padding:20px;font-size:14px;font-weight:500;border:1px solid #131212;outline:none;transition:250ms;resize:vertical;color:rgba(255,255,255,0.8);background:#161d25}.form__input::placeholder{color:rgba(255,255,255,0.8)}.form__input:focus{border:1px solid #0070ff}.article{margin-bottom:30px;border-radius:3px;overflow:hidden;transition:transform .2s}.article:hover{transform:translateY(-3px)}.article__inner{box-shadow:0px 0px 20px rgba(0,0,0,0.05)}.image-wrap{padding:15px 15px 0 15px;background:#161d25}.article__image{position:relative;display:block;height:0;padding-bottom:56.25%;background:#131212;overflow:hidden}.article__image img{position:absolute;width:100%;height:100%;object-fit:cover}.article__content{padding:25px;background:#161d25}.article__title{margin-bottom:10px;font-size:22px;line-height:32px}.article__title a:hover{color:#fff}.article__excerpt{font-size:15px;line-height:24px;font-weight:500;margin-bottom:20px;color:#ccc}.article__meta{display:flex;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:500;line-height:20px}.article__meta .article__author-link{color:#ccc}.article__meta .article__author-link:hover{color:#fff}.article__meta .article-tags__box{display:flex}.article__meta .article-tags__box::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}.article__meta .article-tags__box .article__tag{color:#ccc}.article__meta .article-tags__box .article__tag:hover{color:#fff}.article__meta .article-tags__box .article__tag::after{content:",";display:inline-block;margin:0 2px}.article__meta .article-tags__box .article__tag:last-child::after{content:none}.article__meta .article__date{color:#ccc}.article__meta .article__date::before{content:"/";display:inline-block;margin:0 5px;color:#ccc}img[src$="centerme"]{display:block;margin:0 auto}.post,.page{max-width:850px;margin:0 auto;color:#fff}.post__content a,.page__content a{text-decoration:underline}.image-box{margin:40px 0}.post__share{margin:50px 0}.post__share .share__list{display:flex;justify-content:center;align-items:center;width:100%}.post__share .share__item{margin:0 2px;text-align:center}.post__share .share__link{display:block;padding:2px 12px;font-size:18px;color:#161d25}.post__share .share__link.share__facebook,.post__share .share__link.share__twitter,.post__share .share__link.share__linkedin,.post__share .share__link.share__pinterest{border:1px solid #131212;background:#161d25}.post__share .share__link.share__facebook:hover,.post__share .share__link.share__twitter:hover,.post__share .share__link.share__linkedin:hover,.post__share .share__link.share__pinterest:hover{color:#fff}.post__share .share__link.share__facebook{color:#3b5998}.post__share .share__link.share__facebook:hover{background:#3b5998}.post__share .share__link.share__twitter{color:#55acee}.post__share .share__link.share__twitter:hover{background:#55acee}.post__share .share__link.share__linkedin{color:#0077b5}.post__share .share__link.share__linkedin:hover{background:#0077b5}.post__share .share__link.share__pinterest{color:#bd081c}.post__share .share__link.share__pinterest:hover{background:#bd081c}@media only screen and (max-width: 576px){.post__share{margin:40px 0}}.post__navigation{display:flex;justify-content:space-between;margin-bottom:20px}.post__navigation .post__prev,.post__navigation .post__next{display:flex;width:48%;padding:25px;margin-bottom:30px;background:#161d25;box-shadow:0px 0px 20px rgba(0,0,0,0.05);transition:transform .2s}.post__navigation .post__prev:hover,.post__navigation .post__next:hover{transform:translateY(-3px)}.post__navigation .post__prev .prev__image,.post__navigation .post__prev .next__image,.post__navigation .post__next .prev__image,.post__navigation .post__next .next__image{position:relative;display:block;width:100px;min-width:100px;height:100px;background-color:#131212}.post__navigation .post__prev .prev__image img,.post__navigation .post__prev .next__image img,.post__navigation .post__next .prev__image img,.post__navigation .post__next .next__image img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.post__navigation .post__prev .prev__image,.post__navigation .post__next .prev__image{margin-right:15px}.post__navigation .post__prev .next__image,.post__navigation .post__next .next__image{margin-left:15px}.post__navigation .post__prev .post__nav,.post__navigation .post__next .post__nav{display:inline-block;margin-bottom:5px;font-size:13px;line-height:1;font-weight:500;color:#ccc}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{margin-bottom:0;font-size:18px;line-height:24px}.post__navigation .post__prev .post__nav__title a:hover,.post__navigation .post__next .post__nav__title a:hover{color:#fff}.post__navigation .post__next{text-align:right;margin-left:auto;justify-content:flex-end}@media only screen and (max-width: 768px){.post__navigation{flex-wrap:wrap}.post__navigation .post__prev,.post__navigation .post__next{width:100%}.post__navigation .post__prev{margin-bottom:30px}.post__navigation .next__box{margin-left:auto}}@media only screen and (max-width: 576px){.post__navigation{margin-bottom:10px}.post__navigation .post__prev,.post__navigation .post__next{padding:20px}.post__navigation .post__prev .post__nav__title,.post__navigation .post__next .post__nav__title{font-size:15px;line-height:20px}}.post__comments{padding:40px;box-shadow:0px 0px 20px rgba(0,0,0,0.05);background:#161d25}@media only screen and (max-width: 576px){.post__comments{padding:30px}}.error{margin-bottom:30px;text-align:center}.error .error__title{margin-bottom:0;font-size:100px}.error .error__text{margin-bottom:20px;font-size:21px;color:#ccc}.error .error__button{line-height:45px}.tag{padding:70px 0;margin-bottom:70px;text-align:center;background:#161d25}.tag .tag__meta{font-size:16px;color:#ccc}.tag .tag__title{margin:0;font-size:50px}@media only screen and (max-width: 768px){.tag{padding:60px 0;margin-bottom:60px}}@media only screen and (max-width: 576px){.tag{padding:40px 0;margin-bottom:40px}}
+
+  </style>
+</head>
+
+<body class="dark">
+
+  
+
+    <!-- begin header -->
+<header class="header">
+  <div class="container">
+    <div class="row">
+      <div class="header__inner col col-12">
+
+        <div class="logo">
+          <a class="logo__link" href="/">
+          
+            Artik Blue
+          
+          </a>
+        </div>
+
+        <nav class="main-nav">
+          <div class="main-nav__box">
+            <div class="nav__icon-close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <div class="nav__title">Menu</div>
+            <ul class="nav__list list-reset">
+              <li class="nav__item">
+                <a href="/" class="nav__link">Home</a>
+              </li>
+              
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/about/" class="nav__link">About</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                  <li class="nav__item">
+                    <a href="/reversing" class="nav__link">Reversing</a>
+                  </li>
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+                
+                  
+                
+              
+            </ul>
+          </div>
+        </nav>
+
+        <div class="nav-buttons">
+          <i class="nav__icon nav__icon-menu ion ion-md-menu"></i>
+          <i class="nav__icon nav__icon-search ion ion-md-search"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="header__overlay"></div>
+</header>
+<!-- end header -->
+
+<!-- begin search -->
+<div class="search">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="search__box">
+          <div class="search__group">
+            <div class="search__close">
+              <i class="ion ion-md-close"></i>
+            </div>
+            <label for="js-search-input" class="screen-reader-text">Search for Blog</label>
+            <input type="text" id="js-search-input" class="search__text" autocomplete="off" placeholder="Type to search...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="container__inner">
+          <div class="row search-results-list" id="js-results-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- end search -->
+    <!-- begin content -->
+    <main class="content" aria-label="Content">
+      <!-- begin wrapper-page -->
+      <div class="wrapper-page">
+        <!-- begin hero -->
+
+<section class="hero hero--post">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12">
+        <div class="hero__inner">
+          <div class="hero__left">
+            
+
+            <div class="article__meta">
+              <span class="article__date"><time datetime="2020-05-16T00:01:35+02:00">16 May 2020</time></span>
+              
+              <div class="article-tags__box">
+                
+                  <a href="/tag/reversing" class="article__tag">reversing</a>
+                
+                  <a href="/tag/c" class="article__tag">c</a>
+                
+                  <a href="/tag/radare" class="article__tag">radare</a>
+                
+              </div>
+              
+            </div>
+
+            <h1 class="hero__title">Reverse engineering x64 binaries with Radare2 - 14 - I (linux systems programming; theory, syscalls, files and ESIL)</h1>
+            <a href="/about/" class="article__author-link"><span>By</span> Artik Blue</a>
+
+            
+          </div>
+
+          <div class="hero__right">
+
+            
+            <div class="hero__image">
+              <img class="lazy" data-src="/images//radare2/radare2_14.png" alt="Reverse engineering x64 binaries with Radare2 - 14 - I (linux systems programming; theory, syscalls, files and ESIL)">
+            </div>
+
+            
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- end hero -->
+
+<!-- begin post -->
+<div class="container">
+  <article class="post animate">
+
+    <div class="post__content">
+      <p>What’s up family, today we are going one step further in reversing. From our fist reversing tutorial untill now, we saw the very basics of reverse engineering, particularly reverse engineering focused on x86-64 bits linux binaries written in C. Eventhough our main target were c written binaries for linux the techniques and tricks we went through are pretty common and can be used let’s say when reversing 32 bits windows C++ binaries for example (at the end we were only dealing with libraries such as stdio and strings that are common in both Win/Linux). On the other hand we’ve been using radare2, same thing, the knowledge we got can be applied when doing reversing with other tools such as ghidra, IDA, binaryninja, etc.</p>
+
+<p>As said, today we are moving to the next level. As we start to get deeper into more advanced topics like systems programming, advanced topics on memory management, malware related stuff or exploiting and shellcoding, we encounter that different systems such as Windows and Linux do handle stuff (internally) in a different way. So after this point I’m going to walk you through some new topics on reversing, mostly related to systems internals and malware techniques showing you how the thing is done in both Linux and Windows separately.</p>
+
+<p>In this particular post, we are going to walk through the concept of the Linux kernel and very basic syscalls.</p>
+
+<h4 id="kernel-space-and-user-space">Kernel space and User space</h4>
+
+<p>As you should know, the kernel is the real hearth of the operating system it provides services such as process and memory management or the file system and the tcp stack. It provides access control over the files and memory and also provides us with the modules / drivers that deal with external devices such as the keyboard or the mouse. So the kernel (as a concept) is located on top of the hardware and directly deals with stuff like the ram memory, the disk, the network access etc and also deals with the programs, setting up the environment and dealing witht he resources they need such as space in memory or access to IO devices.</p>
+
+<p>So, the program that is purely related to the operating system kernel, the one that we just presented works in the so called “kernel space” that is an area of the memory where we can only find kernel code/data. Why do we need that separation? For many reasons really, but think about the security, the code that is related to the kernel, the very core of the operating system needs to have full control over the machine, but your average program that does a couple of calculations and outputs a result certainly not, those programs need to be separated for securitty reasons and as the kernel runs in its own mem space and is the kernel the one that launches user programs it has the full control to make them run in the user space, the kernel is able to mangle in both spaces and the user programs do only run on user space. Anyway, if you are reading this, a reverse engineering course, at this point, you should already know about the topic.</p>
+
+<p>But why are we talking about this? At the end we are on a reverse engineering course huh? Well, when we are analyzing programs, we may see functions that clearly deal with external devices or memory managemtn, think about printf() it puts content on the screen, then look at fopen, it writes a file on the disk or malloc that creates space in memory, those need to interact with the kernel in some way to ask it for the required action. Not all functions need the kernel for work, you may have the sqrt() function that just returns the square root of a number, it just takes a number (through rsi) calculates something and returns another one (through rax), the is nothing done in memory, disk, network, screen… that function won’t ask the kernel for anything and will depend only on user space code.</p>
+
+<p>So, in systems that work on top of the Linux kernel, any operation that deals with cpu, memory, io devices, filesystem and so is done under a system call. Think of system calls or syscalls as special functions that require the kernel for a certain action. An example of a syscall, that we’ll inspect on this post is the write() syscall. Write basically writes data to a device, being that device, the screen, a file, a socket or whatever and yes, on linux “everything is a device”. If you want to write text on the screen you can use write() but you can also use printf(), the thing is that inside printf() write() is being called, printf just calls write in a fancy way (allowing us format definition and such)</p>
+
+<h4 id="system-calls-and-error-handling">System calls and error handling</h4>
+
+<p>Let’s now perform our first syscall. On this example we will use the open() syscall to create a file and then the write() syscall to write content to the file and also to the screen.</p>
+
+<pre><code class="language-C">#include &lt;fcntl.h&gt;
+
+void main(){
+    int fd = open("foo", O_WRONLY | O_CREAT, 0644);
+    write(fd, "hello_world", 11);
+    write(1,"hello world", 11);
+    close(fd);
+
+    printf("\nhello world2\n");
+}
+
+</code></pre>
+<p>As you can see, at first, open is called to open “foo” file, it returns an int value that is assigned to the fd var, open returns the file descriptor of the file it just opened. We’ll talk about file descriptors right after but for now just know that a file descriptor is a reference to a file/external device/socket/whatever we can read or write data from/to. Then write gets called with that number and some text as parameter (11 being the size of that text).</p>
+
+<p>Let’s inspect the function header: http://man7.org/linux/man-pages/man2/write.2.html</p>
+
+<p>ssize_t write(int fd, const void *buf, size_t count);</p>
+
+<p>So the parameters for the function work fine but wait, what is the a ssize_t type? Why just not define that return value as some int and that’s all? The kernel uses custom data types as ssize_t for portability reasons, programs relying on the kernel will always kind of blindly refer to types such as ssize_t, the kernel will deal with the actual val internally, in this case a ssize_t is basically a signed long, but it can be another thing on a future version of the kernel, does not matter we’ll always refeer to that.</p>
+
+<p>We also see that open is being called with two flags here O_WRONLY added to O_CREAT so the file will be accessed for write only and will be created if it does not exist, remember the past tutorial about bitwise operations? Now you see how flags are being passed on a real example. Then 644 is related to the unix permissions on the file, I won’t go much into details as I suppose that you already know about permissions.</p>
+
+<p>After that, we see write being called again, this time with 1 as the fd. There are three standard (posix) file descriptors that you should be aware off as they are present in every unix process: 0 is the standard input (what the user enters to the program normally via the keyboard), 1 is the standard output (screen) and 2 is the standard error. So now that second write over there should make more sense to you.</p>
+
+<p>Let’s now jump into radare2:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x558c82dc071a]&gt; pdf
+            ; DATA XREF from entry0 @ 0x558c82dc062d
+┌ 122: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_4h @ rbp-0x4
+│           0x558c82dc071a      55             push rbp
+│           0x558c82dc071b      4889e5         mov rbp, rsp
+│           0x558c82dc071e      4883ec10       sub rsp, 0x10
+│           0x558c82dc0722      baa4010000     mov edx, 0x1a4          ; 420
+│           0x558c82dc0727      be41000000     mov esi, 0x41           ; 'A' ; 65
+│           0x558c82dc072c      488d3df10000.  lea rdi, [0x558c82dc0824] ; "foo"
+│           0x558c82dc0733      b800000000     mov eax, 0
+│           0x558c82dc0738      e8b3feffff     call sym.imp.open       ; int open(const char *path, int oflag)
+│           0x558c82dc073d      8945fc         mov dword [var_4h], eax
+│           0x558c82dc0740      8b45fc         mov eax, dword [var_4h]
+│           0x558c82dc0743      ba0b000000     mov edx, 0xb            ; 11
+│           0x558c82dc0748      488d35d90000.  lea rsi, [0x558c82dc0828] ; "hello_world"
+│           0x558c82dc074f      89c7           mov edi, eax
+│           0x558c82dc0751      b800000000     mov eax, 0
+│           0x558c82dc0756      e875feffff     call sym.imp.write      ; ssize_t write(int fd, const char *ptr, size_t nbytes)
+│           0x558c82dc075b      ba0b000000     mov edx, 0xb            ; 11
+│           0x558c82dc0760      488d35cd0000.  lea rsi, str.hello_world ; 0x558c82dc0834 ; "hello world"
+│           0x558c82dc0767      bf01000000     mov edi, 1
+│           0x558c82dc076c      b800000000     mov eax, 0
+│           0x558c82dc0771      e85afeffff     call sym.imp.write      ; ssize_t write(int fd, const char *ptr, size_t nbytes)
+│           0x558c82dc0776      8b45fc         mov eax, dword [var_4h]
+│           0x558c82dc0779      89c7           mov edi, eax
+│           0x558c82dc077b      b800000000     mov eax, 0
+│           0x558c82dc0780      e85bfeffff     call sym.imp.close      ; int close(int fildes)
+│           0x558c82dc0785      488d3db40000.  lea rdi, str.hello_world2 ; 0x558c82dc0840 ; "\nhello world2"
+│           0x558c82dc078c      e82ffeffff     call sym.imp.puts       ; int puts(const char *s)
+│           0x558c82dc0791      90             nop
+│           0x558c82dc0792      c9             leave
+└           0x558c82dc0793      c3             ret
+[0x558c82dc071a]&gt; 
+</code></pre></div></div>
+
+<p>So on the open we see 420 dec = 0644 octal being assed as weel as the file name and 0x41 that is the combination of those two flags. Then after calling open, we get the file descriptor:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x558c82dc0738      e8b3feffff     call sym.imp.open       ; int open(const char *path, int oflag)
+│           0x558c82dc073d      8945fc         mov dword [var_4h], eax
+
+[0x558c82dc073d]&gt; dr eax
+0x00000003
+</code></pre></div></div>
+<p>Three is the file descriptor for our file, it makes sense as 0,1 and 2 are used by default, 3 is the next one available.</p>
+
+<p>Then that file descriptor is sent to write:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x558c82dc0740      8b45fc         mov eax, dword [var_4h]
+│           0x558c82dc0743      ba0b000000     mov edx, 0xb            ; 11
+│           0x558c82dc0748      488d35d90000.  lea rsi, [0x558c82dc0828] ; "hello_world"
+│           0x558c82dc074f      89c7           mov edi, eax
+│           0x558c82dc0751      b800000000     mov eax, 0
+│           0x558c82dc0756      e875feffff     call sym.imp.write 
+</code></pre></div></div>
+<p>And for the last write just a simple 1 is being sent:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x558c82dc075b      ba0b000000     mov edx, 0xb            ; 11
+│           0x558c82dc0760      488d35cd0000.  lea rsi, str.hello_world ; 0x558c82dc0834 ; "hello world"
+│           0x558c82dc0767      bf01000000     mov edi, 1
+│           0x558c82dc076c      b800000000     mov eax, 0
+│           0x558c82dc0771      e85afeffff     call sym.imp.write 
+</code></pre></div></div>
+<p>Let’s now compare write with printf(). Writting to screen (stdout) with printf is as easy as:</p>
+
+<pre><code class="language-C">#include &lt;stdio.h&gt;
+
+void main(){
+
+        printf("ssssssssyscall\n");
+
+}
+</code></pre>
+<p>And then inside radare, we just see a puts here, not a write</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x558589dc963a]&gt; pdf
+            ; DATA XREF from entry0 @ 0x558589dc954d
+┌ 19: int main (int argc, char **argv, char **envp);
+│           0x558589dc963a      55             push rbp
+│           0x558589dc963b      4889e5         mov rbp, rsp
+│           0x558589dc963e      488d3d8f0000.  lea rdi, str.ssssssssyscall ; 0x558589dc96d4 ; "ssssssssyscall"
+│           0x558589dc9645      e8c6feffff     call sym.imp.puts       ; int puts(const char *s)
+│           0x558589dc964a      90             nop
+│           0x558589dc964b      5d             pop rbp
+└           0x558589dc964c      c3             ret
+[0x558589dc963a]&gt; dcs*
+
+</code></pre></div></div>
+<p>But just note that the write syscall is being used on the inside of puts! With radare2, you can trace all of the syscalls by using dcs*, like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>child stopped with signal 133
+--&gt; SN 0x7f7b6205a154 syscall 1 write (0x1 0x55858a4e3260 0xf)
+ssssssssyscall
+child stopped with signal 133
+--&gt; SN 0x7f7b6202ee06 syscall 231 exit_group (0xf)
+child exited with status 15
+
+==&gt; Process finished
+</code></pre></div></div>
+<p>And as you can see write is being called right before our string gets on the screen. Again functions such as printf included on the stdio.h lib are just abstractions to make our life easy providing us with extra functionality, they deal with syscalls on the inside.</p>
+
+<p>Also note that, when running the write syscall, no internal buffer is used (unlike we saw when using Fwrite function) so no heap space is created after write, this function directly dumps the data to the fd and the kernel internally creates the content inside the file.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x558c82dc075b]&gt; dmh
+No Heap section
+</code></pre></div></div>
+<pre><code class="language-C">#include &lt;fcntl.h&gt;
+#include &lt;stdio.h&gt;
+
+void main(){
+    fd = open("foo", O_WRONLY | O_CREAT, 0644);
+    if(fd &gt;= 0){
+        write(fd, "hello_world", 11);
+        close(fd);
+    }
+    else{
+        printf("error number %d\n", errno);
+        perror("foo");
+        exit(1);
+    }
+}
+</code></pre>
+
+<h4 id="file-descriptors">File descriptors</h4>
+
+<p>Let’s talk a little bit about file descriptors as this is a concept that we’ll see a lot during our reversing adventures and it may be not so clear for everybody.</p>
+
+<p>In Unix and related computer operating systems, a file descriptor or fd is an abstract indicator (handle) used to access a file or other input/output resource, such as a pipe or network socket. In general terms, anything you can read information from or dump information to can be represented by a file descrriptor.</p>
+
+<p>In the traditional implementation of Unix, file descriptors index into a per-process file descriptor table maintained by the kernel, that in turn indexes into a system-wide table of files opened by all processes, called the file table. This table records the mode with which the file (or other resource) has been opened: for reading, writing, appending, and possibly other modes. It also indexes into a third table called the inode table that describes the actual underlying files.[3] To perform input or output, the process passes the file descriptor to the kernel through a system call, and the kernel will access the file on behalf of the process. The process does not have direct access to the file or inode tables.</p>
+
+<p>In Unix-like systems, file descriptors can refer to any Unix file type named in a file system. As well as regular files, this includes directories, block and character devices (also called “special files”), Unix domain sockets, and named pipes. File descriptors can also refer to other objects that do not normally exist in the file system, such as anonymous pipes and network sockets. We’ll talk about those devices such as sockets or pipes a lot during these walkthrough on reversing advanced topics.</p>
+
+<p>Do you remember about our past tutorial, when we talked about dealing with files using fwrite and fread? So the FILE data structure in the C standard I/O library usually includes a low level file descriptor for the object in question on Unix-like systems, so the FILE object and fwrite/fread do use write and read syscalls on the inside. Not everything should make more sense to you.</p>
+
+<p>The following table shows how the system deals with file descriptors for read/write operations on files using the mentioned table:</p>
+
+<p>https://en.wikipedia.org/wiki/File_descriptor</p>
+
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/File_table_and_inode_table.svg/300px-File_table_and_inode_table.svg.png" alt="fd" title="Unix fd table" /></p>
+
+<h4 id="file-copying-at-system-level">File copying at system level</h4>
+
+<p>Let’s dig a bit more inside syscalls. So, if there’s a write call, there should be a read one, right? Consider the following example:</p>
+
+<pre><code class="language-C">#include &lt;fcntl.h&gt;
+#include &lt;stdlib.h&gt;
+
+#define BSIZE 16384
+
+void main(){
+    int fin, fout;
+    char buf[BSIZE];
+    int count;
+
+    if ((fin = open("foo", O_RDONLY)) &lt; 0){
+        perror("foo");
+        exit(2);
+    }
+    if((ffout = open("bar", O_WRONLY | O_CREAT, 0644)) &lt; 0){
+        perror("bar");
+        exit(2);
+    }
+    while ((count = read(fin, buf, BSIZE)) &gt; 0)
+        write(fout, buf, count);
+
+    close(fin);
+    close(fout);
+}
+</code></pre>
+<p>So, the following example basically opens two files, one for reading (O_RDONLY) and the other one for writting (O_WRONLY), the program will check if those files get opened well and then it will read bytes from one file and dump them on the other one.</p>
+
+<p>Let’s inspect the program yeee</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5575eada481a]&gt; pdf
+            ; DATA XREF from entry0 @ 0x5575eada472d
+┌ 300: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_401ch @ rbp-0x401c
+│           ; var int64_t var_4018h @ rbp-0x4018
+│           ; var int64_t var_4014h @ rbp-0x4014
+│           ; var int64_t var_4010h @ rbp-0x4010
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x5575eada481a      55             push rbp
+│           0x5575eada481b      4889e5         mov rbp, rsp
+│           0x5575eada481e      4881ec204000.  sub rsp, 0x4020
+│           0x5575eada4825      64488b042528.  mov rax, qword fs:[0x28]
+│           0x5575eada482e      488945f8       mov qword [var_8h], rax
+│           0x5575eada4832      31c0           xor eax, eax
+│           0x5575eada4834      be00000000     mov esi, 0
+│           0x5575eada4839      488d3d940100.  lea rdi, [0x5575eada49d4] ; "foo"
+│           0x5575eada4840      b800000000     mov eax, 0
+│           0x5575eada4845      e886feffff     call sym.imp.open       ; int open(const char *path, int oflag)
+│           0x5575eada484a      8985e4bfffff   mov dword [var_401ch], eax
+│           0x5575eada4850      83bde4bfffff.  cmp dword [var_401ch], 0
+│       ┌─&lt; 0x5575eada4857      791b           jns 0x5575eada4874
+│       │   0x5575eada4859      488d3d740100.  lea rdi, [0x5575eada49d4] ; "foo"
+│       │   0x5575eada4860      b800000000     mov eax, 0
+│       │   0x5575eada4865      e876feffff     call sym.imp.perror     ; void perror(const char *s)
+│       │   0x5575eada486a      bf02000000     mov edi, 2
+│       │   0x5575eada486f      e87cfeffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x5575eada4874      baa4010000     mov edx, 0x1a4          ; 420
+│           0x5575eada4879      be41000000     mov esi, 0x41           ; 'A' ; 65
+│           0x5575eada487e      488d3d530100.  lea rdi, [0x5575eada49d8] ; "bar"
+│           0x5575eada4885      b800000000     mov eax, 0
+│           0x5575eada488a      e841feffff     call sym.imp.open       ; int open(const char *path, int oflag)
+│           0x5575eada488f      8985e8bfffff   mov dword [var_4018h], eax
+│           0x5575eada4895      83bde8bfffff.  cmp dword [var_4018h], 0
+│       ┌─&lt; 0x5575eada489c      793d           jns 0x5575eada48db
+│       │   0x5575eada489e      488d3d330100.  lea rdi, [0x5575eada49d8] ; "bar"
+│       │   0x5575eada48a5      b800000000     mov eax, 0
+│       │   0x5575eada48aa      e831feffff     call sym.imp.perror     ; void perror(const char *s)
+│       │   0x5575eada48af      bf02000000     mov edi, 2
+│       │   0x5575eada48b4      e837feffff     call sym.imp.exit       ; void exit(int status)
+│      ┌──&gt; 0x5575eada48b9      8b95ecbfffff   mov edx, dword [var_4014h]
+│      ╎│   0x5575eada48bf      488d8df0bfff.  lea rcx, [var_4010h]
+│      ╎│   0x5575eada48c6      8b85e8bfffff   mov eax, dword [var_4018h]
+│      ╎│   0x5575eada48cc      4889ce         mov rsi, rcx
+│      ╎│   0x5575eada48cf      89c7           mov edi, eax
+│      ╎│   0x5575eada48d1      b800000000     mov eax, 0
+│      ╎│   0x5575eada48d6      e8b5fdffff     call sym.imp.write      ; ssize_t write(int fd, const char *ptr, size_t nbytes)
+│      ╎└─&gt; 0x5575eada48db      488d8df0bfff.  lea rcx, [var_4010h]
+│      ╎    0x5575eada48e2      8b85e4bfffff   mov eax, dword [var_401ch]
+│      ╎    0x5575eada48e8      ba00400000     mov edx, 0x4000
+│      ╎    0x5575eada48ed      4889ce         mov rsi, rcx
+│      ╎    0x5575eada48f0      89c7           mov edi, eax
+│      ╎    0x5575eada48f2      b800000000     mov eax, 0
+│      ╎    0x5575eada48f7      e8c4fdffff     call sym.imp.read       ; ssize_t read(int fildes, void *buf, size_t nbyte)
+│      ╎    0x5575eada48fc      8985ecbfffff   mov dword [var_4014h], eax
+│      ╎    0x5575eada4902      83bdecbfffff.  cmp dword [var_4014h], 0
+│      └──&lt; 0x5575eada4909      7fae           jg 0x5575eada48b9
+│           0x5575eada490b      8b85e4bfffff   mov eax, dword [var_401ch]
+│           0x5575eada4911      89c7           mov edi, eax
+│           0x5575eada4913      b800000000     mov eax, 0
+│           0x5575eada4918      e893fdffff     call sym.imp.close      ; int close(int fildes)
+│           0x5575eada491d      8b85e8bfffff   mov eax, dword [var_4018h]
+│           0x5575eada4923      89c7           mov edi, eax
+│           0x5575eada4925      b800000000     mov eax, 0
+│           0x5575eada492a      e881fdffff     call sym.imp.close      ; int close(int fildes)
+│           0x5575eada492f      90             nop
+│           0x5575eada4930      488b45f8       mov rax, qword [var_8h]
+│           0x5575eada4934      644833042528.  xor rax, qword fs:[0x28]
+│       ┌─&lt; 0x5575eada493d      7405           je 0x5575eada4944
+│       │   0x5575eada493f      e85cfdffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x5575eada4944      c9             leave
+└           0x5575eada4945      c3             ret
+[0x5575eada481a]&gt; 
+</code></pre></div></div>
+<p>First of all, those two files get open:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5575eada4845      e886feffff     call sym.imp.open       ; int open(const char *path, int oflag)
+│           0x5575eada484a      8985e4bfffff   mov dword [var_401ch], eax
+│           0x5575eada4850      83bde4bfffff.  cmp dword [var_401ch], 0
+│       ┌─&lt; 0x5575eada4857      791b           jns 0x5575eada4874
+│       │   0x5575eada4859      488d3d740100.  lea rdi, [0x5575eada49d4] ; "foo"
+│       │   0x5575eada4860      b800000000     mov eax, 0
+│       │   0x5575eada4865      e876feffff     call sym.imp.perror     ; void perror(const char *s)
+│       │   0x5575eada486a      bf02000000     mov edi, 2
+│       │   0x5575eada486f      e87cfeffff     call sym.imp.exit       ; void exit(int status)
+│       └─&gt; 0x5575eada4874      baa4010000     mov edx, 0x1a4          ; 420
+│           0x5575eada4879      be41000000     mov esi, 0x41           ; 'A' ; 65
+│           0x5575eada487e      488d3d530100.  lea rdi, [0x5575eada49d8] ; "bar"
+│           0x5575eada4885      b800000000     mov eax, 0
+│           0x5575eada488a      e841feffff     call sym.imp.open       ; int open(const char *path, int oflag)
+│           0x5575eada488f      8985e8bfffff   mov dword [var_4018h], eax
+│           0x5575eada4895      83bde8bfffff.  cmp dword [var_4018h], 0
+</code></pre></div></div>
+<p>If we debug the code, we’ll see how 2 more file descriptors are handled by the process after those opens:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5575eada4895]&gt; dr eax
+0x00000004
+[0x5575eada481a]&gt; 
+</code></pre></div></div>
+<p>The last open returns with the file descriptor 4, as fds get assigned one after the other.</p>
+
+<p>So it is easy to guess that the second file fd (fout) will be assigned to var_4018h the first one (in) will go to var_401ch.</p>
+
+<p>Then we see the read/write loop, that reads from the first file and dumps to the second one.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│      ╎    0x5575eada48f7      e8c4fdffff     call sym.imp.read       ; ssize_t read(int fildes, void *buf, size_t nbyte)
+│      ╎    ;-- rip:
+│      ╎    0x5575eada48fc b    8985ecbfffff   mov dword [var_4014h], eax
+│      ╎    0x5575eada4902      83bdecbfffff.  cmp dword [var_4014h], 0
+
+
+[0x5575eada48fc]&gt; dr rax
+0x0000000b
+</code></pre></div></div>
+<p>Read returns 11dec, the number of bytes that have been readed and loaded inside the corresponding buffer:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5575eada48fc]&gt; afvd
+var var_8h = 0x7ffc6daf1518 = (qword)0x2f161817be55cb00
+var var_401ch = 0x7ffc6daed504 = (qword)0x0000000400000003
+var var_4018h = 0x7ffc6daed508 = (qword)0x0000000000000004
+var var_4010h = 0x7ffc6daed510 = (qword)0x6f775f6f6c6c6568
+var var_4014h = 0x7ffc6daed50c = (qword)0x6c6c656800000000
+[0x5575eada48fc]&gt; pxw @ 0x7ffc6daed510
+0x7ffc6daed510  0x6c6c6568 0x6f775f6f 0x00646c72 0x00000000  hello_world.....
+0x7ffc6daed520  0x00000000 0x00000000 0x00000000 0x00000000  ................
+</code></pre></div></div>
+<p>As shown, variables include file descriptors and a pointer to the buffer for read</p>
+
+<p>The read syscall will get the specified number of bytes (or till the end of the file if less) and dump them on a buffer. Thats it, this is how it works.</p>
+
+<p>But read and write are not the only way which we can use to transfer information between files, syscalls such as sendfile will allow us to do the same without having to use any buffer at all.</p>
+
+<p>Consider the following program:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;fcntl.h&gt;
+#include &lt;stdlib.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">src</span><span class="p">;</span>               <span class="cm">/* file descriptor for source file */</span>
+    <span class="kt">int</span> <span class="n">dest</span><span class="p">;</span>              <span class="cm">/* file descriptor for destination file */</span>
+    <span class="k">struct</span> <span class="n">stat</span> <span class="n">stat_buf</span><span class="p">;</span>  <span class="cm">/* hold information about input file */</span>
+    <span class="kt">off_t</span> <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>      <span class="cm">/* byte offset used by sendfile */</span>
+
+    <span class="cm">/* check that source file exists and can be opened */</span>
+    <span class="n">src</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">O_RDONLY</span><span class="p">);</span>
+
+    <span class="cm">/* get size and permissions of the source file */</span>
+    <span class="n">fstat</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">stat_buf</span><span class="p">);</span>
+
+    <span class="cm">/* open destination file */</span>
+    <span class="n">dest</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">O_WRONLY</span><span class="o">|</span><span class="n">O_CREAT</span><span class="p">,</span> <span class="n">stat_buf</span><span class="p">.</span><span class="n">st_mode</span><span class="p">);</span>
+
+    <span class="cm">/* copy file using sendfile */</span>
+    <span class="n">sendfile</span> <span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">offset</span><span class="p">,</span> <span class="n">stat_buf</span><span class="p">.</span><span class="n">st_size</span><span class="p">);</span>
+
+    <span class="cm">/* clean up and exit */</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">dest</span><span class="p">);</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">src</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>We see a bunch of new stuff here. First of all, this program reads arguments from the user, then the fstat syscall is executed and finally we do sendfile. This one is interesting, let’s reverse it:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5606844bd78a]&gt; pdf
+            ; DATA XREF from entry0 @ 0x5606844bd69d
+┌ 258: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_c0h @ rbp-0xc0
+│           ; var int64_t var_b4h @ rbp-0xb4
+│           ; var int64_t var_b0h @ rbp-0xb0
+│           ; var int64_t var_ach @ rbp-0xac
+│           ; var int64_t var_a8h @ rbp-0xa8
+│           ; var int64_t var_a0h @ rbp-0xa0
+│           ; var int64_t var_88h @ rbp-0x88
+│           ; var int64_t var_70h @ rbp-0x70
+│           ; var int64_t var_8h @ rbp-0x8
+│           ; arg int argc @ rdi
+│           ; arg char **argv @ rsi
+│           0x5606844bd78a      55             push rbp
+│           0x5606844bd78b      4889e5         mov rbp, rsp
+│           0x5606844bd78e      4881ecc00000.  sub rsp, 0xc0
+│           0x5606844bd795      89bd4cffffff   mov dword [var_b4h], edi ; argc
+│           0x5606844bd79b      4889b540ffff.  mov qword [var_c0h], rsi ; argv
+│           0x5606844bd7a2      64488b042528.  mov rax, qword fs:[0x28]
+│           0x5606844bd7ab      488945f8       mov qword [var_8h], rax
+│           0x5606844bd7af      31c0           xor eax, eax
+│           0x5606844bd7b1      48c78558ffff.  mov qword [var_a8h], 0
+│           0x5606844bd7bc      488b8540ffff.  mov rax, qword [var_c0h]
+│           0x5606844bd7c3      4883c008       add rax, 8
+│           0x5606844bd7c7      488b00         mov rax, qword [rax]
+│           0x5606844bd7ca      be00000000     mov esi, 0
+│           0x5606844bd7cf      4889c7         mov rdi, rax
+│           0x5606844bd7d2      b800000000     mov eax, 0
+│           0x5606844bd7d7      e884feffff     call sym.imp.open       ; int open(const char *path, int oflag)
+│           0x5606844bd7dc      898550ffffff   mov dword [var_b0h], eax
+│           0x5606844bd7e2      488d9560ffff.  lea rdx, [var_a0h]
+│           0x5606844bd7e9      8b8550ffffff   mov eax, dword [var_b0h]
+│           0x5606844bd7ef      4889d6         mov rsi, rdx
+│           0x5606844bd7f2      89c7           mov edi, eax
+│           0x5606844bd7f4      b800000000     mov eax, 0
+│           0x5606844bd7f9      e812010000     call sym.fstat          ; int fstat(int fildes, void *buf)
+│           0x5606844bd7fe      8b9578ffffff   mov edx, dword [var_88h]
+│           0x5606844bd804      488b8540ffff.  mov rax, qword [var_c0h]
+│           0x5606844bd80b      4883c010       add rax, 0x10           ; 16
+│           0x5606844bd80f      488b00         mov rax, qword [rax]
+│           0x5606844bd812      be41000000     mov esi, 0x41           ; 'A' ; 65
+│           0x5606844bd817      4889c7         mov rdi, rax
+│           0x5606844bd81a      b800000000     mov eax, 0
+│           0x5606844bd81f      e83cfeffff     call sym.imp.open       ; int open(const char *path, int oflag)
+│           0x5606844bd824      898554ffffff   mov dword [var_ach], eax
+│           0x5606844bd82a      488b4d90       mov rcx, qword [var_70h]
+│           0x5606844bd82e      488d9558ffff.  lea rdx, [var_a8h]
+│           0x5606844bd835      8bb550ffffff   mov esi, dword [var_b0h]
+│           0x5606844bd83b      8b8554ffffff   mov eax, dword [var_ach]
+│           0x5606844bd841      89c7           mov edi, eax
+│           0x5606844bd843      b800000000     mov eax, 0
+│           0x5606844bd848      e803feffff     call sym.imp.sendfile
+│           0x5606844bd84d      8b8554ffffff   mov eax, dword [var_ach]
+│           0x5606844bd853      89c7           mov edi, eax
+│           0x5606844bd855      b800000000     mov eax, 0
+│           0x5606844bd85a      e8d1fdffff     call sym.imp.close      ; int close(int fildes)
+│           0x5606844bd85f      8b8550ffffff   mov eax, dword [var_b0h]
+│           0x5606844bd865      89c7           mov edi, eax
+│           0x5606844bd867      b800000000     mov eax, 0
+│           0x5606844bd86c      e8bffdffff     call sym.imp.close      ; int close(int fildes)
+│           0x5606844bd871      b800000000     mov eax, 0
+│           0x5606844bd876      488b4df8       mov rcx, qword [var_8h]
+│           0x5606844bd87a      6448330c2528.  xor rcx, qword fs:[0x28]
+│       ┌─&lt; 0x5606844bd883      7405           je 0x5606844bd88a
+│       │   0x5606844bd885      e896fdffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x5606844bd88a      c9             leave
+└           0x5606844bd88b      c3             ret
+[0x5606844bd78a]&gt; 
+</code></pre></div></div>
+<p>First of all, we identify a call to fstat or file status. This call obtains the information related to a file, such as path, permissions and so (https://linux.die.net/man/2/fstat)</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x5606844bd7dc      898550ffffff   mov dword [var_b0h], eax
+│           0x5606844bd7e2      488d9560ffff.  lea rdx, [var_a0h]
+│           0x5606844bd7e9      8b8550ffffff   mov eax, dword [var_b0h]
+│           0x5606844bd7ef      4889d6         mov rsi, rdx
+│           0x5606844bd7f2      89c7           mov edi, eax
+│           0x5606844bd7f4      b800000000     mov eax, 0
+│           0x5606844bd7f9      e812010000     call sym.fstat          ; int fstat(int fildes, void *buf)
+│           0x5606844bd7fe      8b9578ffffff   mov edx, dword [var_88h]
+</code></pre></div></div>
+<p>The information returned by fstat is stored inside a struct in memory, so as we can see a pointer to that struct is being passed as one of the parameters. Note that this technique is very common when dealing with system code, as functions in C do not return objects it is prettty common that when we need to recover some structured information we send a pointer to the corresponding struct to the function and the function then “fills” that struct.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>struct stat {
+    dev_t     st_dev;     /* ID of device containing file */
+    ino_t     st_ino;     /* inode number */
+    mode_t    st_mode;    /* protection */
+    nlink_t   st_nlink;   /* number of hard links */
+    uid_t     st_uid;     /* user ID of owner */
+    gid_t     st_gid;     /* group ID of owner */
+    dev_t     st_rdev;    /* device ID (if special file) */
+    off_t     st_size;    /* total size, in bytes */
+    blksize_t st_blksize; /* blocksize for file system I/O */
+    blkcnt_t  st_blocks;  /* number of 512B blocks allocated */
+    time_t    st_atime;   /* time of last access */
+    time_t    st_mtime;   /* time of last modification */
+    time_t    st_ctime;   /* time of last status change */
+};
+</code></pre></div></div>
+<p>As we can see, after the call, the space has been filled in memory, we can, for example identify the 0xB = 11 dec corresponding to the off_t field</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5606844bd7fe]&gt; pxw @ 0x7fff922b2700
+0x7fff922b2700  0x0000fd01 0x00000000 0x00225848 0x00000000  ........HX".....
+0x7fff922b2710  0x00000001 0x00000000 0x000081a4 0x000003e8  ................
+0x7fff922b2720  0x000003e8 0x00000000 0x00000000 0x00000000  ................
+0x7fff922b2730  0x0000000b 0x00000000 0x00001000 0x00000000  ................
+0x7fff922b2740  0x00000008 0x00000000 0x5ec14670 0x00000000  ........pF.^....
+0x7fff922b2750  0x144d8dec 0x00000000 0x5ec06dfa 0x00000000  ..M......m.^....
+</code></pre></div></div>
+<p>We also see that r2 does not recognize the struct (as usual) it uses independent variable references for each value, that correspond to the struct size.</p>
+
+<h4 id="structs-to-files">Structs to files</h4>
+<p>What if the program needs to save its state somehow? Some programs make use of custom files to save some useful information on disk. Think about a program like this:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt; 
+#include &lt;stdlib.h&gt; 
+#include &lt;string.h&gt; 
+#include &lt;fcntl.h&gt;
+#include &lt;stdlib.h&gt;
+</span>
+  <span class="k">struct</span> <span class="n">person</span>  
+<span class="p">{</span> 
+    <span class="kt">int</span> <span class="n">id</span><span class="p">;</span> 
+    <span class="kt">char</span> <span class="n">fname</span><span class="p">[</span><span class="mi">20</span><span class="p">];</span> 
+    <span class="kt">char</span> <span class="n">lname</span><span class="p">[</span><span class="mi">20</span><span class="p">];</span> 
+<span class="p">};</span> 
+  
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> 
+<span class="p">{</span> 
+    <span class="kt">int</span> <span class="n">outfile</span><span class="p">;</span>
+      
+    <span class="n">outfile</span> <span class="o">=</span> <span class="n">open</span> <span class="p">(</span><span class="s">"person.dat"</span><span class="p">,</span> <span class="n">O_WRONLY</span> <span class="o">|</span> <span class="n">O_CREAT</span><span class="p">,</span> <span class="mo">0644</span><span class="p">);</span> 
+
+    <span class="k">if</span><span class="p">(</span><span class="n">outfile</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">){</span>
+  
+    <span class="k">struct</span> <span class="n">person</span> <span class="n">input1</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="s">"artik"</span><span class="p">,</span> <span class="s">"blue"</span><span class="p">};</span> 
+
+    <span class="k">struct</span> <span class="n">person</span> <span class="n">input2</span> <span class="o">=</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="s">"john"</span><span class="p">,</span> <span class="s">"doe"</span><span class="p">};</span> 
+      
+    <span class="n">write</span> <span class="p">(</span><span class="n">outfile</span> <span class="p">,</span> <span class="o">&amp;</span><span class="n">input2</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">person</span><span class="p">));</span> 
+    <span class="n">write</span> <span class="p">(</span><span class="n">outfile</span> <span class="p">,</span> <span class="o">&amp;</span><span class="n">input1</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">person</span><span class="p">));</span> 
+  
+    <span class="n">close</span><span class="p">(</span><span class="n">outfile</span><span class="p">);</span> 
+
+    <span class="p">}</span>
+  
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span> 
+<span class="p">}</span> 
+</code></pre></div></div>
+<p>The program is literally dumpìng a struct to disk, that’s interesting let’s see how it’s done:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55f0d1e2e73a]&gt; pdf
+            ; DATA XREF from entry0 @ 0x55f0d1e2e64d
+┌ 272: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_74h @ rbp-0x74
+│           ; var int64_t var_70h @ rbp-0x70
+│           ; var int64_t var_6ch @ rbp-0x6c
+│           ; var int64_t var_64h @ rbp-0x64
+│           ; var int64_t var_5ch @ rbp-0x5c
+│           ; var int64_t var_58h @ rbp-0x58
+│           ; var int64_t var_50h @ rbp-0x50
+│           ; var int64_t var_48h @ rbp-0x48
+│           ; var int64_t var_40h @ rbp-0x40
+│           ; var int64_t var_3ch @ rbp-0x3c
+│           ; var int64_t var_34h @ rbp-0x34
+│           ; var int64_t var_2ch @ rbp-0x2c
+│           ; var int64_t var_28h @ rbp-0x28
+│           ; var int64_t var_20h @ rbp-0x20
+│           ; var int64_t var_18h @ rbp-0x18
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x55f0d1e2e73a      55             push rbp
+│           0x55f0d1e2e73b      4889e5         mov rbp, rsp
+│           0x55f0d1e2e73e      4883c480       add rsp, 0xffffffffffffff80
+│           0x55f0d1e2e742      64488b042528.  mov rax, qword fs:[0x28]
+│           0x55f0d1e2e74b      488945f8       mov qword [var_8h], rax
+│           0x55f0d1e2e74f      31c0           xor eax, eax
+│           0x55f0d1e2e751      baa4010000     mov edx, 0x1a4          ; 420
+│           0x55f0d1e2e756      be41000000     mov esi, 0x41           ; 'A' ; 65
+│           0x55f0d1e2e75b      488d3d720100.  lea rdi, str.person.dat ; 0x55f0d1e2e8d4 ; "person.dat"
+│           0x55f0d1e2e762      b800000000     mov eax, 0
+│           0x55f0d1e2e767      e8a4feffff     call sym.imp.open       ; int open(const char *path, int oflag)
+│           0x55f0d1e2e76c      89458c         mov dword [var_74h], eax
+│           0x55f0d1e2e76f      837d8c00       cmp dword [var_74h], 0
+│       ┌─&lt; 0x55f0d1e2e773      0f8eb6000000   jle 0x55f0d1e2e82f
+│       │   0x55f0d1e2e779      c74590010000.  mov dword [var_70h], 1
+│       │   0x55f0d1e2e780      48b861727469.  movabs rax, 0x6b69747261 ; 'artik'
+│       │   0x55f0d1e2e78a      ba00000000     mov edx, 0
+│       │   0x55f0d1e2e78f      48894594       mov qword [var_6ch], rax
+│       │   0x55f0d1e2e793      4889559c       mov qword [var_64h], rdx
+│       │   0x55f0d1e2e797      c745a4000000.  mov dword [var_5ch], 0
+│       │   0x55f0d1e2e79e      48c745a8626c.  mov qword [var_58h], 0x65756c62 ; 'blue'
+│       │   0x55f0d1e2e7a6      48c745b00000.  mov qword [var_50h], 0
+│       │   0x55f0d1e2e7ae      c745b8000000.  mov dword [var_48h], 0
+│       │   0x55f0d1e2e7b5      c745c0020000.  mov dword [var_40h], 2
+│       │   0x55f0d1e2e7bc      48c745c46a6f.  mov qword [var_3ch], 0x6e686f6a ; 'john'
+│       │   0x55f0d1e2e7c4      48c745cc0000.  mov qword [var_34h], 0
+│       │   0x55f0d1e2e7cc      c745d4000000.  mov dword [var_2ch], 0
+│       │   0x55f0d1e2e7d3      48c745d8646f.  mov qword [var_28h], 0x656f64 ; 'doe'
+│       │   0x55f0d1e2e7db      48c745e00000.  mov qword [var_20h], 0
+│       │   0x55f0d1e2e7e3      c745e8000000.  mov dword [var_18h], 0
+│       │   0x55f0d1e2e7ea      488d4dc0       lea rcx, [var_40h]
+│       │   0x55f0d1e2e7ee      8b458c         mov eax, dword [var_74h]
+│       │   0x55f0d1e2e7f1      ba2c000000     mov edx, 0x2c           ; ',' ; 44
+│       │   0x55f0d1e2e7f6      4889ce         mov rsi, rcx
+│       │   0x55f0d1e2e7f9      89c7           mov edi, eax
+│       │   0x55f0d1e2e7fb      b800000000     mov eax, 0
+│       │   0x55f0d1e2e800      e8dbfdffff     call sym.imp.write      ; ssize_t write(int fd, const char *ptr, size_t nbytes)
+│       │   0x55f0d1e2e805      488d4d90       lea rcx, [var_70h]
+│       │   0x55f0d1e2e809      8b458c         mov eax, dword [var_74h]
+│       │   0x55f0d1e2e80c      ba2c000000     mov edx, 0x2c           ; ',' ; 44
+│       │   0x55f0d1e2e811      4889ce         mov rsi, rcx
+│       │   0x55f0d1e2e814      89c7           mov edi, eax
+│       │   0x55f0d1e2e816      b800000000     mov eax, 0
+│       │   0x55f0d1e2e81b      e8c0fdffff     call sym.imp.write      ; ssize_t write(int fd, const char *ptr, size_t nbytes)
+│       │   0x55f0d1e2e820      8b458c         mov eax, dword [var_74h]
+│       │   0x55f0d1e2e823      89c7           mov edi, eax
+│       │   0x55f0d1e2e825      b800000000     mov eax, 0
+│       │   0x55f0d1e2e82a      e8d1fdffff     call sym.imp.close      ; int close(int fildes)
+│       └─&gt; 0x55f0d1e2e82f      b800000000     mov eax, 0
+│           0x55f0d1e2e834      488b75f8       mov rsi, qword [var_8h]
+│           0x55f0d1e2e838      644833342528.  xor rsi, qword fs:[0x28]
+│       ┌─&lt; 0x55f0d1e2e841      7405           je 0x55f0d1e2e848
+│       │   0x55f0d1e2e843      e8a8fdffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x55f0d1e2e848      c9             leave
+└           0x55f0d1e2e849      c3             ret
+[0x55f0d1e2e73a]&gt; 
+</code></pre></div></div>
+<p>So as usual it does not recognize the struct keeping a reference for each val:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│       │   0x55f0d1e2e779      c74590010000.  mov dword [var_70h], 1
+│       │   0x55f0d1e2e780      48b861727469.  movabs rax, 0x6b69747261 ; 'artik'
+│       │   0x55f0d1e2e78a      ba00000000     mov edx, 0
+│       │   0x55f0d1e2e78f      48894594       mov qword [var_6ch], rax
+│       │   0x55f0d1e2e793      4889559c       mov qword [var_64h], rdx
+│       │   0x55f0d1e2e797      c745a4000000.  mov dword [var_5ch], 0
+│       │   0x55f0d1e2e79e      48c745a8626c.  mov qword [var_58h], 0x65756c62 ; 'blue'
+│       │   0x55f0d1e2e7a6      48c745b00000.  mov qword [var_50h], 0
+│       │   0x55f0d1e2e7ae      c745b8000000.  mov dword [var_48h], 0
+│       │   0x55f0d1e2e7b5      c745c0020000.  mov dword [var_40h], 2
+│       │   0x55f0d1e2e7bc      48c745c46a6f.  mov qword [var_3ch], 0x6e686f6a ; 'john'
+│       │   0x55f0d1e2e7c4      48c745cc0000.  mov qword [var_34h], 0
+│       │   0x55f0d1e2e7cc      c745d4000000.  mov dword [var_2ch], 0
+│       │   0x55f0d1e2e7d3      48c745d8646f.  mov qword [var_28h], 0x656f64 ; 'doe'
+│       │   0x55f0d1e2e7db      48c745e00000.  mov qword [var_20h], 0
+│       │   0x55f0d1e2e7e3      c745e8000000.  mov dword [var_18h], 0
+</code></pre></div></div>
+<p>As you see it will create an initialize those structs and fill the blanks with zeroes.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│       │   0x55f0d1e2e7fb      b800000000     mov eax, 0
+│       │   0x55f0d1e2e800      e8dbfdffff     call sym.imp.write      ; ssize_t write(int fd, const char *ptr, size_t nbytes)
+│       │   0x55f0d1e2e805      488d4d90       lea rcx, [var_70h]
+│       │   ;-- rip:
+│       │   0x55f0d1e2e809 b    8b458c         mov eax, dword [var_74h]
+</code></pre></div></div>
+<p>Then it just writes the content to disk, let’s inspect what gets sent to the file:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55f0d1e2e809]&gt; pxw @ 0x7ffdb5e2bf3c
+0x7ffdb5e2bf3c  0x00000003 0x00000001 0x69747261 0x0000006b  ........artik...
+0x7ffdb5e2bf4c  0x00000000 0x00000000 0x00000000 0x65756c62  ............blue
+0x7ffdb5e2bf5c  0x00000000 0x00000000 0x00000000 0x00000000  ................
+0x7ffdb5e2bf6c  0x00000000 0x00000002 0x6e686f6a 0x00000000  ........john....
+0x7ffdb5e2bf7c  0x00000000 0x00000000 0x00000000 0x00656f64  ............doe.
+</code></pre></div></div>
+<p>So, the struct, mapped in memory gets “literally” dumpted to the file</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55f0d1e2e809]&gt; "td struct person  {   long id;  char fname[20];  char lname[20]; }; "
+[0x55f0d1e2e809]&gt; tp person @ 0x7ffdb5e2bf3c
+    id : 0x7ffdb5e2bf3c = (qword)0x0000000100000003
+ fname : 0x7ffdb5e2bf44 = "artik"
+ lname : 0x7ffdb5e2bf58 = "blue"
+</code></pre></div></div>
+
+<h4 id="moving-inside-the-file">Moving inside the file</h4>
+<p>What if we want to initially jump straight to a specific value? If we want to do that instead of have to parse the full file (imagine a long file with known format) we can use lseek. With lseek we can move forward and backwards inside the file.</p>
+
+<p>Look at this:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt; 
+#include &lt;stdlib.h&gt; 
+#include &lt;fcntl.h&gt;
+#include &lt;stdlib.h&gt;
+</span><span class="k">struct</span> <span class="n">person</span>  
+<span class="p">{</span> 
+    <span class="kt">int</span> <span class="n">id</span><span class="p">;</span> 
+    <span class="kt">char</span> <span class="n">fname</span><span class="p">[</span><span class="mi">20</span><span class="p">];</span> 
+    <span class="kt">char</span> <span class="n">lname</span><span class="p">[</span><span class="mi">20</span><span class="p">];</span> 
+<span class="p">};</span> 
+
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> 
+<span class="p">{</span> 
+    <span class="kt">int</span> <span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">;</span> 
+    <span class="k">struct</span> <span class="n">person</span> <span class="n">input</span><span class="p">;</span> 
+      
+    <span class="n">infile</span> <span class="o">=</span> <span class="n">open</span> <span class="p">(</span><span class="s">"person.dat"</span><span class="p">,</span> <span class="n">O_RDONLY</span> <span class="p">,</span> <span class="mo">0644</span><span class="p">);</span> 
+    <span class="n">lseek</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="mi">1</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">person</span><span class="p">),</span> <span class="n">SEEK_CUR</span><span class="p">);</span>
+    <span class="n">read</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">input</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">person</span><span class="p">));</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">"second person val = %d, %s, %s </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">input</span><span class="p">.</span><span class="n">id</span><span class="p">,</span> <span class="n">input</span><span class="p">.</span><span class="n">fname</span><span class="p">,</span> <span class="n">input</span><span class="p">.</span><span class="n">lname</span><span class="p">);</span>
+ 
+    <span class="n">close</span> <span class="p">(</span><span class="n">infile</span><span class="p">);</span> 
+  
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span> 
+<span class="p">}</span> 
+</code></pre></div></div>
+<p>The presented code opens the file for reading and uses lseek to tell the kernel to move inside the file. Doing one times the sizeof the struct means moving one position away from the first value, so, moving right to the second value.</p>
+
+<p>The file that gets loaded looks like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x00000000]&gt; x
+- offset -   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0123456789ABCDEF
+0x00000000  0200 0000 6a6f 686e 0000 0000 0000 0000  ....john........
+0x00000010  0000 0000 0000 0000 646f 6500 0000 0000  ........doe.....
+0x00000020  0000 0000 0000 0000 0000 0000 0100 0000  ................
+0x00000030  6172 7469 6b00 0000 0000 0000 0000 0000  artik...........
+0x00000040  0000 0000 626c 7565 0000 0000 0000 0000  ....blue........
+0x00000050  0000 0000 0000 0000 ffff ffff ffff ffff  ................
+
+
+
+[0x00000000]&gt; izz
+[Strings]
+nth paddr      vaddr      len size section type  string
+―――――――――――――――――――――――――――――――――――――――――――――――――――――――
+0   0x00000004 0x00000004 4   5            ascii john
+1   0x00000030 0x00000030 5   6            ascii artik
+2   0x00000044 0x00000044 4   5            ascii blue
+
+[0x00000000]&gt; 
+</code></pre></div></div>
+
+<p>We can easily edit the file to write new content ourselves with wx</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x00000000]&gt; wz red @ 0x00000018
+[0x00000000]&gt; x
+- offset -   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0123456789ABCDEF
+0x00000000  0200 0000 6a6f 686e 0000 0000 0000 0000  ....john........
+0x00000010  0000 0000 0000 0000 7265 6400 0000 0000  ........red.....
+0x00000020  0000 0000 0000 0000 0000 0000 0100 0000  ................
+0x00000030  6172 7469 6b00 0000 0000 0000 0000 0000  artik...........
+0x00000040  0000 0000 626c 7565 0000 0000 0000 0000  ....blue........
+0x00000050  0000 0000 0000 0000 ffff ffff ffff ffff  ................
+</code></pre></div></div>
+<p>As you can see, and this is important to remark, the previously generated file that now gets loaded back in memory is a data file, so hex content not an ascii file, if you are going to edit it, you’ll have to use an hex editor or you may “break” the file. This one is very simple though, it just contains those values located at very specific positions and the rest is just filled with zeores, some files have very specific formats that include bytes at certain positions (like the MZ signature on Windows programs), we’ll talk about that later on on this course.</p>
+<h4 id="file-loading-and-xor-string-encoding">File loading and XOR string encoding</h4>
+<p>The following program reads from the file, loads those values back inside a struct, then encrypts them and dumps the result to another file. The goal of this simple program is just to show that data management operations such as the ones presented can be easily done and by the way are commonly done by many programs, including malware (in a bit more advanced way), the logic is the same, let’s see:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt; 
+#include &lt;stdlib.h&gt; 
+#include &lt;fcntl.h&gt;
+#include &lt;stdlib.h&gt;
+</span><span class="k">struct</span> <span class="n">person</span>  
+<span class="p">{</span> 
+    <span class="kt">int</span> <span class="n">id</span><span class="p">;</span> 
+    <span class="kt">char</span> <span class="n">fname</span><span class="p">[</span><span class="mi">20</span><span class="p">];</span> 
+    <span class="kt">char</span> <span class="n">lname</span><span class="p">[</span><span class="mi">20</span><span class="p">];</span> 
+<span class="p">};</span> 
+
+
+<span class="kt">void</span> <span class="nf">cryp</span><span class="p">(</span><span class="kt">char</span>  <span class="n">arr</span><span class="p">[]){</span>
+    <span class="kt">char</span> <span class="n">k</span><span class="p">[</span><span class="mi">20</span><span class="p">]</span> <span class="o">=</span> <span class="s">"01234567890123456789"</span><span class="p">;</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">arr</span><span class="p">);</span> <span class="n">i</span> <span class="o">++</span><span class="p">){</span>
+        <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">^=</span> <span class="n">k</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="n">arr</span><span class="p">[</span><span class="k">sizeof</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="sc">'\0'</span><span class="p">;</span>
+
+<span class="p">}</span>
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> 
+<span class="p">{</span> 
+    <span class="kt">int</span> <span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">;</span> 
+    <span class="k">struct</span> <span class="n">person</span> <span class="n">input</span><span class="p">;</span> 
+      
+    <span class="n">infile</span> <span class="o">=</span> <span class="n">open</span> <span class="p">(</span><span class="s">"person.dat"</span><span class="p">,</span> <span class="n">O_RDONLY</span> <span class="p">,</span> <span class="mo">0644</span><span class="p">);</span> 
+    <span class="n">outfile</span> <span class="o">=</span> <span class="n">open</span> <span class="p">(</span><span class="s">"person.cry"</span><span class="p">,</span> <span class="n">O_WRONLY</span> <span class="o">|</span> <span class="n">O_CREAT</span><span class="p">,</span> <span class="mo">0644</span><span class="p">);</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">read</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">input</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">person</span><span class="p">))){</span> 
+        <span class="n">cryp</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">fname</span><span class="p">);</span>
+        <span class="n">cryp</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">lname</span><span class="p">);</span>
+
+        <span class="n">write</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">input</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">person</span><span class="p">));</span>
+    <span class="p">}</span>
+    <span class="n">close</span> <span class="p">(</span><span class="n">infile</span><span class="p">);</span> 
+  
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span> 
+<span class="p">}</span> 
+</code></pre></div></div>
+<p>We jump straight to r2:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x7fb0c4197090]&gt; s main
+[0x55de52c0c82c]&gt; pdf
+            ; DATA XREF from entry0 @ 0x55de52c0c69d
+┌ 217: int main (int argc, char **argv, char **envp);
+│           ; var int64_t var_48h @ rbp-0x48
+│           ; var int64_t var_44h @ rbp-0x44
+│           ; var int64_t var_40h @ rbp-0x40
+│           ; var int64_t var_8h @ rbp-0x8
+│           0x55de52c0c82c      55             push rbp
+│           0x55de52c0c82d      4889e5         mov rbp, rsp
+│           0x55de52c0c830      4883ec50       sub rsp, 0x50
+│           0x55de52c0c834      64488b042528.  mov rax, qword fs:[0x28]
+│           0x55de52c0c83d      488945f8       mov qword [var_8h], rax
+│           0x55de52c0c841      31c0           xor eax, eax
+│           0x55de52c0c843      baa4010000     mov edx, 0x1a4          ; 420
+│           0x55de52c0c848      be00000000     mov esi, 0
+│           0x55de52c0c84d      488d3d400100.  lea rdi, str.person.dat ; 0x55de52c0c994 ; "person.dat"
+│           0x55de52c0c854      b800000000     mov eax, 0
+│           0x55de52c0c859      e802feffff     call sym.imp.open       ; int open(const char *path, int oflag)
+│           0x55de52c0c85e      8945b8         mov dword [var_48h], eax
+│           0x55de52c0c861      baa4010000     mov edx, 0x1a4          ; 420
+│           0x55de52c0c866      be41000000     mov esi, 0x41           ; 'A' ; 65
+│           0x55de52c0c86b      488d3d2d0100.  lea rdi, str.person.cry ; 0x55de52c0c99f ; "person.cry"
+│           0x55de52c0c872      b800000000     mov eax, 0
+│           0x55de52c0c877      e8e4fdffff     call sym.imp.open       ; int open(const char *path, int oflag)
+│           0x55de52c0c87c      8945bc         mov dword [var_44h], eax
+│       ┌─&lt; 0x55de52c0c87f      eb3b           jmp 0x55de52c0c8bc
+│      ┌──&gt; 0x55de52c0c881      488d45c0       lea rax, [var_40h]
+│      ╎│   0x55de52c0c885      4883c004       add rax, 4
+│      ╎│   0x55de52c0c889      4889c7         mov rdi, rax
+│      ╎│   0x55de52c0c88c      e8f9feffff     call sym.cryp
+│      ╎│   0x55de52c0c891      488d45c0       lea rax, [var_40h]
+│      ╎│   0x55de52c0c895      4883c018       add rax, 0x18           ; 24
+│      ╎│   0x55de52c0c899      4889c7         mov rdi, rax
+│      ╎│   0x55de52c0c89c      e8e9feffff     call sym.cryp
+│      ╎│   0x55de52c0c8a1      488d4dc0       lea rcx, [var_40h]
+│      ╎│   0x55de52c0c8a5      8b45bc         mov eax, dword [var_44h]
+│      ╎│   0x55de52c0c8a8      ba2c000000     mov edx, 0x2c           ; ',' ; 44
+│      ╎│   0x55de52c0c8ad      4889ce         mov rsi, rcx
+│      ╎│   0x55de52c0c8b0      89c7           mov edi, eax
+│      ╎│   0x55de52c0c8b2      b800000000     mov eax, 0
+│      ╎│   0x55de52c0c8b7      e864fdffff     call sym.imp.write      ; ssize_t write(int fd, const char *ptr, size_t nbytes)
+│      ╎│   ; CODE XREF from main @ 0x55de52c0c87f
+│      ╎└─&gt; 0x55de52c0c8bc      488d4dc0       lea rcx, [var_40h]
+│      ╎    0x55de52c0c8c0      8b45b8         mov eax, dword [var_48h]
+│      ╎    0x55de52c0c8c3      ba2c000000     mov edx, 0x2c           ; ',' ; 44
+│      ╎    0x55de52c0c8c8      4889ce         mov rsi, rcx
+│      ╎    0x55de52c0c8cb      89c7           mov edi, eax
+│      ╎    0x55de52c0c8cd      b800000000     mov eax, 0
+│      ╎    0x55de52c0c8d2      e879fdffff     call sym.imp.read       ; ssize_t read(int fildes, void *buf, size_t nbyte)
+│      ╎    0x55de52c0c8d7      85c0           test eax, eax
+│      └──&lt; 0x55de52c0c8d9      75a6           jne 0x55de52c0c881
+│           0x55de52c0c8db      8b45b8         mov eax, dword [var_48h]
+│           0x55de52c0c8de      89c7           mov edi, eax
+│           0x55de52c0c8e0      b800000000     mov eax, 0
+│           0x55de52c0c8e5      e856fdffff     call sym.imp.close      ; int close(int fildes)
+│           0x55de52c0c8ea      b800000000     mov eax, 0
+│           0x55de52c0c8ef      488b55f8       mov rdx, qword [var_8h]
+│           0x55de52c0c8f3      644833142528.  xor rdx, qword fs:[0x28]
+│       ┌─&lt; 0x55de52c0c8fc      7405           je 0x55de52c0c903
+│       │   0x55de52c0c8fe      e82dfdffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x55de52c0c903      c9             leave
+└           0x55de52c0c904      c3             ret
+[0x55de52c0c82c]&gt; 
+</code></pre></div></div>
+<p>We can start by the first function, the main, and we can jump straight after the first open:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│                                                                      ; 0x55de52c0c994 ; "person.dat"
+│           0x55de52c0c854      b800000000     mov eax, 0
+│           0x55de52c0c859      e802feffff     call sym.imp.open       ; int open(const char *path, int oflag)
+│           ;-- rip:
+│           0x55de52c0c85e b    8945b8         mov dword [var_48h], eax
+│           0x55de52c0c861      baa4010000     mov edx, 0x1a4          ; 420
+</code></pre></div></div>
+<p>The first open launches and opens person.dat, so it returns the corresponding file descriptor. In radare2 we can list the file descriptors opened by the program by doing dd:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55de52c0c85e]&gt; dd
+0 0x0 r-C /dev/pts/2
+1 0x0 r-C /dev/pts/2
+2 0x0 r-C /dev/pts/2
+3 0x0 r-S /home/red/c/part2/new/person.dat
+</code></pre></div></div>
+<p>As you see, 0-3 fd’s are always open. Then after the second open()</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           ;-- rip:
+│           0x55de52c0c87c b    8945bc         mov dword [var_44h], eax
+│       ┌─&lt; 0x55de52c0c87f      eb3b           jmp 0x55de52c0c8bc
+│      ┌──&gt; 0x55de52c0c881      488d45c0       lea rax, [var_40h]
+│      ╎│   0x55de52c0c885      4883c004       add rax, 4
+</code></pre></div></div>
+<p>The program now handles two files, the fd number 4 has been added:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x55de52c0c87c]&gt; dd
+0 0x0 r-C /dev/pts/2
+1 0x0 r-C /dev/pts/2
+2 0x0 r-C /dev/pts/2
+3 0x0 r-S /home/red/c/part2/new/person.dat
+4 0x0 r-S /home/red/c/part2/new/person.cry
+</code></pre></div></div>
+<p>Then the program goes chunk by chunk on the file, loads into the struct and sends a reference to those fields to the crypt function:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│           0x55de52c0c87c b    8945bc         mov dword [var_44h], eax
+│       ┌─&lt; 0x55de52c0c87f      eb3b           jmp 0x55de52c0c8bc
+│      ┌──&gt; 0x55de52c0c881      488d45c0       lea rax, [var_40h]
+│      ╎│   ;-- rip:
+│      ╎│   0x55de52c0c885 b    4883c004       add rax, 4
+│      ╎│   0x55de52c0c889      4889c7         mov rdi, rax
+│      ╎│   0x55de52c0c88c      e8f9feffff     call sym.cryp
+│      ╎│   0x55de52c0c891      488d45c0       lea rax, [var_40h]
+│      ╎│   0x55de52c0c895      4883c018       add rax, 0x18           ; 24
+│      ╎│   0x55de52c0c899      4889c7         mov rdi, rax
+│      ╎│   0x55de52c0c89c      e8e9feffff     call sym.cryp
+</code></pre></div></div>
+<p>We can inspect those values before entering the crypt function:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x557979560885]&gt; afvd
+var var_8h = 0x7ffc1c931058 = (qword)0xdb75146eaecef500
+var var_48h = 0x7ffc1c931018 = (qword)0x0000000400000003
+var var_44h = 0x7ffc1c93101c = (qword)0x0000000200000004
+var var_40h = 0x7ffc1c931020 = (qword)0x6e686f6a00000002
+[0x557979560885]&gt; pxw @ 0x7ffc1c931020
+0x7ffc1c931020  0x00000002 0x6e686f6a 0x00000000 0x00000000  ....john........
+0x7ffc1c931030  0x00000000 0x00000000 0x00646572 0x00000000  ........red.....
+0x7ffc1c931040  0x00000000 0x00000000 0x00000000 0x00005579  ............yU..
+0x7ffc1c931050  0x1c931140 0x00007ffc 0xaecef500 0xdb75146e  @...........n.u.
+0x7ffc1c931060  0x79560910 0x00005579 0xd4fb9b97 0x00007f20  ..VyyU...... ...
+</code></pre></div></div>
+<p>Then we have the crypt function right here:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x557979560885]&gt; db sym.cryp
+[0x557979560885]&gt; dc
+hit breakpoint at: 55797956078a
+[0x55797956078a]&gt; pdf
+            ; CALL XREFS from main @ 0x55797956088c, 0x55797956089c
+            ;-- rip:
+┌ 162: sym.cryp (int64_t arg1);
+│           ; var int64_t var_38h @ rbp-0x38
+│           ; var int64_t var_24h @ rbp-0x24
+│           ; var int64_t var_20h @ rbp-0x20
+│           ; var int64_t var_18h @ rbp-0x18
+│           ; var int64_t var_10h @ rbp-0x10
+│           ; var int64_t var_8h @ rbp-0x8
+│           ; arg int64_t arg1 @ rdi
+│           0x55797956078a b    55             push rbp
+│           0x55797956078b      4889e5         mov rbp, rsp
+│           0x55797956078e      4883ec40       sub rsp, 0x40
+│           0x557979560792      48897dc8       mov qword [var_38h], rdi ; arg1
+│           0x557979560796      64488b042528.  mov rax, qword fs:[0x28]
+│           0x55797956079f      488945f8       mov qword [var_8h], rax
+│           0x5579795607a3      31c0           xor eax, eax
+│           0x5579795607a5      48b830313233.  movabs rax, 0x3736353433323130 ; '01234567'
+│           0x5579795607af      48ba38393031.  movabs rdx, 0x3534333231303938 ; '89012345'
+│           0x5579795607b9      488945e0       mov qword [var_20h], rax
+│           0x5579795607bd      488955e8       mov qword [var_18h], rdx
+│           0x5579795607c1      c745f0363738.  mov dword [var_10h], 0x39383736 ; '6789'
+│           0x5579795607c8      c745dc000000.  mov dword [var_24h], 0
+│       ┌─&lt; 0x5579795607cf      eb31           jmp 0x557979560802
+│      ┌──&gt; 0x5579795607d1      8b45dc         mov eax, dword [var_24h]
+│      ╎│   0x5579795607d4      4863d0         movsxd rdx, eax
+│      ╎│   0x5579795607d7      488b45c8       mov rax, qword [var_38h]
+│      ╎│   0x5579795607db      4801d0         add rax, rdx
+│      ╎│   0x5579795607de      0fb630         movzx esi, byte [rax]
+│      ╎│   0x5579795607e1      8b45dc         mov eax, dword [var_24h]
+│      ╎│   0x5579795607e4      4898           cdqe
+│      ╎│   0x5579795607e6      0fb64c05e0     movzx ecx, byte [rbp + rax - 0x20]
+│      ╎│   0x5579795607eb      8b45dc         mov eax, dword [var_24h]
+│      ╎│   0x5579795607ee      4863d0         movsxd rdx, eax
+│      ╎│   0x5579795607f1      488b45c8       mov rax, qword [var_38h]
+│      ╎│   0x5579795607f5      4801d0         add rax, rdx
+│      ╎│   0x5579795607f8      31ce           xor esi, ecx
+│      ╎│   0x5579795607fa      89f2           mov edx, esi
+│      ╎│   0x5579795607fc      8810           mov byte [rax], dl
+│      ╎│   0x5579795607fe      8345dc01       add dword [var_24h], 1
+│      ╎│   ; CODE XREF from sym.cryp @ 0x5579795607cf
+│      ╎└─&gt; 0x557979560802      8b45dc         mov eax, dword [var_24h]
+│      ╎    0x557979560805      83f807         cmp eax, 7              ; 7
+│      └──&lt; 0x557979560808      76c7           jbe 0x5579795607d1
+│           0x55797956080a      488b45c8       mov rax, qword [var_38h]
+│           0x55797956080e      4883c007       add rax, 7
+│           0x557979560812      c60000         mov byte [rax], 0
+│           0x557979560815      90             nop
+│           0x557979560816      488b45f8       mov rax, qword [var_8h]
+│           0x55797956081a      644833042528.  xor rax, qword fs:[0x28]
+│       ┌─&lt; 0x557979560823      7405           je 0x55797956082a
+│       │   0x557979560825      e806feffff     call sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       └─&gt; 0x55797956082a      c9             leave
+└           0x55797956082b      c3             ret
+[0x55797956078a]&gt; 
+</code></pre></div></div>
+<p>And XOR is being done like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>│      ╎│   0x5579795607f1      488b45c8       mov rax, qword [var_38h]
+│      ╎│   0x5579795607f5      4801d0         add rax, rdx
+│      ╎│   0x5579795607f8      31ce           xor esi, ecx
+│      ╎│   0x5579795607fa      89f2           mov edx, esi
+│      ╎│   0x5579795607fc      8810           mov byte [rax], dl
+│      ╎│   0x5579795607fe      8345dc01       add dword [var_24h], 1
+</code></pre></div></div>
+<p>With the following key that gets loaded before doing XOR:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5579795607fa]&gt; pxw @ 0x7ffc1c930fc8
+0x7ffc1c930fc8  0x1c931024 0x00007ffc 0x1c9892a8 0x00007ffc  $...............
+0x7ffc1c930fd8  0xd55b2710 0x00000001 0x33323130 0x37363534  .'[.....01234567
+0x7ffc1c930fe8  0x31303938 0x35343332 0x39383736 0x00000000  890123456789....
+</code></pre></div></div>
+<p>Then encryption is done char by char as you see here:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x5579795607f8]&gt; dr esi
+0x0000006f
+[0x5579795607f8]&gt; dr ecx
+0x00000031 (= ascii l from blue)
+[0x5579795607f8]&gt; 
+[0x5579795607f8]&gt; ds
+[0x5579795607fa]&gt; dr esi
+0x0000005e
+
+[0x5579795607fa]&gt; dr rax
+0x7ffc1c931025
+[0x5579795607fa]&gt; pxw @ 0x7ffc1c931024
+0x7ffc1c931024  0x6e686f5a 0x00000000 0x00000000 0x00000000  Zohn............
+0x7ffc1c931034  0x00000000 0x00646572 0x00000000 0x00000000  ....red.........
+</code></pre></div></div>
+<p>When dealing with really long and complex functions that return a value, you may want to set a breakpoint before and after their execution and just figure out about the internals…</p>
+
+<p>Sometimes you may be doing static analysis on a program you cannot run, in such cases dealing with encryption routines can crack your balls, ESIL comes handly</p>
+<h4 id="a-few-words-on-esil">A few words on ESIL</h4>
+
+<p>No, we are not talking about some middle east terrorist organization. ESIL stands for ‘Evaluable Strings Intermediate Language’ and basically, it helps us in debugging programs without actually having to run it on our machines. I’m going to be very brief on this topic as we’ll explore it more along the course.</p>
+
+<p>Let’s start with this example:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#include &lt;stdio.h&gt;
+
+
+void main(){
+
+        char a[4] = "abcd";
+        char b[4] = "XYZU";
+
+
+        for (int i=0; i &lt; 4; i++){
+
+                b[i] ^= a[i];
+        }
+
+        printf("%s \n",b);
+}
+</code></pre></div></div>
+<p>On general terms: there will be ocasions when we don’t want or we just cannot run the program on our machine. That may happen when dealing with malware or when reversing programs that correspond to other weird architectures (such as gameboy), on those ocasions static analysis is not enough as we may need to calculate where the code will jump based on a specific input, or we may need to go over a specific encryption routine that can be very hard/time consuming to analyse “by hand”.</p>
+
+<p>Esil helps with this, r2 offers the ESIL VM, read about it here: https://radare.gitbooks.io/radare2book/analysis/emulation.html</p>
+
+<p>Along with the help of that VM we can debug the program without actually running it, the stuff we’ll be able to do is limited, as we are just emulating and we are not backed by the os, we won’t be able to debug syscalls such as the ones we just saw. Eventhough ESIL will be able for calculations.</p>
+
+<p>We enable it like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x000005a0]&gt; s main
+[0x000005a0]&gt; e asm.esil = true
+[0x000005a0]&gt; aei
+[0x000005a0]&gt; aeim
+[0x000005a0]&gt; aeip
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x000006aa]&gt; pdf
+            ; DATA XREF from entry0 @ 0x5bd
+            ;-- rip:
+┌ 134: int main (int argc, char **argv, char **envp);
+│           ; var signed int64_t var_14h @ rbp-0x14
+│           ; var int64_t var_10h @ rbp-0x10
+│           ; var char *var_ch @ rbp-0xc
+│           ; var int64_t canary @ rbp-0x8
+│           0x000006aa      55             rbp,8,rsp,-,=[8],8,rsp,-=
+│           0x000006ab      4889e5         rsp,rbp,=
+│           0x000006ae      4883ec20       32,rsp,-=,63,$o,of,:=,63,$s,sf,:=,$z,zf,:=,$p,pf,:=,64,$b,cf,:=
+│           0x000006b2      64488b042528.  0x28,[8],rax,=
+│           0x000006bb      488945f8       rax,0x8,rbp,-,=[8]
+│           0x000006bf      31c0           eax,rax,^,0xffffffff,&amp;,rax,=,$z,zf,:=,$p,pf,:=,31,$s,sf,:=,0,cf,:=,0,of,:=
+│           0x000006c1      c745f0616263.  1684234849,0x10,rbp,-,=[4]  ; 'abcd'
+│                                                                      ; 0x64636261
+│           0x000006c8      c745f458595a.  1431984472,0xc,rbp,-,=[4]   ; 'XYZU'
+│                                                                      ; 0x555a5958
+│           0x000006cf      c745ec000000.  0,0x14,rbp,-,=[4]
+│       ┌─&lt; 0x000006d6      eb23           0x6fb,rip,=
+│       │   ; CODE XREF from main @ 0x6ff
+│      ┌──&gt; 0x000006d8      8b45ec         0x14,rbp,-,[4],rax,=
+│      ╎│   0x000006db      4898           eax,rax,=,31,rax,&gt;&gt;,?{,0xffffffff00000000,rax,|=,}
+│      ╎│   0x000006dd      0fb65405f4     0xc,rax,rbp,+,-,[1],rdx,=
+│      ╎│   0x000006e2      8b45ec         0x14,rbp,-,[4],rax,=
+│      ╎│   0x000006e5      4898           eax,rax,=,31,rax,&gt;&gt;,?{,0xffffffff00000000,rax,|=,}
+│      ╎│   0x000006e7      0fb64405f0     0x10,rax,rbp,+,-,[1],rax,=
+│      ╎│   0x000006ec      31c2           eax,rdx,^,0xffffffff,&amp;,rdx,=,$z,zf,:=,$p,pf,:=,31,$s,sf,:=,0,cf,:=,0,of,:=
+│      ╎│   0x000006ee      8b45ec         0x14,rbp,-,[4],rax,=
+│      ╎│   0x000006f1      4898           eax,rax,=,31,rax,&gt;&gt;,?{,0xffffffff00000000,rax,|=,}
+│      ╎│   0x000006f3      885405f4       dl,0xc,rax,rbp,+,-,=[1]
+│      ╎│   0x000006f7      8345ec01       1,0x14,rbp,-,+=[4],31,$o,of,:=,31,$s,sf,:=,$z,zf,:=,31,$c,cf,:=,$p,pf,:=
+│      ╎│   ; CODE XREF from main @ 0x6d6
+│      ╎└─&gt; 0x000006fb      837dec03       3,0x14,rbp,-,[4],==,$z,zf,:=,32,$b,cf,:=,$p,pf,:=,31,$s,sf,:=,31,$o,of,:=
+│      └──&lt; 0x000006ff      7ed7           of,sf,^,zf,|,?{,1752,rip,=,}
+│           0x00000701      488d45f4       0xc,rbp,-,rax,=
+│           0x00000705      4889c6         rax,rsi,=
+│           0x00000708      488d3da50000.  0xa5,rip,+,rdi,=            ; str.s
+│                                                                      ; 0x7b4 ; "%s \n" ; const char *format
+│           0x0000070f      b800000000     0,rax,=
+│           0x00000714      e867feffff     1408,rip,8,rsp,-=,rsp,=[],rip,= ; sym.imp.printf ; int printf(const char *format)
+│           0x00000719      90             ,
+│           0x0000071a      488b45f8       0x8,rbp,-,[8],rax,=
+│           0x0000071e      644833042528.  0x28,[8],rax,^=,$z,zf,:=,$p,pf,:=,63,$s,sf,:=,0,cf,:=,0,of,:=
+│       ┌─&lt; 0x00000727      7405           zf,?{,1838,rip,=,}
+│       │   0x00000729      e842feffff     1392,rip,8,rsp,-=,rsp,=[],rip,= ; sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       │   ; CODE XREF from main @ 0x727
+│       └─&gt; 0x0000072e      c9             rbp,rsp,=,rsp,[8],rbp,=,8,rsp,+=
+└           0x0000072f      c3             rsp,[8],rip,=,8,rsp,+=
+</code></pre></div></div>
+<p>As you see, after getting into ESIL instructions appear on its format, you can find the instruction set here: https://radare.gitbooks.io/radare2book/disassembling/esil.html</p>
+
+<p>Inside esil we can do aesu to emulate the execution untill a specific mem addr is reached:</p>
+
+<p>For example, in our program we can inspect the byte per byte XOR inside the loop with ESIL like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x000006aa]&gt; aesu 0x000006ee
+[0x000006d8]&gt; dr
+rax = 0x00000061
+rbx = 0x00000000
+rcx = 0x00000000
+rdx = 0x00000039
+</code></pre></div></div>
+<p>Here you can see that the operation has been computed and ESIL registers have been updated (watch those ascii codes)</p>
+
+<p>In our case we can also “jump” after the encryption is done and inspect the result like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x000006aa]&gt; aesu 0x00000701
+
+[0x000006d8]&gt; pdf
+            ; DATA XREF from entry0 @ 0x5bd
+┌ 134: int main (int argc, char **argv, char **envp);
+│           ; var signed int64_t var_14h @ rbp-0x14
+│           ; var int64_t var_10h @ rbp-0x10
+│           ; var char *var_ch @ rbp-0xc
+│           ; var int64_t canary @ rbp-0x8
+│           0x000006aa      55             rbp,8,rsp,-,=[8],8,rsp,-=
+│           0x000006ab      4889e5         rsp,rbp,=
+│           0x000006ae      4883ec20       32,rsp,-=,63,$o,of,:=,63,$s,sf,:=,$z,zf,:=,$p,pf,:=,64,$b,cf,:=
+│           0x000006b2      64488b042528.  0x28,[8],rax,=
+│           0x000006bb      488945f8       rax,0x8,rbp,-,=[8]
+│           0x000006bf      31c0           eax,rax,^,0xffffffff,&amp;,rax,=,$z,zf,:=,$p,pf,:=,31,$s,sf,:=,0,cf,:=,0,of,:=
+│           0x000006c1      c745f0616263.  1684234849,0x10,rbp,-,=[4]  ; 'abcd'
+│                                                                      ; 0x64636261
+│           0x000006c8      c745f458595a.  1431984472,0xc,rbp,-,=[4]   ; 'XYZU'
+│                                                                      ; 0x555a5958
+│           0x000006cf      c745ec000000.  0,0x14,rbp,-,=[4]
+│       ┌─&lt; 0x000006d6      eb23           0x6fb,rip,=
+│       │   ; CODE XREF from main @ 0x6ff
+│      ┌──&gt; 0x000006d8      8b45ec         0x14,rbp,-,[4],rax,=
+│      ╎│   0x000006db      4898           eax,rax,=,31,rax,&gt;&gt;,?{,0xffffffff00000000,rax,|=,}
+│      ╎│   0x000006dd      0fb65405f4     0xc,rax,rbp,+,-,[1],rdx,=
+│      ╎│   0x000006e2      8b45ec         0x14,rbp,-,[4],rax,=
+│      ╎│   0x000006e5      4898           eax,rax,=,31,rax,&gt;&gt;,?{,0xffffffff00000000,rax,|=,}
+│      ╎│   0x000006e7      0fb64405f0     0x10,rax,rbp,+,-,[1],rax,=
+│      ╎│   0x000006ec      31c2           eax,rdx,^,0xffffffff,&amp;,rdx,=,$z,zf,:=,$p,pf,:=,31,$s,sf,:=,0,cf,:=,0,of,:=
+│      ╎│   0x000006ee      8b45ec         0x14,rbp,-,[4],rax,=
+│      ╎│   0x000006f1      4898           eax,rax,=,31,rax,&gt;&gt;,?{,0xffffffff00000000,rax,|=,}
+│      ╎│   0x000006f3      885405f4       dl,0xc,rax,rbp,+,-,=[1]
+│      ╎│   0x000006f7      8345ec01       1,0x14,rbp,-,+=[4],31,$o,of,:=,31,$s,sf,:=,$z,zf,:=,31,$c,cf,:=,$p,pf,:=
+│      ╎│   ; CODE XREF from main @ 0x6d6
+│      ╎└─&gt; 0x000006fb      837dec03       3,0x14,rbp,-,[4],==,$z,zf,:=,32,$b,cf,:=,$p,pf,:=,31,$s,sf,:=,31,$o,of,:=
+│      └──&lt; 0x000006ff      7ed7           of,sf,^,zf,|,?{,1752,rip,=,}
+│           ;-- rip:
+│           0x00000701      488d45f4       0xc,rbp,-,rax,=
+│           0x00000705      4889c6         rax,rsi,=
+│           0x00000708      488d3da50000.  0xa5,rip,+,rdi,=            ; str.s
+│                                                                      ; 0x7b4 ; "%s \n" ; const char *format
+│           0x0000070f      b800000000     0,rax,=
+│           0x00000714      e867feffff     1408,rip,8,rsp,-=,rsp,=[],rip,= ; sym.imp.printf ; int printf(const char *format)
+│           0x00000719      90             ,
+│           0x0000071a      488b45f8       0x8,rbp,-,[8],rax,=
+│           0x0000071e      644833042528.  0x28,[8],rax,^=,$z,zf,:=,$p,pf,:=,63,$s,sf,:=,0,cf,:=,0,of,:=
+│       ┌─&lt; 0x00000727      7405           zf,?{,1838,rip,=,}
+│       │   0x00000729      e842feffff     1392,rip,8,rsp,-=,rsp,=[],rip,= ; sym.imp.__stack_chk_fail ; void __stack_chk_fail(void)
+│       │   ; CODE XREF from main @ 0x727
+│       └─&gt; 0x0000072e      c9             rbp,rsp,=,rsp,[8],rbp,=,8,rsp,+=
+└           0x0000072f      c3             rsp,[8],rip,=,8,rsp,+=
+</code></pre></div></div>
+<p>And we can also inspect the memory like when doing debug:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0x000006d8]&gt; pxw @ 0x00177fe8
+0x00177fe8  0x64636261 0x31393b39 0x00001960 0x00000000  abcd9;91`.......
+0x00177ff8  0x00178000 0x00000000 0x00000000 0x00000000  ................
+
+</code></pre></div></div>
+
+<p>On the next post we’ll explore similar topics on a Windows system.</p>
+
+    </div>
+
+    <div class="post__share">
+  <ul class="share__list list-reset">
+    <li class="share__item">
+      <a class="share__link share__facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/reversing-radare-13"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Facebook" rel="nofollow"><i class="ion ion-logo-facebook"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__twitter" href="https://twitter.com/intent/tweet?text=Reverse%20engineering%20x64%20binaries%20with%20Radare2%20-%2014%20-%20I%20(linux%20systems%20programming;%20theory,%20syscalls,%20files%20and%20ESIL)&url=http://localhost:4000/reversing-radare-13"
+        onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+        title="Share on Twitter" rel="nofollow"><i class="ion ion-logo-twitter"></i></a>
+    </li>
+
+    <li class="share__item">
+      <a class="share__link share__linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url=http://localhost:4000/reversing-radare-13&title=Reverse%20engineering%20x64%20binaries%20with%20Radare2%20-%2014%20-%20I%20(linux%20systems%20programming;%20theory,%20syscalls,%20files%20and%20ESIL)&summary=&source=Artik%20Blue"
+      onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn" rel="nofollow"><i class="ion ion-logo-linkedin"></i></a>
+    </li>
+  </ul>
+</div>
+
+
+    <div class="post__navigation">
+  
+  <a class="post__prev" href="/reversing-radare-12">
+    <div class="prev__image">
+      <img class="lazy" data-src="/images//radare2/radare2_13.png" alt="Reverse engineering x64 binaries with Radare2 - 14 - I (linux systems programming; theory, syscalls, files and ESIL)">
+    </div>
+    <div class="prev__box">
+      <span class="post__nav post__nav__prev">Older post</span>
+      <h2 class="post__nav__title">Reverse engineering 32 and 64 bits binaries with Radare2 - 13 (defines, unions and bitmaps)</h2>
+    </div>
+  </a>
+  
+
+  
+  <a class="post__next" href="/reversing-radare-14">
+    <div class="next__box">
+      <span class="post__nav post__nav__next">Newer post</span>
+      <h2 class="post__nav__title">Reverse engineering x64 binaries with Radare2 - 15 (Windows fundamentals; Intro to WinApi and file management)</h2>
+    </div>
+    <div class="next__image">
+      <img class="lazy" data-src="/images//radare2/radare2_14.png" alt="Reverse engineering x64 binaries with Radare2 - 14 - I (linux systems programming; theory, syscalls, files and ESIL)">
+    </div>
+  </a>
+  
+</div>
+
+     <!-- begin comments -->
+<div id="disqus_thread" class="post__comments">
+  <div id="disqus_empty"></div>
+</div>
+
+<script>
+  function load_disqus() {
+    var disqus_shortname = 'artikblue',
+      is_disqus_empty = document.getElementById('disqus_empty'),
+      disqus_target = document.getElementById('disqus_thread'),
+      disqus_embed = document.createElement('script'),
+      disqus_hook = (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]);
+
+    if (disqus_target && is_disqus_empty) {
+      disqus_embed.type = 'text/javascript';
+      disqus_embed.async = true;
+      disqus_embed.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      disqus_hook.appendChild(disqus_embed);
+      is_disqus_empty.remove();
+    }
+  }
+
+  window.addEventListener('scroll', function (e) {
+    var currentScroll = document.scrollingElement.scrollTop;
+    var disqus_target = document.getElementById('disqus_thread');
+
+    if (disqus_target && (currentScroll > disqus_target.getBoundingClientRect().top - 150)) {
+      load_disqus('disqus_shortname');
+    }
+  }, false);
+
+</script>
+<noscript>Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+</noscript>
+<!-- end comments --> 
+
+  </article>
+</div>
+<!-- end post -->
+      </div>
+      <!-- end wrapper-page -->
+    </main>
+    <!-- end content -->
+    <div class="top" title="Top"><i class="ion ion-ios-arrow-round-up"></i></div>
+    <!-- begin footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col col-12 col-m-12">
+        <div class="footer__inner">
+
+          <div class="footer__head">
+            <div class="row">
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-recent">
+    <div class="widget__head">
+      <h3 class="widget__title">Recent Posts</h3>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-22">
+        <img class="lazy" data-src="/images//radare2/radare2_22.png" alt="Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-20T00:01:35+02:00">Jun 20, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-22">Reverse engineering x64 binaries with Radare2 - Enabling code execution on Stack</a></h4>
+      </div>
+    </div>
+    
+    <div class="recent-posts">
+      
+      <a class="recent-posts__image" href="/reversing-radare-21">
+        <img class="lazy" data-src="/images//radare2/radare2_21.png" alt="Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains">
+      </a>
+      
+      <div class="recent-posts__content">
+        <div class="recent-posts__date">
+          <time class="timeago" datetime="2022-06-15T00:01:35+02:00">Jun 15, 2022</time>
+        </div>
+        <h4 class="recent-posts__title"><a href="/reversing-radare-21">Reverse engineering x64 binaries with Radare2 - Bypasssing DEP with simple ROP Chains</a></h4>
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-gallery">
+    <div class="widget__head">
+      <h3 class="widget__title">Gallery</h3>
+    </div>
+    
+    <div class="gallery-box gallery-footer">
+      <div class="gallery">
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/landscape1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sasha1.jpeg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/castle1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/scotland1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/sanfran1.jpg" alt="Minimalism">
+        </div>
+        
+        <div class="gallery__image">
+          <img class="lazy" data-src="/images/newyork1.jpg" alt="Minimalism">
+        </div>
+        
+      </div>
+    </div>
+    
+  </div>
+</div>
+              <div class="col col-4 col-d-6 col-t-12">
+  <div class="widget widget-subscribe">
+    <div class="widget__head">
+      <h3 class="widget__title"></h3>
+    </div>
+    <div class="subscribe__inner">
+      <div class="subscribe__group">
+        <div class="subscribe__description"></div>
+      </div>
+      <!-- <form class="subscribe-form validate"
+           action="#" method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form" target="_blank" novalidate>
+           <label class="screen-reader-text" for="mce-EMAIL">Email address</label>
+           <input class="subscribe-email required email" id="mce-EMAIL" type="text" name="EMAIL"
+           placeholder="Your email address">
+           <button class="button subscribe-button" id="membedded-subscribe" type="submit" name="subscribe"></button>
+           </form> -->
+    </div>
+  </div>
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        
+  <div class="social">
+    <ul class="social__list list-reset">
+      
+      <li class="social__item">
+        <a class="social__link" href="https://twitter.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-twitter"></i></a>
+      </li>
+      
+      <li class="social__item">
+        <a class="social__link" href="https://github.com/artikblue" target="_blank" rel="noopener" aria-label="social icon"><i class="ion ion-logo-github"></i></a>
+      </li>
+      
+    </ul>
+  </div>
+
+        <div class="copyright">2022 &copy; <a href="/">Artik Blue</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- end footer -->
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="/js/scripts.js"></script>
+</body>
+
+</html>
