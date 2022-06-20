@@ -11,16 +11,16 @@ blog-theme: dark # By default, Atega theme uses a 'light' color scheme, to chang
 #-------------------------------
 # Author Settings
 author:
-  name: Artik BLue
-  image: '/images/front.jpeg'
+  name: Artik Blue
+  image: '/images/01.jpg'
 
 
 #-------------------------------
 # Hero Settings
 hero:
   hero__title: Hi, I'm <span class="hero__name">Paul</span>.
-  hero__job: hacker
-  hero__description: Threat intelligence analyst, security enthusiast and non stop learner.
+  hero__job: Hacker
+  hero__description: Threat intelligence analyst, security enthusiast and constant learner.
   hero__button__text: Read about me
   hero__button__link: '/about'
   hero__image: '/images/front.jpeg'
