@@ -3,7 +3,7 @@ layout: post
 title:  Reverse engineering x64 binaries with Radare2 - Defeating stack canaries
 tags: c reversing radare
 image: '/images//radare2/canaries.jpeg'
-date: 2022-06-26 15:01:35 -0700
+date: 2022-06-25 15:01:35 -0700
 ---
 
 #### Compiling without no-stack-protector
