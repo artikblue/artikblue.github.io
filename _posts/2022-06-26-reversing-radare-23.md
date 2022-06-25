@@ -46,14 +46,14 @@ But this time we notice that the program terminates withouth the typical overflo
 
 What happened in here is that, as it wasn't disabled, GCC compiled the program enabling stack canaries. The term Stack Canaries paraphrases the [Canary in a coal mine](https://en.wiktionary.org/wiki/canary_in_a_coal_mine), that was a protection mechanism for miners, working in coal mines back then in the early 20th century. The miners would bring an actual canary inside the mine, whenever the canary died it was time to leave the mine for food, before facing death due to air intoxication. The following image extracted from Ch0pin's blog shows a sample canary:
 
-[!canarimine](https://miro.medium.com/max/1400/0*PgNurmyrOS3WVsAs.jpg)
+![canarimine](https://miro.medium.com/max/1400/0*PgNurmyrOS3WVsAs.jpg)
 
 
 The thing works in a similar way here in the stack. This mechanism starts from the fact that an attacker will try to overflow the stack, that is, to overwrite memory, writting stuff when it should not be done. Assume that at the beginning of a function call (e.g. during its prologue) we are saving a value in the function’s stack frame, we would expect (! if everything went well !) to read the same value just before the function exits or namely at its epilogue. If the value has changed, then the execution of the program will be terminated and an error message will be displayed.
 
 Visually, we can see that stack canaries work like in the following diagram:
 
-[!canary](https://miro.medium.com/max/562/1*bHpEk6RPDTfdU2bIdVspbQ.png)
+![canary](https://miro.medium.com/max/562/1*bHpEk6RPDTfdU2bIdVspbQ.png)
 
 Now if we go back to our previous program, compiled without deactivating the stack protector, we see the following before and after the greet_me function:
 
