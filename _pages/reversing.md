@@ -46,6 +46,6 @@ image: '/images//radare2.png'
   </ul>
 <h3>Malware analysis</h3>
 <ul>
-  <li><a href="https://artik.blue/malware1">Malware analysis with IDA/Radare2 - C# Malware (Ziraat)</a></li>l>
+  <li><a href="https://artik.blue/malware1">Malware analysis with IDA/Radare2 - C# Malware (Ziraat)</a></li>
   
 </ul>
