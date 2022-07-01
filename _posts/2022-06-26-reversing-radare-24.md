@@ -2,7 +2,7 @@
 layout: post 
 title:  Reverse engineering x64 binaries with Radare2 - Dealing with ASLR
 tags: reversing radare malware c   
-image: '/images//radare2/malware1.png'
+image: '/images//radare2/aslr.png'
 date: 2022-06-29 15:01:35 -0700 
 ---
 
