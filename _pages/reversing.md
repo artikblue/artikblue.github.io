@@ -40,8 +40,8 @@ image: '/images//radare2.png'
   <li><a href="https://artik.blue/reversing-radare-20">Reverse engineering x64 binaries with Radare2 - 19 (Exploiting basic Buffer Overflows)</a></li>
   <li><a href="https://artik.blue/reversing-radare-21">Reverse engineering x64 binaries with Radare2 - 20 (Bypassing DEP with simple ROP Chains)</a></li>
   <li><a href="https://artik.blue/reversing-radare-22">Reverse engineering x64 binaries with Radare2 - 21 (Enabling code execution on stack)</a></li>
-  https://artik.blue/malware1
   <li><a href="https://artik.blue/reversing-radare-23">Reverse engineering x64 binaries with Radare2 - 22 (Defeating stack canaries)</a></li>
+  <li><a href="https://artik.blue/reversing-radare-24">Reverse engineering x64 binaries with Radare2 - 23 (Dealing with aslr)</a></li>
 
   </ul>
 <h3>Malware analysis</h3>
