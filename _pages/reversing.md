@@ -48,5 +48,6 @@ image: '/images//radare2.png'
 <ul>
   <li><a href="https://artik.blue/malware1">Malware analysis with IDA/Radare2 - C# Malware (Ziraat)</a></li>
   <li><a href="https://artik.blue/malware2">Malware analysis with IDA/Radare2 - Analyzing maldocs (Emotet Dropper)</a></li>
+  <li><a href="https://artik.blue/malware2">Malware analysis with IDA/Radare2 - Basic unpacking (Dridex)</a></li>
   
 </ul>
