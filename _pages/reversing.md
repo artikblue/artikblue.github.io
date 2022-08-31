@@ -51,5 +51,7 @@ image: '/images//radare2.png'
   <li><a href="https://artik.blue/malware3">Malware analysis with IDA/Radare2 - Basic unpacking (Dridex)</a></li>
   <li><a href="https://artik.blue/malware4">Malware analysis with IDA/Radare2 - Multiple unpacking (Ramnit)</a></li>
   <li><a href="https://artik.blue/malware5">Malware analysis with IDA/Radare2 - From unpacking to config extraction (IceID)</a></li>
+  <li><a href="https://artik.blue/malware6">Malware analysis with IDA/Radare2 - DLL injection, the fundamentals</a></li>
+  <li><a href="https://artik.blue/malware7">Malware analysis with IDA/Radare2 - PE injection, the fundamentals</a></li>
   
 </ul>
